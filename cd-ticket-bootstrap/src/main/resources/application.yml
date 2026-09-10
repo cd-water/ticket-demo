@@ -1,0 +1,6 @@
+server:
+  port: 8600
+
+spring:
+  application:
+    name: cd-ticket

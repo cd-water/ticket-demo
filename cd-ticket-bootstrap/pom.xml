@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.cdwater</groupId>
+        <artifactId>cd-ticket</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>cd-ticket-bootstrap</artifactId>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-admin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-movie</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-cinema</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-screening</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-order</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cdwater</groupId>
+            <artifactId>cd-ticket-payment</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
