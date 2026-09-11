@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { ALL_MENUS } from '@/config/menu'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,12 +13,13 @@ const router = createRouter({
     },
     {
       path: '/',
+      component: () => import('@/layout/AdminLayout.vue'),
       redirect: '/dashboard',
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
+      children: ALL_MENUS.map((m) => ({
+        path: m.key,
+        component: () => import('@/views/PlaceholderView.vue'),
+        meta: { title: m.title },
+      })),
     },
     {
       path: '/:pathMatch(.*)*',

@@ -25,24 +25,19 @@ input,select{font-family:inherit}
 
 /* ---- 登录 ---- */
 .login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(1000px 600px at 70% -10%,#3A3200 0%,#141414 60%)}
-.login-card{width:460px;background:var(--bg2);border:1px solid var(--line);border-radius:22px;padding:44px 40px}
-.login-card .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:24px;font-weight:800;justify-content:center}
+.login-card{width:460px;background:var(--bg2);border:1px solid var(--line);border-radius:22px;padding:44px 40px 36px}
+.login-card .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:24px;font-weight:800;justify-content:center;margin-bottom:34px}
 .login-card .brand .dot{width:14px;height:14px;border-radius:4px;background:var(--brand);box-shadow:0 0 18px rgba(255,195,0,.6)}
-.login-card .sub{text-align:center;font-size:13px;color:var(--ink-2);margin-top:8px}
-.login-card .roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:30px 0 22px}
-.role-card{border:2px solid var(--line);border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:.15s;background:var(--bg3)}
-.role-card.on{border-color:var(--brand);background:rgba(255,195,0,.08)}
-.role-card .ic{font-size:22px}
-.role-card .t{font-family:var(--serif);font-weight:700;margin-top:8px}
-.role-card .d{font-size:11px;color:var(--ink-2);margin-top:4px}
-.role-card .tag{margin-top:10px;display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;background:var(--brand);color:#5c3d00;font-weight:700}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:6px}
 .field input,.field select{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:14px}
 .field input:focus,.field select:focus{outline:none;border-color:var(--brand)}
 .login-btn{width:100%;padding:13px;border-radius:10px;background:var(--brand);color:#5c3d00;font-size:15px;font-weight:800;margin-top:6px}
 .login-btn:hover{background:var(--brand-deep);color:#fff}
-.login-hint{text-align:center;font-size:12px;color:var(--ink-2);margin-top:16px;line-height:1.8}
+.tear{position:relative;border-top:2px dashed var(--line);margin:28px -40px -16px}
+.tear::before,.tear::after{content:'';position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.tear::before{left:-11px}
+.tear::after{right:-11px}
 
 /* ---- 后台布局 ---- */
 .layout{display:flex;min-height:100vh}
@@ -183,22 +178,11 @@ td .poster{width:32px;height:46px;border-radius:6px;background:linear-gradient(1
 <div class="view active" id="login">
   <div class="login">
     <div class="login-card">
-      <div class="brand"><span class="dot"></span>CD-TICKET · 管理后台</div>
-      <div class="sub">多影院 · 多角色运营总控台</div>
-      <div class="roles">
-        <div class="role-card" data-role="0" onclick="pickRole(0)">
-          <div class="ic">🏢</div><div class="t">超级管理员</div>
-          <div class="d">管理全部影院与全局数据</div><span class="tag">全局权限</span>
-        </div>
-        <div class="role-card" data-role="1" onclick="pickRole(1)">
-          <div class="ic">🎬</div><div class="t">影院管理员</div>
-          <div class="d">仅管理本影院经营</div><span class="tag">单影院权限</span>
-        </div>
-      </div>
-      <div class="field"><label>用户名</label><input id="uname" placeholder="admin / cinema01"></div>
-      <div class="field"><label>密码</label><input id="upass" type="password" placeholder="Aa123456"></div>
+      <div class="brand">电影票务系统<span class="dot"></span>管理后台</div>
+      <div class="field"><label>用户名</label><input id="uname" placeholder="用户名"></div>
+      <div class="field"><label>密码</label><input id="upass" type="password" placeholder="密码"></div>
       <button class="login-btn" onclick="doLogin()">登 录</button>
-      <div class="login-hint">演示账号<br>超级管理员：admin / Aa123456<br>影院管理员：cinema01 / Aa123456</div>
+      <div class="tear"></div>
     </div>
   </div>
 </div>
@@ -365,11 +349,10 @@ const MENU_NAME={dashboard:'仪表盘',movies:'电影管理',cinemas:'影院管�
 const MENU_ICON={dashboard:'📊',movies:'🎞️',cinemas:'🏢',users:'👥',admins:'🛡️',banners:'🖼️',orders:'🧾',halls:'🎬',sessions:'📅'};
 let role=0,current='dashboard';
 
-function pickRole(r){role=r;document.querySelectorAll('.role-card').forEach(c=>c.classList.toggle('on',+c.dataset.role===r));}
 function doLogin(){
   const u=$('#uname').value||'admin';
-  if(u.startsWith('cinema')&&role!==1){toast('该账号为影院管理员，请选择「影院管理员」角色','error');return;}
-  if(u==='admin'&&role!==0){toast('该账号为超级管理员，请选择「超级管理员」角色','error');return;}
+  /* 与真实后端一致：由返回的 admin.role 决定后台菜单（demo 按用户名前缀模拟） */
+  role=u.startsWith('cinema')?1:0;
   $('#login').classList.remove('active');$('#app').classList.add('active');
   buildMenu();switchScreen('dashboard');toast(`欢迎，${u}`);
 }
@@ -591,7 +574,6 @@ function toggleSeatCfg(idx){
 function saveSeats(){const h=HALLS.find(x=>x.id===selHall);toast(`「${h.name}」座位模板已保存（${h.seats.size} 座不可售）`,'success');}
 
 /* 初始化 */
-pickRole(0);
 </script>
 </body>
 </html>

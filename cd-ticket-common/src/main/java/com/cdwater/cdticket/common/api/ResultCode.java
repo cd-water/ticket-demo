@@ -24,7 +24,7 @@ import lombok.Getter;
  * 示例：
  *   0000  = 成功
  *   C001  = 客户端-公共-001    参数错误
- *   C005  = 客户端-公共-005    用户名或密码错误
+ *   C004  = 客户端-公共-004    用户名或密码错误
  *   C101  = 客户端-用户-101    验证码错误或已过期
  *   S001  = 服务端-公共-001    系统异常
  */
@@ -37,14 +37,13 @@ public enum ResultCode {
     BAD_REQUEST("C001", "参数错误"),
     UNAUTHORIZED("C002", "未认证或登录已过期"),
     FORBIDDEN("C003", "无权限"),
-    PHONE_INVALID("C004", "手机号格式非法"),
-    LOGIN_FAILED("C005", "用户名或密码错误"),
+    LOGIN_FAILED("C004", "用户名或密码错误"),
 
     // C1xx 用户
     SMS_CODE_INVALID("C101", "验证码错误或已过期"),
-    USER_DISABLED("C103", "用户已禁用"),
-    PASSWORD_SAME_AS_OLD("C104", "新密码与旧密码相同"),
-    PASSWORD_CONFIRM_MISMATCH("C105", "两次输入密码不一致"),
+    USER_DISABLED("C102", "用户已禁用"),
+    PASSWORD_SAME_AS_OLD("C103", "新密码与旧密码相同"),
+    PASSWORD_CONFIRM_MISMATCH("C104", "两次输入密码不一致"),
 
     // C2xx 管理员（预留）
     // C3xx 影片（预留）
