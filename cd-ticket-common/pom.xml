@@ -18,6 +18,27 @@
     </properties>
 
     <dependencies>
+        <!-- Spring Security：SecurityConfig / JwtAuthenticationFilter / SecurityUtils 在本模块 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- Redis（StringRedisTemplate 在 JwtAuthenticationFilter 使用） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- Kafka 异步解耦（短信发送等场景） -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <!-- MySQL 驱动（runtime，MyBatis-Plus 运行时需要） -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- JWT（版本由根 POM dependencyManagement 管理） -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

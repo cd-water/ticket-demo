@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.common.infrastructure;
+package com.cdwater.cdticket.common.security;
 
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,8 +13,8 @@ class JwtUtilTest {
     void setUp() {
         JwtProperties props = new JwtProperties();
         props.setSecret("cd-ticket-dev-secret-key-0123456789abcdef0123456789abcdef");
-        props.setAccessExpireSeconds(900);
-        props.setRefreshExpireSeconds(604800);
+        props.setAccessExpireSeconds(900L);
+        props.setRefreshExpireSeconds(604800L);
         jwtUtil = new JwtUtil(props);
     }
 

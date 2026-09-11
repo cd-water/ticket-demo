@@ -1,50 +1,39 @@
 package com.cdwater.cdticket.user.application;
 
-import com.cdwater.cdticket.common.application.BizException;
-import com.cdwater.cdticket.common.application.ResultCode;
+import com.cdwater.cdticket.common.exception.BizException;
+import com.cdwater.cdticket.common.api.ResultCode;
 import com.cdwater.cdticket.user.infrastructure.SmsProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class SmsCodeService {
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
-    private static final String CODE_KEY = "sms:";
-    private static final String COOLDOWN_KEY = "sms:send:";
+    private static final String SMS_KEY_PREFIX = "sms:";
 
     private final StringRedisTemplate redis;
     private final SmsProperties smsProperties;
     private final SmsSender smsSender;
 
-    public SmsCodeService(StringRedisTemplate redis, SmsProperties smsProperties, SmsSender smsSender) {
-        this.redis = redis;
-        this.smsProperties = smsProperties;
-        this.smsSender = smsSender;
-    }
-
     public void sendCode(String phone) {
-        if (!PHONE_PATTERN.matcher(phone).matches()) {
-            throw new BizException(ResultCode.PHONE_INVALID);
-        }
-        String cooldownKey = COOLDOWN_KEY + phone;
-        if (Boolean.TRUE.equals(redis.hasKey(cooldownKey))) {
-            throw new BizException(ResultCode.SMS_SEND_TOO_FREQUENT);
-        }
+        // 手机号格式校验已在 controller 的 @Valid(SmsCodeRequest) 完成
+        // 短信发送不限流；如需限流，统一在更高层（API网关/切面）做
         String code = String.format("%06d", ThreadLocalRandom.current().nextInt(1_000_000));
-        redis.opsForValue().set(CODE_KEY + phone, code, Duration.ofSeconds(smsProperties.getCodeExpireSeconds()));
-        redis.opsForValue().set(cooldownKey, "1", Duration.ofSeconds(smsProperties.getSendCooldownSeconds()));
+        redis.opsForValue().set(SMS_KEY_PREFIX + phone, code,
+                Duration.ofSeconds(smsProperties.getCodeExpireSeconds()));
         smsSender.send(phone, code);
     }
 
     public void verify(String phone, String code) {
-        String saved = redis.opsForValue().get(CODE_KEY + phone);
+        String key = SMS_KEY_PREFIX + phone;
+        String saved = redis.opsForValue().get(key);
         if (saved == null || !saved.equals(code)) {
             throw new BizException(ResultCode.SMS_CODE_INVALID);
         }
-        redis.delete(CODE_KEY + phone);
+        redis.delete(key);
     }
 }

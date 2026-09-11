@@ -1,4 +1,6 @@
-package com.cdwater.cdticket.common.infrastructure;
+package com.cdwater.cdticket.common.security;
+
+import com.cdwater.cdticket.common.api.ResultCode;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

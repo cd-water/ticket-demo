@@ -1,7 +1,7 @@
-package com.cdwater.cdticket.common.interfaces;
+package com.cdwater.cdticket.common.security;
 
-import com.cdwater.cdticket.common.application.BizException;
-import com.cdwater.cdticket.common.application.ResultCode;
+import com.cdwater.cdticket.common.api.ResultCode;
+import com.cdwater.cdticket.common.exception.BizException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

@@ -1,9 +1,8 @@
-package com.cdwater.cdticket.common.interfaces;
+package com.cdwater.cdticket.common.security;
 
-import com.cdwater.cdticket.common.application.ResultCode;
-import com.cdwater.cdticket.common.domain.Result;
-import com.cdwater.cdticket.common.infrastructure.JwtUtil;
-import com.cdwater.cdticket.common.infrastructure.ResultWriter;
+import com.cdwater.cdticket.common.api.Result;
+import com.cdwater.cdticket.common.api.ResultCode;
+import com.cdwater.cdticket.common.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -62,7 +61,9 @@ public class SecurityConfig {
                                    org.springframework.security.core.AuthenticationException e) throws IOException {
         response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(ResultWriter.toJson(Result.fail(
-                ResultCode.UNAUTHORIZED.getCode(), ResultCode.UNAUTHORIZED.getMessage())));
+        response.getWriter().write(Result.fail(
+                ResultCode.UNAUTHORIZED.getCode(),
+                ResultCode.UNAUTHORIZED.getMessage()
+        ).toJson());
     }
 }

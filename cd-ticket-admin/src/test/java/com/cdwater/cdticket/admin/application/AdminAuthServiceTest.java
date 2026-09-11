@@ -1,17 +1,15 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.admin.application.AdminAuthDtos.AdminLoginResponse;
+import com.cdwater.cdticket.admin.application.dto.AdminLoginResponse;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
 import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
-import com.cdwater.cdticket.common.application.BizException;
-import com.cdwater.cdticket.common.infrastructure.JwtProperties;
-import com.cdwater.cdticket.common.infrastructure.JwtUtil;
+import com.cdwater.cdticket.common.exception.BizException;
+import com.cdwater.cdticket.common.security.JwtProperties;
+import com.cdwater.cdticket.common.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,8 +26,8 @@ class AdminAuthServiceTest {
         when(redis.opsForValue()).thenReturn(mock(org.springframework.data.redis.core.ValueOperations.class));
         JwtProperties props = new JwtProperties();
         props.setSecret("cd-ticket-dev-secret-key-0123456789abcdef0123456789abcdef");
-        props.setAccessExpireSeconds(900);
-        props.setRefreshExpireSeconds(604800);
+        props.setAccessExpireSeconds(900L);
+        props.setRefreshExpireSeconds(604800L);
         TokenStoreService tokenStore = new TokenStoreService(redis, props);
         service = new AdminAuthService(adminRepository, tokenStore, new JwtUtil(props), new BCryptPasswordEncoder());
     }
@@ -43,9 +41,9 @@ class AdminAuthServiceTest {
         admin.setRole(0);
         admin.setCinemaId(0L);
         admin.setStatus(1);
-        when(adminRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(adminRepository.findByUsername("admin")).thenReturn(admin);
         AdminLoginResponse resp = service.login("admin", "Aa123456");
-        assertNotNull(resp.token());
+        assertNotNull(resp.getToken());
         verify(redis).opsForValue();
     }
 
@@ -55,7 +53,7 @@ class AdminAuthServiceTest {
         admin.setId(1L);
         admin.setPassword(new BCryptPasswordEncoder().encode("Aa123456"));
         admin.setStatus(0);
-        when(adminRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(adminRepository.findByUsername("admin")).thenReturn(admin);
         assertThrows(BizException.class, () -> service.login("admin", "Aa123456"));
     }
 
@@ -65,7 +63,7 @@ class AdminAuthServiceTest {
         admin.setId(1L);
         admin.setPassword(new BCryptPasswordEncoder().encode("right"));
         admin.setStatus(1);
-        when(adminRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(adminRepository.findByUsername("admin")).thenReturn(admin);
         assertThrows(BizException.class, () -> service.login("admin", "wrong"));
     }
 }

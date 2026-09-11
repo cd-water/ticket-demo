@@ -1,8 +1,9 @@
 package com.cdwater.cdticket.user.application;
 
-import com.cdwater.cdticket.common.application.BizException;
-import com.cdwater.cdticket.common.application.ResultCode;
-import com.cdwater.cdticket.common.infrastructure.JwtProperties;
+import com.cdwater.cdticket.common.exception.BizException;
+import com.cdwater.cdticket.common.api.ResultCode;
+import com.cdwater.cdticket.common.security.JwtProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -10,16 +11,12 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshTokenService {
     private static final String KEY_PREFIX = "refresh:token:";
 
     private final StringRedisTemplate redis;
     private final JwtProperties jwtProperties;
-
-    public RefreshTokenService(StringRedisTemplate redis, JwtProperties jwtProperties) {
-        this.redis = redis;
-        this.jwtProperties = jwtProperties;
-    }
 
     public String create(Long userId) {
         String token = UUID.randomUUID().toString();

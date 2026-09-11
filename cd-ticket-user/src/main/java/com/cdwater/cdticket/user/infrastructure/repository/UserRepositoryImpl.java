@@ -4,28 +4,23 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.user.domain.UserRepository;
 import com.cdwater.cdticket.user.infrastructure.entity.User;
 import com.cdwater.cdticket.user.infrastructure.mapper.UserMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
+@RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 
     private final UserMapper userMapper;
 
-    public UserRepositoryImpl(UserMapper userMapper) {
-        this.userMapper = userMapper;
+    @Override
+    public User findByPhone(String phone) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
     }
 
     @Override
-    public Optional<User> findByPhone(String phone) {
-        return Optional.ofNullable(userMapper.selectOne(
-                new LambdaQueryWrapper<User>().eq(User::getPhone, phone)));
-    }
-
-    @Override
-    public Optional<User> findById(Long id) {
-        return Optional.ofNullable(userMapper.selectById(id));
+    public User findById(Long id) {
+        return userMapper.selectById(id);
     }
 
     @Override
