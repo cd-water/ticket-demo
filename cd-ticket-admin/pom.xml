@@ -46,6 +46,15 @@
             <groupId>com.cdwater</groupId>
             <artifactId>cd-ticket-payment</artifactId>
         </dependency>
+        <!-- MyBatis-Plus（版本由根 POM dependencyManagement 管理） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
