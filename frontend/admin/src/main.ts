@@ -1,5 +1,18 @@
 import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import ElementPlus from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
+import '@/styles/tokens.css'
+import App from '@/App.vue'
+import router from '@/router'
 
-createApp(App).mount('#app')
+document.documentElement.classList.add('dark')
+
+const app = createApp(App)
+app.use(createPinia().use(piniaPluginPersistedstate))
+app.use(router)
+app.use(ElementPlus, { locale: zhCn })
+app.mount('#app')

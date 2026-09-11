@@ -1,0 +1,87 @@
+/**
+ * 设计令牌（暗场放映厅 · 票根黄）
+ * 参考 docs/demo/admin-demo.html；Element Plus 暗色主题在此统一覆盖。
+ */
+
+:root {
+  /* 色板 */
+  --bg: #141414;
+  --panel: #1E1E1E;
+  --panel-2: #272727;
+  --line: #333333;
+  --brand: #FFC300;
+  --brand-deep: #F5A623;
+  --on-brand: #5C3D00;
+  --ink: #F5F2E8;
+  --ink-2: #9A927F;
+  --danger: #E5484D;
+
+  /* 字体（系统栈，Noto 本机装了即生效） */
+  --font-serif: 'Noto Serif SC', 'Songti SC', SimSun, serif;
+  --font-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-din: 'DIN Alternate', 'Bahnschrift', var(--font-sans);
+
+  color-scheme: dark;
+}
+
+html {
+  background: var(--bg);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* 页面自身不出现横向滚动 */
+  overflow-x: hidden;
+}
+
+/* ---- Element Plus 暗色主题覆盖（配合 dark/css-vars.css） ---- */
+html.dark {
+  --el-color-primary: var(--brand);
+  --el-color-primary-light-3: #FFCB33;
+  --el-color-primary-light-5: #FFD65E;
+  --el-color-primary-light-7: #FFE29B;
+  --el-color-primary-light-8: #FFE9B8;
+  --el-color-primary-light-9: #FFF6DC;
+  --el-color-primary-dark-2: var(--brand-deep);
+
+  --el-bg-color: var(--bg);
+  --el-bg-color-overlay: var(--panel);
+  --el-fill-color-blank: var(--bg);
+  --el-fill-color: var(--panel-2);
+  --el-fill-color-light: var(--panel-2);
+
+  --el-border-color: var(--line);
+  --el-border-color-hover: #555555;
+
+  --el-text-color-primary: var(--ink);
+  --el-text-color-regular: #C9C2B4;
+  --el-text-color-secondary: var(--ink-2);
+
+  --el-box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* 焦点可见性（键盘导航） */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* 动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
