@@ -20,3 +20,181 @@ export interface AdminLoginResponse {
   token: string
   admin: AdminInfo
 }
+
+/** 管理端列表接口的 data */
+export interface PageResult<T> {
+  total: number
+  records: T[]
+  page: number
+  size: number
+}
+
+/** 电影（/api/admin/movies） */
+export interface MovieVO {
+  id: number
+  title: string
+  poster: string
+  description: string | null
+  duration: number
+  releaseDate: string | null
+  status: number
+  createTime: string
+}
+
+export interface MovieSaveRequest {
+  title: string
+  poster?: string | null
+  description?: string | null
+  duration: number
+  releaseDate?: string | null
+  status: number
+}
+
+export interface MovieOption {
+  id: number
+  title: string
+}
+
+/** 轮播图（/api/admin/banners） */
+export interface BannerVO {
+  id: number
+  image: string
+  linkUrl: string
+  sort: number
+  status: number
+  createTime: string
+}
+
+export interface BannerSaveRequest {
+  image: string
+  linkUrl?: string
+  sort: number
+  status: number
+}
+
+/** 影院（/api/admin/cinemas） */
+export interface CinemaVO {
+  id: number
+  name: string
+  address: string
+  status: number
+  createTime: string
+}
+
+export interface CinemaSaveRequest {
+  name: string
+  address: string
+  status: number
+}
+
+/** 影厅与座位（/api/admin/halls） */
+export interface HallVO {
+  id: number
+  cinemaId: number
+  name: string
+  seatRows: number
+  seatCols: number
+  status: number
+}
+
+export interface HallSaveRequest {
+  name: string
+  seatRows: number
+  seatCols: number
+}
+
+export interface SeatCellVO {
+  row: number
+  col: number
+  seatNo: string
+  status: number
+}
+
+export interface SeatCellPayload {
+  row: number
+  col: number
+  status: number
+}
+
+export interface SeatGridVO {
+  rows: number
+  cols: number
+  seats: SeatCellVO[]
+}
+
+/** 排场（/api/admin/screenings） */
+export interface ScreeningVO {
+  id: number
+  movieId: number
+  movieTitle: string
+  hallId: number
+  hallName: string
+  cinemaId: number
+  startTime: string
+  price: number
+  status: number
+}
+
+export interface ScreeningSaveRequest {
+  movieId: number
+  hallId: number
+  startTime: string
+  price: number
+}
+
+/** 订单（/api/admin/orders，只读） */
+export interface OrderAdminRecord {
+  id: number
+  orderNo: string
+  userId: number
+  userPhone: string | null
+  userNickname: string | null
+  screeningId: number
+  movieId: number
+  movieTitle: string
+  cinemaId: number
+  status: number
+  totalAmount: number
+  payExpireTime: string | null
+  payTime: string | null
+  cancelType: number | null
+  createTime: string
+}
+
+/** 用户（/api/admin/users） */
+export interface UserAdminVO {
+  id: number
+  phone: string
+  nickname: string
+  status: number
+  createTime: string
+}
+
+/** 管理员管理（/api/admin/admins） */
+export interface AdminManageVO {
+  id: number
+  username: string
+  role: number
+  cinemaId: number
+  status: number
+  createTime: string
+}
+
+export interface AdminCreateRequest {
+  username: string
+  password: string
+  role: number
+  cinemaId?: number | null
+}
+
+export interface AdminUpdateRequest {
+  username: string
+  role: number
+  cinemaId?: number | null
+  status: number
+}
+
+/** 文件上传（/api/admin/files） */
+export interface UploadResponse {
+  url: string
+}

@@ -1,0 +1,167 @@
+/* 列表页通用样式（移植自 docs/demo/admin-demo.html） */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.panel-head .search {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px 0;
+}
+
+.filters .f-btn {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.filters .f-btn.on {
+  background: var(--brand);
+  color: var(--on-brand);
+  font-weight: 700;
+  border-color: var(--brand);
+}
+
+.tag-pill {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.tag-pill.t-ok { background: rgba(47, 168, 79, 0.16); color: #57c46f; }
+.tag-pill.t-warn { background: rgba(255, 195, 0, 0.16); color: var(--brand); }
+.tag-pill.t-muted { background: rgba(154, 146, 127, 0.16); color: var(--ink-2); }
+.tag-pill.t-danger { background: rgba(229, 72, 77, 0.16); color: #e5484d; }
+
+.panel .el-table {
+  --el-table-border-color: var(--line);
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: transparent;
+}
+
+.panel .el-table th.el-table__cell {
+  color: var(--ink-2);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.panel .el-table td.el-table__cell {
+  font-size: 13px;
+}
+
+.panel .el-table__empty-text {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.pager .total {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.thumb {
+  width: 32px;
+  height: 46px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  background: linear-gradient(160deg, #3a3a3a, #2a2a2a);
+}
+
+.thumb-wide {
+  width: 76px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  background: linear-gradient(160deg, #3a3a3a, #2a2a2a);
+}
+
+.upload-slot {
+  width: 96px;
+  height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--ink-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.upload-slot.wide {
+  width: 180px;
+  height: 76px;
+}
+
+.upload-preview {
+  width: 96px;
+  height: 132px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.upload-preview.wide {
+  width: 180px;
+  height: 76px;
+}
+
+.hint {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.detail-text {
+  color: var(--ink-2);
+}
+
+.detail-strong {
+  color: var(--ink);
+}

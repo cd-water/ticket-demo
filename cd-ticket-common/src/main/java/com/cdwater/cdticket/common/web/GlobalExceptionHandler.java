@@ -15,6 +15,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Slf4j
@@ -80,6 +81,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Result<Void> handleNoHandler(NoHandlerFoundException e) {
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), "接口不存在: " + e.getHttpMethod() + " " + e.getRequestURL());
+    }
+
+    /** 上传文件超过 multipart 上限（application.yml 配 5MB），返回 C001 */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public Result<Void> handleMaxUploadSize(MaxUploadSizeExceededException e) {
+        return Result.fail("C001", "图片不能超过 5MB");
     }
 
     /** 兜底 */
