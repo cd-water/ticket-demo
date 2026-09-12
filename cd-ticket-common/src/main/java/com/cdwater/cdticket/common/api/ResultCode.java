@@ -45,10 +45,18 @@ public enum ResultCode {
     PASSWORD_SAME_AS_OLD("C103", "新密码与旧密码相同"),
     PASSWORD_CONFIRM_MISMATCH("C104", "两次输入密码不一致"),
 
-    // C2xx 管理员（预留）
+    // C2xx 管理员
+    ADMIN_USERNAME_EXISTS("C201", "用户名已存在"),
+    CINEMA_ADMIN_NEED_CINEMA("C202", "影院管理员必须绑定影院"),
+    CANNOT_OPERATE_SELF("C203", "不能操作当前登录管理员"),
+    NOT_FOUND("C204", "记录不存在"),
+
     // C3xx 影片（预留）
     // C4xx 影院（预留）
-    // C5xx 排场（预留）
+    // C5xx 排场
+    SCREENING_TIME_CONFLICT("C501", "同影厅同一开场时间已有排场"),
+    HALL_HAS_SCREENING("C502", "该影厅已有排场，禁止删除"),
+    SCREENING_STARTED("C503", "排场已开场，禁止修改/删除"),
     // C6xx 订单（预留）
     // C7xx 支付（预留）
 

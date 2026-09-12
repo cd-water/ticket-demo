@@ -39,6 +39,24 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- IPage（PageResult 工厂用）；根 POM dependencyManagement 未管理该构件，用其 ${mybatis-plus.version} 属性统一版本 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-extension</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+        <!-- MinIO 对象存储（版本由根 POM dependencyManagement 管理） -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+        </dependency>
+        <!-- MinIO 8.6.0 传递依赖的 okhttp 5.1.0 只发布了 Gradle 元数据空壳 jar（Maven 解析不到类），
+             显式固定到 4.12.0（MinioClient 使用的 okhttp3 API 4.x 全部兼容）；直接依赖优先于传递依赖 -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
         <!-- JWT（版本由根 POM dependencyManagement 管理） -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

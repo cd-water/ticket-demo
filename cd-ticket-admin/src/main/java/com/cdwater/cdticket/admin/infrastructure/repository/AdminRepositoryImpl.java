@@ -7,6 +7,8 @@ import com.cdwater.cdticket.admin.infrastructure.mapper.AdminMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class AdminRepositoryImpl implements AdminRepository {
@@ -21,5 +23,28 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public Admin findById(Long id) {
         return adminMapper.selectById(id);
+    }
+
+    @Override
+    public List<Admin> list(Integer role, Long cinemaId) {
+        return adminMapper.selectList(new LambdaQueryWrapper<Admin>()
+                .eq(role != null, Admin::getRole, role)
+                .eq(cinemaId != null, Admin::getCinemaId, cinemaId)
+                .orderByAsc(Admin::getId));
+    }
+
+    @Override
+    public Admin save(Admin admin) {
+        if (admin.getId() == null) {
+            adminMapper.insert(admin);
+        } else {
+            adminMapper.updateById(admin);
+        }
+        return admin;
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        adminMapper.deleteById(id);
     }
 }

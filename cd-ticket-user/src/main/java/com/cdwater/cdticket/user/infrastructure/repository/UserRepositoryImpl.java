@@ -1,6 +1,7 @@
 package com.cdwater.cdticket.user.infrastructure.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cdwater.cdticket.user.domain.UserRepository;
 import com.cdwater.cdticket.user.infrastructure.entity.User;
 import com.cdwater.cdticket.user.infrastructure.mapper.UserMapper;
@@ -31,5 +32,12 @@ public class UserRepositoryImpl implements UserRepository {
             userMapper.updateById(user);
         }
         return user;
+    }
+
+    @Override
+    public IPage<User> pageByPhone(IPage<User> page, String phone) {
+        return userMapper.selectPage(page, new LambdaQueryWrapper<User>()
+                .like(phone != null && !phone.isBlank(), User::getPhone, phone)
+                .orderByDesc(User::getId));
     }
 }

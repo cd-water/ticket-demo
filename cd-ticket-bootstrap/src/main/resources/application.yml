@@ -43,3 +43,9 @@ jwt:
 
 sms:
   code-expire-seconds: 300
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: cdwaterminio
+  secret-key: cdwaterminio
+  bucket: cd-ticket
