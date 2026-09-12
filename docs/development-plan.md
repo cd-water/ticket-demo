@@ -93,7 +93,7 @@ common (无依赖)
 | 座位锁定 | Redis Bitmap，一场一 key，座位号 → bit；Lua 脚本原子「检查+锁定」，高并发一座一人 |
 | 超时关单 | Redis ZSet 延迟队列 `[expireTs, orderId]` + 轮询；DB 乐观锁（version）防竞态 |
 | C 端认证 | 双 Token：Access 15min + Refresh 7d，无感刷新 |
-| B 端认证 | 单 Token + Redis，设备指纹限制单设备，支持即时吊销 |
+| B 端认证 | 单 Token + Redis，覆盖写限制单设备（新登录踢旧 Token），支持即时吊销 |
 | 缓存 | 逻辑过期+互斥锁（击穿）、布隆+空值（穿透）、TTL 抖动+预热（雪崩） |
 | 限流 | Redis ZSet + Lua 滑动窗口 |
 | 异步 | Kafka 短信/票房，本地消息表 + 定时任务保证最终一致 |
@@ -121,7 +121,7 @@ common (无依赖)
 
 | 页面 | 功能 |
 |------|------|
-| 登录页 | 选择角色 → 用户名+密码 |
+| 登录页 | 用户名+密码（角色由账号决定，前端无需选择） |
 | 仪表盘 | 核心指标 + ECharts 图表（总票房、订单数、热映影片 Top） |
 | 电影管理 | 影片 CRUD、上下架、海报上传（MinIO） |
 | 影院管理 | 影院 CRUD |
@@ -134,7 +134,7 @@ common (无依赖)
 
 | 页面 | 功能 |
 |------|------|
-| 登录页 | 选择角色 → 用户名+密码 |
+| 登录页 | 用户名+密码（角色由账号决定，前端无需选择） |
 | 仪表盘 | 本影院票房统计 |
 | 影厅管理 | 影厅 CRUD + 座位模板可视化设置 |
 | 排场管理 | 为本影院影片/影厅排场 |
@@ -151,10 +151,11 @@ common (无依赖)
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |------|------|------|------|
-| POST | `/api/user/auth/sms-code` | 发送验证码（Mock 固定值演示） | 公开 |
+| POST | `/api/user/auth/sms-code` | 发送验证码（随机 6 位；Kafka 异步下发，消费者打日志模拟） | 公开 |
 | POST | `/api/user/auth/login/sms` | 手机号+验证码登录（静默注册） | 公开 |
 | POST | `/api/user/auth/login/password` | 手机号+密码登录 | 公开 |
-| POST | `/api/user/auth/refresh` | 刷新 Token | Refresh Token |
+| POST | `/api/user/auth/refresh` | 刷新 Token（轮换，旧 Refresh 作废） | Refresh Token |
+| POST | `/api/user/auth/logout` | 退出登录（吊销 refreshToken） | Access Token |
 | GET | `/api/user/me` | 当前用户信息 | Access Token |
 | POST | `/api/user/me/password` | 设置/修改密码 | Access Token |
 
@@ -245,7 +246,7 @@ common (无依赖)
 | poster | VARCHAR(255) | 海报 URL（MinIO） |
 | description | TEXT | 简介 |
 | release_date | DATE | 上映日期 |
-| status | TINYINT | 0 待映 / 1 热映 / 2 下架 |
+| status | TINYINT | 0 下架 / 1 上架；热映/待映由 release_date 与当前时间比对得出 |
 | 审计字段 | | |
 
 ### 5.4 轮播图 `t_banner`（并入 movie 模块）
@@ -307,7 +308,7 @@ CREATE TABLE t_order (
   pay_expire_time DATETIME  -- 超时关单时间（创建+15min）
 );
 CREATE TABLE t_order_item (
-  id BIGINT PK, order_id BIGINT, seat_no VARCHAR(10), price DECIMAL(10,2)
+  id BIGINT PK, order_id BIGINT, seat_row INT, seat_col INT, seat_no VARCHAR(10), price DECIMAL(10,2)
 );
 ```
 
@@ -373,7 +374,7 @@ CREATE TABLE t_order_item (
 ### 6.5 认证
 
 - **C 端双 Token**：登录/静默注册签发 Access(15min) + Refresh(7d)；Access 过期用 Refresh 换新（`/auth/refresh`）。
-- **B 端单 Token**：登录后 Token 存 Redis `admin:token:{adminId}:{deviceFingerprint}`，单设备，注销/封号即时吊销。
+- **B 端单 Token**：登录后 Token 存 Redis `admin:token:{adminId}`，新登录覆盖旧 Token（单设备踢线），注销/封号即时吊销。
 - Spring Security `OncePerRequestFilter` 校验 JWT；`/api/user/auth/**`、`/api/admin/auth/login`、公开浏览接口放行。
 
 ### 6.6 缓存与限流（movie/cinema 热点）
@@ -392,13 +393,15 @@ CREATE TABLE t_order_item (
 
 ## 7. 开发里程碑
 
-### 阶段 1：地基
+### 阶段 1：地基 ✅ 已完成
 
-- [ ] application.yml：MySQL/Redis/Kafka/MinIO 连接、JWT 密钥
-- [ ] 全量 `script/sql/table.sql` + `seed.sql`（新增 t_user/t_movie/t_hall/t_seat_config/t_screening/t_order/t_order_item/t_payment_record/t_local_message/t_banner）
-- [ ] common：统一响应体、异常处理、常量、MyBatis-Plus 配置
-- [ ] Spring Security + JWT：C 端双 Token、B 端单 Token、登录接口
-- **验收**：`./mvnw clean compile` 通过；curl 能登录拿 Token
+- [x] application.yml：MySQL/Redis/Kafka 连接、JWT 密钥（MinIO 暂未接入）
+- [x] 全量 `script/sql/table.sql` + `seed.sql`（t_admin/t_user/t_movie/t_banner/t_cinema/t_hall/t_seat_config/t_screening/t_order/t_order_item/t_payment_record/t_local_message）
+- [x] common：统一响应体（Result/ResultCode）、异常体系（BizException/GlobalExceptionHandler）、MyBatis-Plus 配置
+- [x] Spring Security + JWT：C 端双 Token（Access 15min + Refresh 7d 轮换）、B 端单 Token（Redis 覆盖写踢线）、登录/刷新/退出接口
+- [x] 单元测试：JwtUtilTest / AuthServiceTest / SmsCodeServiceTest / AdminAuthServiceTest
+- [x] 双端前端骨架：admin 登录 + 布局 + 角色菜单（功能页占位）；web 登录页（验证码/密码双 Tab、游客进入）+ 首页占位 + 已登录 hover 下拉（修改密码/退出登录）
+- **验收**：`./mvnw clean compile` 通过；curl 能登录拿 Token（C 端/B 端均可）
 
 ### 阶段 2：影片·影院·影厅·场次（管理端 + 用户端）
 
