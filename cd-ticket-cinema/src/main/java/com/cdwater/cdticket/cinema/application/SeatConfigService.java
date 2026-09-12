@@ -25,7 +25,7 @@ public class SeatConfigService {
     private final SeatConfigRepository configRepository;
     private final AdminAuthorizer adminAuthorizer;
 
-    /** 返回 rows×cols 全量网格；未配置的格子默认 status=0（可售） */
+    /** 返回 rows×cols 全量网格；未配置的格子默认 status=1（启用） */
     public SeatGridVO getGrid(Long hallId) {
         Hall hall = requireHall(hallId);
         adminAuthorizer.requireScope(hall.getCinemaId());
@@ -37,7 +37,7 @@ public class SeatConfigService {
                 final int c = col;
                 int status = configs.stream()
                         .filter(s -> s.getSeatRow() == r && s.getSeatCol() == c)
-                        .findFirst().map(SeatConfig::getStatus).orElse(0);
+                        .findFirst().map(SeatConfig::getStatus).orElse(1);
                 cells.add(new SeatCellVO(r, c, r + "排" + c + "座", status));
             }
         }

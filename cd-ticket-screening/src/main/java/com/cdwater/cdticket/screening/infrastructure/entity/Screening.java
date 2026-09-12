@@ -22,7 +22,6 @@ public class Screening {
     private Long cinemaId;
     private LocalDateTime startTime;
     private BigDecimal price;
-    private Integer status;
     private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

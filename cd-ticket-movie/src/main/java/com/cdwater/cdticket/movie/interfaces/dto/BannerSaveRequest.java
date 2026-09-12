@@ -14,6 +14,7 @@ public class BannerSaveRequest {
     @Size(max = 255, message = "图片地址过长")
     private String image;
 
+    @NotBlank(message = "跳转链接不能为空")
     @Size(max = 255, message = "跳转链接过长")
     private String linkUrl;
 

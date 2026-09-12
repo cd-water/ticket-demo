@@ -18,8 +18,8 @@ const emit = defineEmits<{ toggle: [row: number, col: number] }>()
         :key="`${s.row}-${s.col}`"
         type="button"
         class="cseat"
-        :class="{ off: s.status === 1 }"
-        :title="`${s.seatNo} ${s.status === 1 ? '不可售' : '可售'}`"
+        :class="{ off: s.status === 0 }"
+        :title="`${s.seatNo} ${s.status === 1 ? '启用' : '禁用'}`"
         @click="emit('toggle', s.row, s.col)"
       />
     </div>

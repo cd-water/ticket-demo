@@ -51,7 +51,7 @@ public class ScreeningService {
 
     public void update(Long id, ScreeningSaveCommand command) {
         Screening existing = requireScreening(id);
-        if (existing.getStatus() != null && existing.getStatus() == 1) {
+        if (existing.getStartTime().isBefore(LocalDateTime.now())) {
             throw new BizException(ResultCode.SCREENING_STARTED);
         }
         save(id, command);
@@ -59,7 +59,7 @@ public class ScreeningService {
 
     public void delete(Long id) {
         Screening existing = requireScreening(id);
-        if (existing.getStatus() != null && existing.getStatus() == 1) {
+        if (existing.getStartTime().isBefore(LocalDateTime.now())) {
             throw new BizException(ResultCode.SCREENING_STARTED);
         }
         screeningRepository.deleteById(id);
@@ -102,7 +102,7 @@ public class ScreeningService {
         vo.setCinemaId(s.getCinemaId());
         vo.setStartTime(s.getStartTime());
         vo.setPrice(s.getPrice());
-        vo.setStatus(s.getStatus());
+        vo.setStatus(s.getStartTime().isBefore(LocalDateTime.now()) ? 1 : 0);
         return vo;
     }
 

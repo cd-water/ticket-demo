@@ -32,7 +32,7 @@ class SeatConfigServiceTest {
     }
 
     @Test
-    void getGridDefaultsMissingCellsToSellable() {
+    void getGridDefaultsMissingCellsToEnabled() {
         Hall hall = new Hall(1L, 5L, "1号厅", 2, 2, 1, 0, null, null);
         when(hallRepository.findById(1L)).thenReturn(hall);
         when(configRepository.listByHallId(1L)).thenReturn(List.of(
@@ -44,7 +44,7 @@ class SeatConfigServiceTest {
         assertEquals(2, grid.getCols());
         assertEquals(4, grid.getSeats().size());
         assertEquals(1, grid.getSeats().get(0).getStatus());
-        assertEquals(0, grid.getSeats().get(1).getStatus()); // 未配置默认可售
+        assertEquals(1, grid.getSeats().get(1).getStatus()); // 未配置默认启用
     }
 
     @Test

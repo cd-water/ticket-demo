@@ -201,13 +201,13 @@ function removeCurrent() {
       <div v-if="current" v-loading="loadingSeats" class="canvas-body">
         <SeatCanvas :rows="grid.rows" :cols="grid.cols" :seats="seats" @toggle="toggleSeat" />
         <div class="legend">
-          <span><i class="lg lg-on" />可售</span>
-          <span><i class="lg lg-off" />不可售</span>
+          <span><i class="lg lg-on" />启用</span>
+          <span><i class="lg lg-off" />禁用</span>
         </div>
         <el-button type="primary" :loading="savingSeats" :disabled="!dirty" @click="saveSeats">
           {{ dirty ? '保存座位模板' : '座位模板已保存' }}
         </el-button>
-        <p class="canvas-hint">点击座位切换「可售 / 不可售」，改完点保存生效。</p>
+        <p class="canvas-hint">点击座位切换「启用 / 禁用」，改完点保存生效。</p>
       </div>
       <p v-else class="canvas-hint">先在左侧新增影厅。</p>
     </div>
