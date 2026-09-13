@@ -1,12 +1,12 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.admin.application.dto.BannerSaveCommand;
-import com.cdwater.cdticket.admin.application.dto.BannerVO;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.application.dto.banner.BannerSaveCommand;
+import com.cdwater.cdticket.admin.application.dto.banner.BannerVO;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.BannerRepository;
-import com.cdwater.cdticket.admin.domain.entity.Banner;
 import com.cdwater.cdticket.admin.infrastructure.convert.BannerConvert;
+import com.cdwater.cdticket.admin.infrastructure.entity.Banner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,8 +1,8 @@
 package com.cdwater.cdticket.admin.infrastructure.convert;
 
-import com.cdwater.cdticket.admin.application.dto.HallSaveCommand;
-import com.cdwater.cdticket.admin.application.dto.HallVO;
-import com.cdwater.cdticket.admin.domain.entity.Hall;
+import com.cdwater.cdticket.admin.application.dto.hall.HallSaveCommand;
+import com.cdwater.cdticket.admin.application.dto.hall.HallVO;
+import com.cdwater.cdticket.admin.infrastructure.entity.Hall;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

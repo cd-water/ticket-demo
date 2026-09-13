@@ -2,7 +2,7 @@ package com.cdwater.cdticket.admin.infrastructure.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.domain.entity.Admin;
+import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
 import com.cdwater.cdticket.admin.infrastructure.mapper.AdminMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

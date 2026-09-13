@@ -1,15 +1,15 @@
 package com.cdwater.cdticket.admin.application;
 
+import com.cdwater.cdticket.admin.application.AdminAuthorizer;
 import com.cdwater.cdticket.admin.application.CinemaAdminService;
-import com.cdwater.cdticket.admin.application.dto.AdminCreateCommand;
-import com.cdwater.cdticket.admin.application.dto.AdminManageVO;
-import com.cdwater.cdticket.admin.application.dto.AdminUpdateCommand;
-import com.cdwater.cdticket.admin.common.admin.AdminAuthorizer;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.application.dto.admin.AdminCreateCommand;
+import com.cdwater.cdticket.admin.application.dto.admin.AdminManageVO;
+import com.cdwater.cdticket.admin.application.dto.admin.AdminUpdateCommand;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.domain.entity.Admin;
 import com.cdwater.cdticket.admin.infrastructure.convert.AdminConvert;
+import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

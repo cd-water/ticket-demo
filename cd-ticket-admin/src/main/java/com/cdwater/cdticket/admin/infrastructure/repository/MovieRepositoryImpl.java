@@ -4,9 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cdwater.cdticket.admin.application.dto.MovieSaveCommand;
 import com.cdwater.cdticket.admin.domain.MovieRepository;
-import com.cdwater.cdticket.admin.domain.entity.Movie;
+import com.cdwater.cdticket.admin.infrastructure.entity.Movie;
 import com.cdwater.cdticket.admin.infrastructure.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -55,16 +54,16 @@ public class MovieRepositoryImpl implements MovieRepository {
     }
 
     @Override
-    public void updateAllColumns(Long id, MovieSaveCommand command) {
+    public void updateAllColumns(Long id, Movie movie) {
         // poster 列为 NOT NULL DEFAULT ''，置空须写空串（null 会违反约束）
-        String poster = command.getPoster() == null ? "" : command.getPoster();
+        String poster = movie.getPoster() == null ? "" : movie.getPoster();
         movieMapper.update(null, new LambdaUpdateWrapper<Movie>()
                 .eq(Movie::getId, id)
-                .set(Movie::getTitle, command.getTitle())
+                .set(Movie::getTitle, movie.getTitle())
                 .set(Movie::getPoster, poster)
-                .set(Movie::getDescription, command.getDescription())
-                .set(Movie::getDuration, command.getDuration())
-                .set(Movie::getReleaseDate, command.getReleaseDate())
-                .set(Movie::getStatus, command.getStatus()));
+                .set(Movie::getDescription, movie.getDescription())
+                .set(Movie::getDuration, movie.getDuration())
+                .set(Movie::getReleaseDate, movie.getReleaseDate())
+                .set(Movie::getStatus, movie.getStatus()));
     }
 }

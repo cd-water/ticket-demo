@@ -2,7 +2,7 @@ package com.cdwater.cdticket.admin.domain;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cdwater.cdticket.admin.domain.entity.Screening;
+import com.cdwater.cdticket.admin.infrastructure.entity.Screening;
 
 public interface ScreeningRepository {
     IPage<Screening> pageByMovieIdAndCinemaId(Page<Screening> page, Long movieId, Long cinemaId);

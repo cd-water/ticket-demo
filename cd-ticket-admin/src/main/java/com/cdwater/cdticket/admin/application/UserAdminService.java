@@ -1,13 +1,13 @@
 package com.cdwater.cdticket.admin.application;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cdwater.cdticket.admin.application.dto.UserAdminVO;
-import com.cdwater.cdticket.admin.common.api.PageResult;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.application.dto.PageResult;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.dto.user.UserAdminVO;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.UserRepository;
-import com.cdwater.cdticket.admin.domain.entity.User;
 import com.cdwater.cdticket.admin.infrastructure.convert.UserConvert;
+import com.cdwater.cdticket.admin.infrastructure.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

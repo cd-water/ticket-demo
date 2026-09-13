@@ -2,7 +2,7 @@ package com.cdwater.cdticket.admin.infrastructure.mapper;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cdwater.cdticket.admin.application.dto.OrderAdminRecord;
+import com.cdwater.cdticket.admin.application.dto.order.OrderAdminRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

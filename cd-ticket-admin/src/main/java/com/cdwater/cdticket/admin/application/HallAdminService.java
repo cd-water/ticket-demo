@@ -1,13 +1,13 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.admin.application.dto.HallSaveCommand;
-import com.cdwater.cdticket.admin.application.dto.HallVO;
-import com.cdwater.cdticket.admin.common.admin.AdminAuthorizer;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.application.AdminAuthorizer;
+import com.cdwater.cdticket.admin.application.dto.hall.HallSaveCommand;
+import com.cdwater.cdticket.admin.application.dto.hall.HallVO;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.HallRepository;
-import com.cdwater.cdticket.admin.domain.entity.Hall;
 import com.cdwater.cdticket.admin.infrastructure.convert.HallConvert;
+import com.cdwater.cdticket.admin.infrastructure.entity.Hall;
 import com.cdwater.cdticket.admin.infrastructure.mapper.HallUsageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.admin.common.security.TokenProperties;
+import com.cdwater.cdticket.admin.infrastructure.security.TokenProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;

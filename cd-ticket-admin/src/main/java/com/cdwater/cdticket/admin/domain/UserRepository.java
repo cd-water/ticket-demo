@@ -1,7 +1,7 @@
 package com.cdwater.cdticket.admin.domain;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cdwater.cdticket.admin.domain.entity.User;
+import com.cdwater.cdticket.admin.infrastructure.entity.User;
 
 public interface UserRepository {
     User findByPhone(String phone);

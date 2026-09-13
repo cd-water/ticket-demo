@@ -1,11 +1,12 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.admin.application.dto.AdminLoginResponse;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.application.dto.admin.AdminLoginResponse;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.domain.entity.Admin;
 import com.cdwater.cdticket.admin.infrastructure.convert.AdminConvert;
+import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
+import com.cdwater.cdticket.admin.infrastructure.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class AdminAuthService {
         return resp;
     }
 
-    public void logout(Long adminId) {
-        tokenStoreService.revoke(adminId);
+    public void logout() {
+        tokenStoreService.revoke(SecurityUtils.getCurrentId());
     }
 }

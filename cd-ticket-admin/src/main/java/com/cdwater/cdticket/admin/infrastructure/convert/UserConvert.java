@@ -1,7 +1,7 @@
 package com.cdwater.cdticket.admin.infrastructure.convert;
 
-import com.cdwater.cdticket.admin.application.dto.UserAdminVO;
-import com.cdwater.cdticket.admin.domain.entity.User;
+import com.cdwater.cdticket.admin.application.dto.user.UserAdminVO;
+import com.cdwater.cdticket.admin.infrastructure.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

@@ -1,15 +1,15 @@
 package com.cdwater.cdticket.admin.application;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cdwater.cdticket.admin.application.dto.MovieOption;
-import com.cdwater.cdticket.admin.application.dto.MovieSaveCommand;
-import com.cdwater.cdticket.admin.application.dto.MovieVO;
-import com.cdwater.cdticket.admin.common.api.PageResult;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.application.dto.movie.MovieOption;
+import com.cdwater.cdticket.admin.application.dto.movie.MovieSaveCommand;
+import com.cdwater.cdticket.admin.application.dto.movie.MovieVO;
+import com.cdwater.cdticket.admin.application.dto.PageResult;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.MovieRepository;
-import com.cdwater.cdticket.admin.domain.entity.Movie;
 import com.cdwater.cdticket.admin.infrastructure.convert.MovieConvert;
+import com.cdwater.cdticket.admin.infrastructure.entity.Movie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +35,7 @@ public class MovieAdminService {
 
     public void update(Long id, MovieSaveCommand command) {
         requireMovie(id);
-        movieRepository.updateAllColumns(id, command);
+        movieRepository.updateAllColumns(id, MovieConvert.INSTANCE.toEntity(command));
     }
 
     public void delete(Long id) {

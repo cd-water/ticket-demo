@@ -1,12 +1,12 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.admin.common.admin.AdminAuthorizer;
-import com.cdwater.cdticket.admin.common.admin.AdminPrincipal;
-import com.cdwater.cdticket.admin.common.api.ResultCode;
-import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.common.security.SecurityUtils;
+import com.cdwater.cdticket.admin.application.AdminAuthorizer;
+import com.cdwater.cdticket.admin.application.AdminPrincipal;
+import com.cdwater.cdticket.admin.application.dto.ResultCode;
+import com.cdwater.cdticket.admin.application.exception.BizException;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.domain.entity.Admin;
+import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
+import com.cdwater.cdticket.admin.infrastructure.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -2,7 +2,7 @@ package com.cdwater.cdticket.admin.infrastructure.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.domain.SeatConfigRepository;
-import com.cdwater.cdticket.admin.domain.entity.SeatConfig;
+import com.cdwater.cdticket.admin.infrastructure.entity.SeatConfig;
 import com.cdwater.cdticket.admin.infrastructure.mapper.SeatConfigMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

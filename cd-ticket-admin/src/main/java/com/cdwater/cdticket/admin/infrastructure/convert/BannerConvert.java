@@ -1,8 +1,8 @@
 package com.cdwater.cdticket.admin.infrastructure.convert;
 
-import com.cdwater.cdticket.admin.application.dto.BannerSaveCommand;
-import com.cdwater.cdticket.admin.application.dto.BannerVO;
-import com.cdwater.cdticket.admin.domain.entity.Banner;
+import com.cdwater.cdticket.admin.application.dto.banner.BannerSaveCommand;
+import com.cdwater.cdticket.admin.application.dto.banner.BannerVO;
+import com.cdwater.cdticket.admin.infrastructure.entity.Banner;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

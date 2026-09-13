@@ -1,7 +1,7 @@
 package com.cdwater.cdticket.admin.infrastructure.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cdwater.cdticket.admin.domain.entity.Movie;
+import com.cdwater.cdticket.admin.infrastructure.entity.Movie;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

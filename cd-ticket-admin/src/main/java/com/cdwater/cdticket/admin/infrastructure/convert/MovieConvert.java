@@ -1,9 +1,9 @@
 package com.cdwater.cdticket.admin.infrastructure.convert;
 
-import com.cdwater.cdticket.admin.application.dto.MovieOption;
-import com.cdwater.cdticket.admin.application.dto.MovieSaveCommand;
-import com.cdwater.cdticket.admin.application.dto.MovieVO;
-import com.cdwater.cdticket.admin.domain.entity.Movie;
+import com.cdwater.cdticket.admin.application.dto.movie.MovieOption;
+import com.cdwater.cdticket.admin.application.dto.movie.MovieSaveCommand;
+import com.cdwater.cdticket.admin.application.dto.movie.MovieVO;
+import com.cdwater.cdticket.admin.infrastructure.entity.Movie;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.domain.CinemaRepository;
-import com.cdwater.cdticket.admin.domain.entity.Cinema;
+import com.cdwater.cdticket.admin.infrastructure.entity.Cinema;
 import com.cdwater.cdticket.admin.infrastructure.mapper.CinemaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
