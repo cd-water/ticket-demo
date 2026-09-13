@@ -5,10 +5,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
 
+/**
+ * Security 工具类
+ */
 public final class SecurityUtils {
-    private SecurityUtils() {}
+    private SecurityUtils() {
+    }
 
-    /** 返回当前登录主体 ID（user 或 admin 的 Long 主键）；未认证抛 1002。 */
+    /**
+     * 当前登录管理员 ID
+     */
     public static Long getCurrentId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof Long id)) {

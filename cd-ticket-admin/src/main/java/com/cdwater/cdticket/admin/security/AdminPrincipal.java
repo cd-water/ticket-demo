@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** 当前登录管理员的值对象（无持久化依赖，供所有业务模块使用） */
+/**
+ * 当前登录管理员身份（不含持久化字段）
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

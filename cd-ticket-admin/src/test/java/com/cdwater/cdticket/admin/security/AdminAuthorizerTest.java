@@ -32,16 +32,16 @@ class AdminAuthorizerTest {
 
     /** currentAdmin 依赖 SecurityContext；单测通过受保护方法提取逻辑不便，改为直接测三个 require 方法（内部走 currentAdmin 需 mock 静态，见说明） */
     @Test
-    void superAdminPassesRequireSuperAdmin() {
+    void 平台管理员PassesRequire平台管理员() {
         // currentAdmin 内部调用 SecurityUtils.getCurrentId()（静态），单测改为子类覆写 currentAdmin
         AuthorizerWithStubCurrent stub = new AuthorizerWithStubCurrent(admin(1L, 0, 0L, 1));
-        assertDoesNotThrow(stub::requireSuperAdmin);
+        assertDoesNotThrow(stub::requirePlatformAdmin);
     }
 
     @Test
-    void cinemaAdminRejectedByRequireSuperAdmin() {
+    void cinemaAdminRejectedByRequire平台管理员() {
         AuthorizerWithStubCurrent stub = new AuthorizerWithStubCurrent(admin(2L, 1, 5L, 1));
-        assertThrows(BizException.class, stub::requireSuperAdmin);
+        assertThrows(BizException.class, stub::requirePlatformAdmin);
     }
 
     @Test

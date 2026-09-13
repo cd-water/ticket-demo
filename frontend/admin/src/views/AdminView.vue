@@ -2,12 +2,12 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createAdmin, deleteAdmin, listAdmins, updateAdmin } from '@/api/admins'
-import { listCinemas } from '@/api/cinemas'
+import { deleteAdmin, listAdmins, saveAdmin } from '@/api/admins'
+import { listCinemasSimple } from '@/api/cinemas'
 import StatusPill from '@/components/StatusPill.vue'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/format'
-import type { AdminManageVO, CinemaVO } from '@/types/api'
+import type { AdminManageVO, AdminSaveRequest, CinemaVO } from '@/types/api'
 
 const auth = useAuthStore()
 const isCinemaAdmin = computed(() => auth.admin?.role === 1)
@@ -48,7 +48,7 @@ const rules = computed(() => ({
     form.role === 1 ? [{ required: true, message: '请选择所属影院', trigger: 'change' }] : [],
 }))
 
-const cinemaName = (id: number) => cinemas.value.find((c) => c.id === id)?.name ?? `#${id}`
+const cinemaName = (row: AdminManageVO) => row.role === 0 ? '全部影院' : (row.cinemaName ?? '未知影院')
 
 async function load() {
   loading.value = true
@@ -62,15 +62,10 @@ async function load() {
 }
 
 onMounted(async () => {
-  // 仅超管加载影院列表（影院管理员调用 /api/admin/cinemas 会得 C003「无权限」，导致 toast 错误且 cinemas 仍空 → 表格 #id）
-  // T10-minor #1 的彻底修复需要后端把 cinemas 接口按角色作用域（影院管理员至少能读自己那家），属后续任务
   if (!isCinemaAdmin.value) {
     try {
-      const data = await listCinemas({ page: 1, size: 100 })
-      cinemas.value = data.records
-    } catch {
-      /* 错误提示已由 http.ts 统一弹出 */
-    }
+      cinemas.value = await listCinemasSimple()
+    } catch { /* handled by http.ts */ }
   }
   load()
 })
@@ -113,23 +108,19 @@ async function submit() {
   if (!valid) return
   saving.value = true
   try {
-    if (editingId.value === null) {
-      await createAdmin({
-        username: form.username,
-        password: form.password,
-        role: form.role,
-        cinemaId: form.role === 1 ? form.cinemaId : 0,
-      })
-      ElMessage.success('已新增管理员')
-    } else {
-      await updateAdmin(editingId.value, {
-        username: form.username,
-        role: form.role,
-        cinemaId: form.role === 1 ? form.cinemaId : 0,
-        status: rows.value.find((r) => r.id === editingId.value)?.status ?? 1,
-      })
-      ElMessage.success('已保存')
+    const body: AdminSaveRequest = {
+      username: form.username,
+      role: form.role,
+      cinemaId: form.role === 1 ? form.cinemaId : 0,
     }
+    if (editingId.value !== null) {
+      body.id = editingId.value
+      body.status = rows.value.find((r) => r.id === editingId.value)?.status ?? 1
+    } else {
+      body.password = form.password
+    }
+    await saveAdmin(body)
+    ElMessage.success(editingId.value === null ? '已新增管理员' : '已保存')
     dialogVisible.value = false
     load()
   } catch {
@@ -169,7 +160,7 @@ async function remove(row: AdminManageVO) {
 
     <div class="filters">
       <button class="f-btn" :class="{ on: roleFilter === null }" @click="filterRole(null)">全部</button>
-      <button class="f-btn" :class="{ on: roleFilter === 0 }" @click="filterRole(0)">超级管理员</button>
+      <button class="f-btn" :class="{ on: roleFilter === 0 }" @click="filterRole(0)">平台管理员</button>
       <button class="f-btn" :class="{ on: roleFilter === 1 }" @click="filterRole(1)">影院管理员</button>
     </div>
 
@@ -178,7 +169,7 @@ async function remove(row: AdminManageVO) {
       <el-table-column label="角色" width="130">
         <template #default="{ row }">
           <StatusPill
-            :label="row.role === 0 ? '超级管理员' : '影院管理员'"
+            :label="row.role === 0 ? '平台管理员' : '影院管理员'"
             :tone="row.role === 0 ? 'warn' : 'muted'"
           />
         </template>
@@ -186,7 +177,7 @@ async function remove(row: AdminManageVO) {
       <el-table-column label="所属影院" min-width="180">
         <template #default="{ row }">
           <span :class="row.role === 0 ? 'detail-text' : 'detail-strong'">
-            {{ row.role === 0 ? '全部影院' : cinemaName(row.cinemaId) }}
+            {{ cinemaName(row) }}
           </span>
         </template>
       </el-table-column>
@@ -197,6 +188,9 @@ async function remove(row: AdminManageVO) {
       </el-table-column>
       <el-table-column label="创建时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
       <el-table-column v-if="!isCinemaAdmin" label="操作" width="150" align="right">
         <template #default="{ row }">
@@ -235,7 +229,7 @@ async function remove(row: AdminManageVO) {
         </el-form-item>
         <el-form-item label="角色">
           <el-radio-group v-model="form.role" :disabled="isCinemaAdmin || editingId !== null">
-            <el-radio :value="0">超级管理员</el-radio>
+            <el-radio :value="0">平台管理员</el-radio>
             <el-radio :value="1">影院管理员</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -254,7 +248,7 @@ async function remove(row: AdminManageVO) {
             />
             <el-option
               v-if="isCinemaAdmin"
-              :label="cinemaName(auth.admin?.cinemaId ?? 0)"
+              :label="cinemas.find(c => c.id === auth.admin?.cinemaId)?.name ?? `影院 #${auth.admin?.cinemaId}`"
               :value="auth.admin?.cinemaId ?? 0"
             />
           </el-select>

@@ -7,6 +7,7 @@ import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
 import com.cdwater.cdticket.admin.security.AdminAuthorizer;
 import com.cdwater.cdticket.admin.security.AdminPrincipal;
+import com.cdwater.cdticket.admin.security.TokenStoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,6 +24,7 @@ class AdminManageServiceTest {
     private AdminMapper mapper;
     private CinemaAdminService cinemaService;
     private AdminAuthorizer authorizer;
+    private TokenStoreService tokenStore;
     private AdminManageService service;
 
     @BeforeEach
@@ -30,7 +32,8 @@ class AdminManageServiceTest {
         mapper = mock(AdminMapper.class);
         cinemaService = mock(CinemaAdminService.class);
         authorizer = mock(AdminAuthorizer.class);
-        service = new AdminManageService(mapper, cinemaService, new BCryptPasswordEncoder(), authorizer);
+        tokenStore = mock(TokenStoreService.class);
+        service = new AdminManageService(mapper, cinemaService, new BCryptPasswordEncoder(), authorizer, tokenStore);
     }
 
     private Admin admin(long id, String username, int role, long cinemaId) {
@@ -70,19 +73,19 @@ class AdminManageServiceTest {
     }
 
     @Test
-    void cinemaAdminCannotCreateSuperAdmin() {
+    void cinemaAdminCannotCreate平台管理员() {
         when(authorizer.currentAdmin()).thenReturn(new AdminPrincipal(2L, "cinema01", 1, 5L));
         assertThrows(BizException.class, () -> service.create(createReq("new", "Aa123456", 0, 0L)));
     }
 
     @Test
-    void superAdminCreatingCinemaAdminRequiresCinema() {
+    void 平台管理员CreatingCinemaAdminRequiresCinema() {
         when(authorizer.currentAdmin()).thenReturn(new AdminPrincipal(1L, "admin", 0, 0L));
         assertThrows(BizException.class, () -> service.create(createReq("new", "Aa123456", 1, null)));
     }
 
     @Test
-    void superAdminCreatingCinemaAdminValidatesCinemaExists() {
+    void 平台管理员CreatingCinemaAdminValidatesCinemaExists() {
         when(authorizer.currentAdmin()).thenReturn(new AdminPrincipal(1L, "admin", 0, 0L));
         when(cinemaService.getCinema(99L)).thenReturn(null);
         assertThrows(BizException.class, () -> service.create(createReq("new", "Aa123456", 1, 99L)));

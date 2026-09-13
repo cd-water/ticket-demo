@@ -1,9 +1,10 @@
 package com.cdwater.cdticket.admin.common.exception;
+
 import com.cdwater.cdticket.admin.common.ResultCode;
 
+
 /**
- * 业务异常。用于业务逻辑校验失败、状态非法等场景。
- * 对应 HTTP 200 + body 中 code 非零。
+ * 业务异常
  */
 public class BizException extends AbstractException {
 

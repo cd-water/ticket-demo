@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * MinIO 客户端
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -32,7 +35,7 @@ public class MinioConfig {
                 log.info("minio bucket created: {}", props.getBucket());
             }
         } catch (Exception e) {
-            throw new IllegalStateException("MinIO bucket 初始化失败，请检查 docker compose 中 MinIO 是否已启动", e);
+            throw new IllegalStateException("MinIO bucket 初始化失败", e);
         }
     }
 }

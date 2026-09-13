@@ -7,47 +7,49 @@ import com.cdwater.cdticket.admin.mapper.AdminMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 管理员认证鉴权
+ */
 @Service
 @RequiredArgsConstructor
 public class AdminAuthorizer {
 
     private final AdminMapper adminMapper;
 
-    /** 当前登录管理员；未登录 C002、已禁用 C002（消息「账号已禁用」） */
+    /**
+     * 当前登录管理员
+     */
     public AdminPrincipal currentAdmin() {
-        Admin admin = resolveAdmin();
+        Long adminId = SecurityUtils.getCurrentId();
+        Admin admin = adminMapper.selectById(adminId);
         return new AdminPrincipal(admin.getId(), admin.getUsername(), admin.getRole(), admin.getCinemaId());
     }
 
-    /** 非超级管理员抛 FORBIDDEN(C003) */
-    public void requireSuperAdmin() {
+    /**
+     * 仅平台管理员通过，否则 FORBIDDEN
+     */
+    public void requirePlatformAdmin() {
         if (currentAdmin().getRole() != 0) {
             throw new BizException(ResultCode.FORBIDDEN);
         }
     }
 
-    /** 非影院管理员抛 FORBIDDEN(C003) */
+    /**
+     * 仅影院管理员通过，否则 FORBIDDEN
+     */
     public void requireCinemaAdmin() {
         if (currentAdmin().getRole() != 1) {
             throw new BizException(ResultCode.FORBIDDEN);
         }
     }
 
-    /** 超管恒通过；影院管理员要求与管辖 cinemaId 相等，否则 FORBIDDEN(C003) */
+    /**
+     * 平台管理员恒通过；影院管理员必须匹配 cinemaId，否则 FORBIDDEN
+     */
     public void requireScope(long cinemaId) {
         AdminPrincipal cur = currentAdmin();
         if (cur.getRole() != 0 && !cur.getCinemaId().equals(cinemaId)) {
             throw new BizException(ResultCode.FORBIDDEN);
         }
-    }
-
-    /** 从 SecurityContext 取 id → 查库 → 校验启用。禁用后下一请求即被拒（管理员禁用即踢）。 */
-    protected Admin resolveAdmin() {
-        Long adminId = SecurityUtils.getCurrentId();
-        Admin admin = adminMapper.selectById(adminId);
-        if (admin == null || admin.getStatus() == null || admin.getStatus() != 1) {
-            throw new BizException("账号已禁用", ResultCode.UNAUTHORIZED.getCode());
-        }
-        return admin;
     }
 }

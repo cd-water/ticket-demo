@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: (state) => !!state.token,
     /** 由后端返回的 role 决定显示内容 */
     roleLabel: (state) => {
-      if (state.admin?.role === 0) return '超级管理员'
+      if (state.admin?.role === 0) return '平台管理员'
       if (state.admin?.role === 1) return '影院管理员'
       return '未知角色'
     },

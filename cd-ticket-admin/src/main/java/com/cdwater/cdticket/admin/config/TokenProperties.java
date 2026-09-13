@@ -5,11 +5,13 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * token 配置
+ */
 @Component
 @ConfigurationProperties(prefix = "token")
 @Getter
 @Setter
 public class TokenProperties {
-    /** token 有效期（秒）；每次请求滑动续期 */
     private Long expireSeconds;
 }

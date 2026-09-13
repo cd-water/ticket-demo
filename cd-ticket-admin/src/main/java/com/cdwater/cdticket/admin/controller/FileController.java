@@ -21,7 +21,7 @@ public class FileController {
 
     @PostMapping
     public Result<UploadResponse> upload(@RequestParam("file") MultipartFile file) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         return Result.success(fileService.upload(file));
     }
 }

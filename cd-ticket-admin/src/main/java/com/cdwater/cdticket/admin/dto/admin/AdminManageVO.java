@@ -9,7 +9,8 @@ public class AdminManageVO {
     private Long id;
     private String username;
     private Integer role;
-    private Long cinemaId;
+    private String cinemaName;
     private Integer status;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

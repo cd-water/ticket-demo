@@ -9,8 +9,8 @@ public interface AdminAuthorizer {
     /** 当前登录管理员；未登录 C002、已禁用 C002（消息「账号已禁用」） */
     AdminPrincipal currentAdmin();
 
-    /** 非超级管理员抛 FORBIDDEN(C003) */
-    void requireSuperAdmin();
+    /** 非平台管理员抛 FORBIDDEN(C003) */
+    void requirePlatformAdmin();
 
     /** 非影院管理员抛 FORBIDDEN(C003) */
     void requireCinemaAdmin();

@@ -13,6 +13,8 @@ import com.cdwater.cdticket.admin.mapper.CinemaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CinemaAdminService {
@@ -43,6 +45,12 @@ public class CinemaAdminService {
     public void delete(Long id) {
         requireCinema(id);
         cinemaMapper.deleteById(id);
+    }
+
+    /** 仅平台管理员可用，返回 {id, name} 列表 */
+    public List<CinemaVO> listAll() {
+        return cinemaMapper.selectList(new LambdaQueryWrapper<Cinema>().orderByAsc(Cinema::getId))
+                .stream().map(CinemaConvert.INSTANCE::toVO).toList();
     }
 
     /** 供 admin 模块校验影院存在（创建影院管理员时）；不存在返回 null */

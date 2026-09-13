@@ -11,6 +11,10 @@ export function listCinemas(q: CinemaListQuery) {
   return http.get<unknown, PageResult<CinemaVO>>('/admin/cinemas', { params: q })
 }
 
+export function listCinemasSimple() {
+  return http.get<unknown, CinemaVO[]>('/admin/cinemas/simple')
+}
+
 export function createCinema(body: CinemaSaveRequest) {
   return http.post<unknown, void>('/admin/cinemas', body)
 }

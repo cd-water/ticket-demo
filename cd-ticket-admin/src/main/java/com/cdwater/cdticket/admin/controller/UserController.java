@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-public class AdminUserController {
+public class UserController {
 
     private final UserAdminService userAdminService;
     private final AdminAuthorizer adminAuthorizer;
@@ -28,13 +28,13 @@ public class AdminUserController {
     public Result<PageResult<UserAdminVO>> page(@RequestParam(defaultValue = "1") int page,
                                                 @RequestParam(defaultValue = "10") int size,
                                                 @RequestParam(required = false) String phone) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         return Result.success(userAdminService.page(page, size, phone));
     }
 
     @PutMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestBody @Valid UserStatusRequest req) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         userAdminService.updateStatus(id, req.getStatus());
         return Result.success();
     }

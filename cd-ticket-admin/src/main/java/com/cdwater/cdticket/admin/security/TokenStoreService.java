@@ -9,22 +9,27 @@ import java.time.Duration;
 import java.util.UUID;
 
 /**
- * 管理端会话存储：token 是不带签名的 UUID，状态全部在 Redis。
- * 认证时按 token 反查 adminId；同一管理员只保留最新 token（单设备踢线）。
+ * 管理端会话存储：Redis 存 token ↔ adminId（单设备踢线）
  */
 @Service
 @RequiredArgsConstructor
 public class TokenStoreService {
 
-    /** token → adminId（认证查找方向） */
+    /**
+     * token → adminId
+     */
     private static final String TOKEN_KEY = "admin:token:";
-    /** adminId → token（单设备踢线：只保留最新 token） */
+    /**
+     * adminId → 当前 token
+     */
     private static final String CURRENT_KEY = "admin:current:";
 
     private final StringRedisTemplate redis;
     private final TokenProperties props;
 
-    /** 签发新 token；同一管理员的旧 token 立即失效 */
+    /**
+     * 签发 token（旧 token 失效）
+     */
     public String issue(Long adminId) {
         String previous = redis.opsForValue().get(CURRENT_KEY + adminId);
         if (previous != null) {
@@ -38,19 +43,25 @@ public class TokenStoreService {
         return token;
     }
 
-    /** 查 token 对应的管理员；无效/过期返回 null */
+    /**
+     * 查 token 对应管理员；无效返回 null
+     */
     public Long resolveAdminId(String token) {
         String value = redis.opsForValue().get(TOKEN_KEY + token);
         return value == null ? null : Long.valueOf(value);
     }
 
-    /** 滑动续期：两个 key 的 TTL 一起重置 */
+    /**
+     * 滑动续期
+     */
     public void renew(String token, Long adminId) {
         redis.expire(TOKEN_KEY + token, Duration.ofSeconds(props.getExpireSeconds()));
         redis.expire(CURRENT_KEY + adminId, Duration.ofSeconds(props.getExpireSeconds()));
     }
 
-    /** 注销：作废该管理员当前 token */
+    /**
+     * 注销当前 token
+     */
     public void revoke(Long adminId) {
         String token = redis.opsForValue().get(CURRENT_KEY + adminId);
         if (token != null) {

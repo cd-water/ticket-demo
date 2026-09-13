@@ -9,9 +9,9 @@ export interface Result<T = unknown> {
 export interface AdminInfo {
   id: number
   username: string
-  /** 0=超级管理员 1=影院管理员 */
+  /** 0=平台管理员 1=影院管理员 */
   role: number
-  /** 关联影院 ID，超级管理员为 0 */
+  /** 关联影院 ID，平台管理员为 0 */
   cinemaId: number
 }
 
@@ -175,23 +175,20 @@ export interface AdminManageVO {
   id: number
   username: string
   role: number
-  cinemaId: number
+  cinemaName: string | null
   status: number
   createTime: string
+  updateTime: string
 }
 
-export interface AdminCreateRequest {
+/** 新增/修改（id=null → 新增，id!=null → 修改） */
+export interface AdminSaveRequest {
+  id?: number | null
   username: string
-  password: string
+  password?: string
   role: number
   cinemaId?: number | null
-}
-
-export interface AdminUpdateRequest {
-  username: string
-  role: number
-  cinemaId?: number | null
-  status: number
+  status?: number
 }
 
 /** 文件上传（/api/admin/files） */

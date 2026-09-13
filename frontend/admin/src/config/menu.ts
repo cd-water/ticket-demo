@@ -18,7 +18,7 @@ export interface MenuItem {
   icon: Component
 }
 
-/** 超级管理员菜单（role=0） */
+/** 平台管理员菜单（role=0） */
 export const SUPER_MENUS: MenuItem[] = [
   { key: 'dashboard', title: '仪表盘', icon: Odometer },
   { key: 'movies', title: '电影管理', icon: Film },
@@ -35,7 +35,6 @@ export const CINEMA_MENUS: MenuItem[] = [
   { key: 'halls', title: '影厅管理', icon: VideoCamera },
   { key: 'screenings', title: '排场管理', icon: Calendar },
   { key: 'orders', title: '订单管理', icon: Tickets },
-  { key: 'admins', title: '管理员管理', icon: Avatar },
 ]
 
 /** 全部菜单（路由表用，按 key 去重合并） */

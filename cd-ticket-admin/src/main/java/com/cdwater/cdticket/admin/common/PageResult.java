@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/** 统一分页响应：data 恒为该结构 */
+/**
+ * 统一分页响应
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -6,6 +6,7 @@ import com.cdwater.cdticket.admin.common.Result;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,25 +20,34 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
+/**
+ * Security 配置
+ */
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    /**
+     * 免认证路径
+     */
     public static final String[] PERMIT_ALL_PATHS = {
             "/api/admin/auth/login"
     };
 
     private final TokenStoreService tokenStore;
 
-    public SecurityConfig(TokenStoreService tokenStore) {
-        this.tokenStore = tokenStore;
-    }
-
+    /**
+     * 密码加密器
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 安全过滤链：无状态 + Token 认证
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
@@ -51,6 +61,9 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * 未认证统一返回 401 Result
+     */
     private void writeUnauthorized(HttpServletRequest request, HttpServletResponse response,
                                    org.springframework.security.core.AuthenticationException e) throws IOException {
         response.setStatus(401);

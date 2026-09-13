@@ -5,6 +5,9 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * MinIO 配置
+ */
 @Component
 @ConfigurationProperties(prefix = "minio")
 @Getter

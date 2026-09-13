@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 
+/**
+ * 统一响应
+ */
 @Data
 public class Result<T> {
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -31,7 +34,9 @@ public class Result<T> {
         return r;
     }
 
-    /** 序列化为 JSON。Spring MVC 的 @RestControllerAdvice 走 Jackson 自动序列化，本方法用于 Spring Security 入口等需手动写响应的场景。 */
+    /**
+     * 手动写响应时用（如 Security 入口）；Controller 返回由 Jackson 自动序列化
+     */
     public String toJson() {
         try {
             return MAPPER.writeValueAsString(this);

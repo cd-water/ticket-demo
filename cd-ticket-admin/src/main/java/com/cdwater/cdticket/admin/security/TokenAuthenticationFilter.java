@@ -1,6 +1,5 @@
 package com.cdwater.cdticket.admin.security;
 
-import com.cdwater.cdticket.admin.security.TokenStoreService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,10 +11,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/** 解析 Authorization: Bearer {uuid} → Redis 查 adminId → 写 SecurityContext 并滑动续期 TTL。 */
+/**
+ * Token 认证过滤器
+ */
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
-
-    private static final String BEARER_PREFIX = "Bearer ";
 
     private final TokenStoreService tokenStore;
 
@@ -27,8 +26,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith(BEARER_PREFIX)) {
-            String token = header.substring(BEARER_PREFIX.length());
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring("Bearer ".length());
             Long adminId = tokenStore.resolveAdminId(token);
             if (adminId != null) {
                 SecurityContextHolder.getContext().setAuthentication(

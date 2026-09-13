@@ -31,27 +31,27 @@ public class MovieController {
                                             @RequestParam(defaultValue = "10") int size,
                                             @RequestParam(required = false) String title,
                                             @RequestParam(required = false) Integer status) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         return Result.success(movieAdminService.page(page, size, title, status));
     }
 
     @PostMapping
     public Result<Void> create(@RequestBody @Valid MovieSaveRequest req) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         movieAdminService.create(req);
         return Result.success();
     }
 
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Valid MovieSaveRequest req) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         movieAdminService.update(id, req);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         movieAdminService.delete(id);
         return Result.success();
     }

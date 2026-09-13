@@ -28,27 +28,27 @@ public class BannerController {
 
     @GetMapping
     public Result<List<BannerVO>> list() {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         return Result.success(bannerAdminService.list());
     }
 
     @PostMapping
     public Result<Void> create(@RequestBody @Valid BannerSaveRequest req) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         bannerAdminService.create(req);
         return Result.success();
     }
 
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Valid BannerSaveRequest req) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         bannerAdminService.update(id, req);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
-        adminAuthorizer.requireSuperAdmin();
+        adminAuthorizer.requirePlatformAdmin();
         bannerAdminService.delete(id);
         return Result.success();
     }

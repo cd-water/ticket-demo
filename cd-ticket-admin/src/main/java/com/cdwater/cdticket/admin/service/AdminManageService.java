@@ -3,13 +3,12 @@ package com.cdwater.cdticket.admin.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.convert.AdminConvert;
-import com.cdwater.cdticket.admin.dto.admin.AdminCreateRequest;
 import com.cdwater.cdticket.admin.dto.admin.AdminManageVO;
-import com.cdwater.cdticket.admin.dto.admin.AdminUpdateRequest;
+import com.cdwater.cdticket.admin.dto.admin.AdminSaveRequest;
 import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
 import com.cdwater.cdticket.admin.security.AdminAuthorizer;
+import com.cdwater.cdticket.admin.security.TokenStoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,78 +23,66 @@ public class AdminManageService {
     private final CinemaAdminService cinemaService;
     private final PasswordEncoder passwordEncoder;
     private final AdminAuthorizer adminAuthorizer;
+    private final TokenStoreService tokenStore;
 
-    /** 列表（不分页）；影院管理员只列本影院 */
+    /** 列表（仅平台管理员） */
     public List<AdminManageVO> list(Integer role) {
-        var current = adminAuthorizer.currentAdmin();
-        Long cinemaId = current.getRole() == 1 ? current.getCinemaId() : null;
-        return adminMapper.selectList(new LambdaQueryWrapper<Admin>()
-                .eq(role != null, Admin::getRole, role)
-                .eq(cinemaId != null, Admin::getCinemaId, cinemaId)
-                .orderByAsc(Admin::getId)).stream().map(AdminConvert.INSTANCE::toManageVO).toList();
+        adminAuthorizer.requirePlatformAdmin();
+        return adminMapper.selectListWithCinema(role, null);
     }
 
-    /** 新增；影院管理员仅能新增本影院、role=1 的管理员 */
-    public void create(AdminCreateRequest req) {
-        var current = adminAuthorizer.currentAdmin();
-        if (current.getRole() == 1) {
-            if (req.getRole() == null || req.getRole() != 1) {
-                throw new BizException(ResultCode.FORBIDDEN);
-            }
-            if (req.getCinemaId() == null || !req.getCinemaId().equals(current.getCinemaId())) {
-                throw new BizException(ResultCode.FORBIDDEN);
-            }
-        } else {
-            if (req.getRole() != null && req.getRole() == 1 && req.getCinemaId() == null) {
-                throw new BizException(ResultCode.CINEMA_ADMIN_NEED_CINEMA);
-            }
-            if (req.getCinemaId() != null && req.getCinemaId() != 0
-                    && cinemaService.getCinema(req.getCinemaId()) == null) {
-                throw new BizException("绑定的影院不存在", ResultCode.CINEMA_ADMIN_NEED_CINEMA.getCode());
-            }
-        }
-        if (findByUsername(req.getUsername()) != null) {
-            throw new BizException(ResultCode.ADMIN_USERNAME_EXISTS);
-        }
-        Admin admin = new Admin();
-        admin.setUsername(req.getUsername());
-        admin.setPassword(passwordEncoder.encode(req.getPassword()));
-        admin.setRole(req.getRole() == null ? 0 : req.getRole());
-        admin.setCinemaId(req.getRole() != null && req.getRole() == 1
-                ? req.getCinemaId() : 0L);
-        admin.setStatus(1);
-        adminMapper.insert(admin);
-    }
+    /** 新增/修改（仅平台管理员） */
+    public void save(AdminSaveRequest req) {
+        adminAuthorizer.requirePlatformAdmin();
+        boolean isCreate = req.getId() == null;
 
-    /** 修改（超管专属，Controller 已 requireSuperAdmin） */
-    public void update(Long id, AdminUpdateRequest req) {
-        var current = adminAuthorizer.currentAdmin();
-        if (id.equals(current.getId())) {
+        // 权限校验
+        if (!isCreate && req.getId().equals(adminAuthorizer.currentAdmin().getId())) {
             throw new BizException(ResultCode.CANNOT_OPERATE_SELF);
         }
-        Admin target = requireAdmin(id);
-        if (!target.getUsername().equals(req.getUsername())
-                && findByUsername(req.getUsername()) != null) {
-            throw new BizException(ResultCode.ADMIN_USERNAME_EXISTS);
-        }
+
+        // 角色+影院绑定校验
         if (req.getRole() != null && req.getRole() == 1 && req.getCinemaId() == null) {
             throw new BizException(ResultCode.CINEMA_ADMIN_NEED_CINEMA);
         }
-        if (req.getRole() != null && req.getRole() == 1
+        if (req.getCinemaId() != null && req.getCinemaId() != 0
                 && cinemaService.getCinema(req.getCinemaId()) == null) {
             throw new BizException("绑定的影院不存在", ResultCode.CINEMA_ADMIN_NEED_CINEMA.getCode());
         }
-        target.setUsername(req.getUsername());
-        target.setRole(req.getRole());
-        target.setCinemaId(req.getRole() == 1 ? req.getCinemaId() : 0L);
-        target.setStatus(req.getStatus());
-        adminMapper.updateById(target);
+
+        // 用户名唯一校验
+        Admin existingAdmin = findByUsername(req.getUsername());
+        if (existingAdmin != null && (isCreate || !existingAdmin.getId().equals(req.getId()))) {
+            throw new BizException(ResultCode.ADMIN_USERNAME_EXISTS);
+        }
+
+        if (isCreate) {
+            Admin admin = new Admin();
+            admin.setUsername(req.getUsername());
+            admin.setPassword(passwordEncoder.encode(req.getPassword()));
+            admin.setRole(req.getRole());
+            admin.setCinemaId(req.getRole() != null && req.getRole() == 1 ? req.getCinemaId() : 0L);
+            admin.setStatus(1);
+            adminMapper.insert(admin);
+        } else {
+            Admin target = requireAdmin(req.getId());
+            target.setUsername(req.getUsername());
+            target.setRole(req.getRole());
+            target.setCinemaId(req.getRole() != null && req.getRole() == 1 ? req.getCinemaId() : 0L);
+            if (req.getStatus() != null) {
+                target.setStatus(req.getStatus());
+                if (req.getStatus() == 0) {
+                    tokenStore.revoke(req.getId());
+                }
+            }
+            adminMapper.updateById(target);
+        }
     }
 
-    /** 逻辑删除 + 用户名改写（避开 uk_username，同名可重建）；超管专属 */
+    /** 删除（仅平台管理员） */
     public void delete(Long id) {
-        var current = adminAuthorizer.currentAdmin();
-        if (id.equals(current.getId())) {
+        adminAuthorizer.requirePlatformAdmin();
+        if (id.equals(adminAuthorizer.currentAdmin().getId())) {
             throw new BizException(ResultCode.CANNOT_OPERATE_SELF);
         }
         Admin target = requireAdmin(id);

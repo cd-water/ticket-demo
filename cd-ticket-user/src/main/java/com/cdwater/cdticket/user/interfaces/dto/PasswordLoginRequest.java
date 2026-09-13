@@ -12,7 +12,6 @@ public class PasswordLoginRequest {
     private String phone;
 
     @NotBlank(message = "密码不能为空")
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,20}$",
-            message = "密码需8-20位，且包含字母与数字")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,20}$", message = "密码需8-20位，且包含字母与数字")
     private String password;
 }
