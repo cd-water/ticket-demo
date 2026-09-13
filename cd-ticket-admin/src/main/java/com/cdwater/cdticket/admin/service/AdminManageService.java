@@ -11,35 +11,26 @@ import com.cdwater.cdticket.admin.mapper.AdminMapper;
 import com.cdwater.cdticket.admin.security.SecurityUtils;
 import com.cdwater.cdticket.admin.security.TokenStoreService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AdminManageService {
-
     private final AdminMapper adminMapper;
     private final CinemaService cinemaService;
     private final PasswordEncoder passwordEncoder;
     private final TokenStoreService tokenStore;
 
-    /**
-     * 列表
-     */
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public List<AdminVO> list(Integer role) {
-        return adminMapper.selectListWithCinema(role, null);
+        return adminMapper.selectListWithCinema(role);
     }
 
-    /**
-     * 新增
-     */
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public void create(AdminSaveRequest req) {
-        if (req.getRole() != null && req.getRole() == 1 && req.getCinemaId() == null) {
+        if (req.isCinemaAdmin() && req.getCinemaId() == null) {
             throw new BizException(ResultCode.CINEMA_ADMIN_NEED_CINEMA);
         }
         if (req.getCinemaId() != null && req.getCinemaId() != 0
@@ -55,15 +46,11 @@ public class AdminManageService {
         admin.setUsername(req.getUsername());
         admin.setPassword(passwordEncoder.encode(req.getPassword()));
         admin.setRole(req.getRole());
-        admin.setCinemaId(req.getRole() != null && req.getRole() == 1 ? req.getCinemaId() : 0L);
+        admin.setCinemaId(req.isCinemaAdmin() ? req.getCinemaId() : 0L);
         admin.setStatus(1);
         adminMapper.insert(admin);
     }
 
-    /**
-     * 重置密码（可重置自己）；密码更新后立即踢下线
-     */
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public void resetPassword(Long id, ResetPasswordRequest req) {
         Admin target = requireAdmin(id);
         target.setPassword(passwordEncoder.encode(req.getPassword()));
@@ -71,10 +58,6 @@ public class AdminManageService {
         tokenStore.revoke(id);
     }
 
-    /**
-     * 启用/禁用；状态切换后踢下线
-     */
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public void toggleStatus(Long id, int status) {
         if (id.equals(SecurityUtils.getCurrentId())) {
             throw new BizException(ResultCode.CANNOT_OPERATE_SELF);
@@ -87,10 +70,7 @@ public class AdminManageService {
         }
     }
 
-    /**
-     * 删除
-     */
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
+    @Transactional
     public void delete(Long id) {
         if (id.equals(SecurityUtils.getCurrentId())) {
             throw new BizException(ResultCode.CANNOT_OPERATE_SELF);

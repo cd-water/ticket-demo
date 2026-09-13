@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/admin/files")
 @RequiredArgsConstructor
 public class FileController {
-
     private final FileService fileService;
 
     @PostMapping

@@ -10,6 +10,5 @@ import java.util.List;
 
 @Mapper
 public interface AdminMapper extends BaseMapper<Admin> {
-
-    List<AdminVO> selectListWithCinema(@Param("role") Integer role, @Param("cinemaId") Long cinemaId);
+    List<AdminVO> selectListWithCinema(@Param("role") Integer role);
 }

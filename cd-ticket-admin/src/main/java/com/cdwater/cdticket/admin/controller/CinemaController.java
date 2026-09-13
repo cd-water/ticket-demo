@@ -22,10 +22,10 @@ import java.util.List;
 @RequestMapping("/api/admin/cinemas")
 @RequiredArgsConstructor
 public class CinemaController {
-
     private final CinemaService cinemaService;
 
     @GetMapping("/simple")
+    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public Result<List<CinemaVO>> simple() {
         return Result.success(cinemaService.listAll());
     }

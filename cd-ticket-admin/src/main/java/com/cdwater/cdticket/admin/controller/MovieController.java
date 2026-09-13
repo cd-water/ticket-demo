@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/movies")
 @RequiredArgsConstructor
 public class MovieController {
-
     private final MovieService movieService;
 
     @GetMapping

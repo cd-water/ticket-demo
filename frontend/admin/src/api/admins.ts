@@ -20,5 +20,5 @@ export function deleteAdmin(id: number) {
 }
 
 export function updateAdminStatus(id: number, status: number) {
-  return http.post<unknown, void>(`/admin/admins/${id}/status?status=${status}`)
+  return http.post<unknown, void>(`/admin/admins/${id}/status`, { status })
 }

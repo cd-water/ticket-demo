@@ -15,7 +15,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BannerService {
-
     private final BannerMapper bannerMapper;
 
     public List<BannerVO> list() {
@@ -24,7 +23,6 @@ public class BannerService {
                 .stream().map(BannerService::toVO).toList();
     }
 
-    /** 新增/修改（id=null → 新增） */
     public void save(BannerSaveRequest req) {
         Banner banner = toEntity(req);
         if (req.getId() == null) {

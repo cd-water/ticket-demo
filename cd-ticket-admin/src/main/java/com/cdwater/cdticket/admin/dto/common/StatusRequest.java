@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.dto.user;
+package com.cdwater.cdticket.admin.dto.common;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class UserStatusRequest {
+public class StatusRequest {
     @NotNull
     @Min(0)
     @Max(1)

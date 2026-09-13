@@ -12,12 +12,14 @@ import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class HallService {
-
     private final HallMapper hallMapper;
     private final HallUsageMapper hallUsageMapper;
 
@@ -28,7 +30,6 @@ public class HallService {
                 .orderByAsc(Hall::getId)).stream().map(HallService::toVO).toList();
     }
 
-    /** 新增/修改（id=null → 新增） */
     public void save(HallSaveRequest req) {
         Hall target = toEntity(req);
         if (req.getId() == null) {
@@ -56,7 +57,13 @@ public class HallService {
         return hall == null ? null : toVO(hall);
     }
 
-    private Hall requireHall(Long id) {
+    public Map<Long, String> mapNamesByIds(Collection<Long> ids) {
+        if (ids.isEmpty()) return Map.of();
+        return hallMapper.selectBatchIds(ids).stream()
+                .collect(Collectors.toMap(Hall::getId, Hall::getName));
+    }
+
+    public Hall requireHall(Long id) {
         Hall hall = hallMapper.selectById(id);
         if (hall == null) throw new BizException(ResultCode.NOT_FOUND);
         return hall;

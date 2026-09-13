@@ -8,14 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * MinIO 客户端
- */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class MinioConfig {
-
     private final MinioProperties props;
 
     @Bean

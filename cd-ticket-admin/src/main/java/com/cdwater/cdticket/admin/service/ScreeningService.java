@@ -11,7 +11,6 @@ import com.cdwater.cdticket.admin.dto.hall.HallVO;
 import com.cdwater.cdticket.admin.dto.movie.MovieOption;
 import com.cdwater.cdticket.admin.dto.movie.MovieVO;
 import com.cdwater.cdticket.admin.dto.screening.ScreeningSaveRequest;
-import com.cdwater.cdticket.admin.dto.screening.ScreeningVO;
 import com.cdwater.cdticket.admin.entity.Screening;
 import com.cdwater.cdticket.admin.mapper.ScreeningMapper;
 import com.cdwater.cdticket.admin.security.SecurityUtils;
@@ -21,30 +20,35 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ScreeningService {
-
     private final ScreeningMapper screeningMapper;
-    private final MovieService movieAdminService;
-    private final HallService hallAdminService;
+    private final MovieService movieService;
+    private final HallService hallService;
 
     public PageResult<ScreeningVO> page(int page, int size, Long movieId) {
         PageResult.check(page, size);
-        Long cinemaId = SecurityUtils.isPlatformAdmin() ? null : SecurityUtils.getCinemaId();
         IPage<Screening> p = screeningMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Screening>()
                 .eq(movieId != null, Screening::getMovieId, movieId)
-                .eq(cinemaId != null, Screening::getCinemaId, cinemaId)
+                .eq(Screening::getCinemaId, SecurityUtils.getCinemaId())
                 .orderByDesc(Screening::getStartTime));
-        return PageResult.of(p.convert(s -> toVO(s)));
+
+        Set<Long> movieIds = p.getRecords().stream().map(Screening::getMovieId).collect(Collectors.toSet());
+        Set<Long> hallIds = p.getRecords().stream().map(Screening::getHallId).collect(Collectors.toSet());
+        Map<Long, String> movieTitles = movieService.mapTitlesByIds(movieIds);
+        Map<Long, String> hallNames = hallService.mapNamesByIds(hallIds);
+        return PageResult.of(p.convert(s -> toVO(s, movieTitles, hallNames)));
     }
 
     public List<MovieOption> movieOptions() {
-        return movieAdminService.listOptions();
+        return movieService.listOptions();
     }
 
-    /** 新增/修改（id=null → 新增） */
     public void save(ScreeningSaveRequest req) {
         boolean isCreate = req.getId() == null;
         if (!isCreate) {
@@ -53,11 +57,11 @@ public class ScreeningService {
                 throw new BizException(ResultCode.SCREENING_STARTED);
             }
         }
-        MovieVO movie = movieAdminService.getMovie(req.getMovieId());
+        MovieVO movie = movieService.getMovie(req.getMovieId());
         if (movie == null || movie.getStatus() != 1) {
             throw new BizException("电影不存在或已下架", ResultCode.BAD_REQUEST.getCode());
         }
-        HallVO hall = hallAdminService.getHall(req.getHallId());
+        HallVO hall = hallService.getHall(req.getHallId());
         if (hall == null) {
             throw new BizException("影厅不存在", ResultCode.BAD_REQUEST.getCode());
         }
@@ -86,15 +90,13 @@ public class ScreeningService {
         screeningMapper.deleteById(id);
     }
 
-    private ScreeningVO toVO(Screening s) {
-        MovieVO movie = movieAdminService.getMovie(s.getMovieId());
-        HallVO hall = hallAdminService.getHall(s.getHallId());
+    private ScreeningVO toVO(Screening s, Map<Long, String> movieTitles, Map<Long, String> hallNames) {
         ScreeningVO vo = new ScreeningVO();
         vo.setId(s.getId());
         vo.setMovieId(s.getMovieId());
-        vo.setMovieTitle(movie == null ? "" : movie.getTitle());
+        vo.setMovieTitle(movieTitles.getOrDefault(s.getMovieId(), ""));
         vo.setHallId(s.getHallId());
-        vo.setHallName(hall == null ? "" : hall.getName());
+        vo.setHallName(hallNames.getOrDefault(s.getHallId(), ""));
         vo.setCinemaId(s.getCinemaId());
         vo.setStartTime(s.getStartTime());
         vo.setPrice(s.getPrice());

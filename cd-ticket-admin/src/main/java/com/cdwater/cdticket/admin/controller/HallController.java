@@ -23,7 +23,6 @@ import java.util.List;
 @RequestMapping("/api/admin/halls")
 @RequiredArgsConstructor
 public class HallController {
-
     private final HallService hallService;
     private final SeatConfigService seatConfigService;
 

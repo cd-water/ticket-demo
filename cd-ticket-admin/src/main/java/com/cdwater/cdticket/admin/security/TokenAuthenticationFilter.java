@@ -13,12 +13,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Token 认证过滤器
- */
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
-
     private static final String ROLE_PLATFORM_ADMIN = "PLATFORM_ADMIN";
     private static final String ROLE_CINEMA_ADMIN = "CINEMA_ADMIN";
 
@@ -32,7 +28,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring("Bearer ".length());
             TokenAuthenticationFilter.AdminContext info = tokenStore.resolve(token);
             if (info != null) {
-                SimpleGrantedAuthority authority = info.role() == 0
+                SimpleGrantedAuthority authority = info.isPlatformAdmin()
                         ? new SimpleGrantedAuthority(ROLE_PLATFORM_ADMIN)
                         : new SimpleGrantedAuthority(ROLE_CINEMA_ADMIN);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
@@ -45,6 +41,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /** SecurityContext details 载体（由 TokenStoreService.resolve 返回，filter 直接塞进去） */
-    public record AdminContext(long adminId, int role, long cinemaId) {}
+    public record AdminContext(long adminId, int role, long cinemaId) {
+        public boolean isPlatformAdmin() {
+            return role == 0;
+        }
+    }
 }

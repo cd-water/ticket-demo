@@ -12,13 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class OrderQueryService {
-
     private final OrderAdminMapper orderAdminMapper;
 
     public PageResult<OrderVO> page(int page, int size, String orderNo, Integer status) {
         PageResult.check(page, size);
-        Long cinemaId = SecurityUtils.isPlatformAdmin() ? null : SecurityUtils.getCinemaId();
-        IPage<OrderVO> p = orderAdminMapper.selectPage(Page.of(page, size), orderNo, status, cinemaId);
+        IPage<OrderVO> p = orderAdminMapper.selectPage(Page.of(page, size), orderNo, status,
+                SecurityUtils.getCinemaId());
         return PageResult.of(p);
     }
 }

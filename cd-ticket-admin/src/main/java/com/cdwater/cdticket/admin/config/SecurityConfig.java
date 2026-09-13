@@ -21,35 +21,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
-/**
- * Security 配置
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    /**
-     * 免认证路径
-     */
     public static final String[] PERMIT_ALL_PATHS = {
             "/api/admin/auth/login"
     };
 
     private final TokenStoreService tokenStore;
 
-    /**
-     * 密码加密器
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * 安全过滤链：无状态 + Token 认证
-     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
@@ -63,16 +50,10 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * 未认证统一返回 401 Result
-     */
     private void writeUnauthorized(HttpServletRequest request, HttpServletResponse response,
                                    org.springframework.security.core.AuthenticationException e) throws IOException {
         response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(Result.fail(
-                ResultCode.UNAUTHORIZED.getCode(),
-                ResultCode.UNAUTHORIZED.getMessage()
-        ).toJson());
+        response.getWriter().write(Result.fail(ResultCode.UNAUTHORIZED).toJson());
     }
 }

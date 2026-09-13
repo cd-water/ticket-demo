@@ -18,7 +18,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CinemaService {
-
     private final CinemaMapper cinemaMapper;
 
     public PageResult<CinemaVO> page(int page, int size, String name) {
@@ -29,7 +28,6 @@ public class CinemaService {
         return PageResult.of(p.convert(CinemaService::toVO));
     }
 
-    /** 新增/修改（id=null → 新增） */
     public void save(CinemaSaveRequest req) {
         Cinema cinema = toEntity(req);
         if (req.getId() == null) {
@@ -45,13 +43,11 @@ public class CinemaService {
         cinemaMapper.deleteById(id);
     }
 
-    /** 仅平台管理员可用，返回 {id, name} 列表 */
     public List<CinemaVO> listAll() {
         return cinemaMapper.selectList(new LambdaQueryWrapper<Cinema>().orderByAsc(Cinema::getId))
                 .stream().map(CinemaService::toVO).toList();
     }
 
-    /** 供 admin 模块校验影院存在（创建影院管理员时）；不存在返回 null */
     public CinemaVO getCinema(Long id) {
         Cinema cinema = cinemaMapper.selectById(id);
         return cinema == null ? null : toVO(cinema);

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/orders")
 @RequiredArgsConstructor
 public class OrderAdminController {
-
     private final OrderQueryService orderQueryService;
 
     @GetMapping

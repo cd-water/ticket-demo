@@ -10,13 +10,9 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.UUID;
 
-/**
- * 管理端会话存储：Redis 存 token ↔ adminId（单设备踢线）
- */
 @Service
 @RequiredArgsConstructor
 public class TokenStoreService {
-
     private static final String TOKEN_KEY = "admin:token:";
     private static final String CURRENT_KEY = "admin:current:";
 
@@ -24,9 +20,6 @@ public class TokenStoreService {
     private final AdminMapper adminMapper;
     private final TokenProperties props;
 
-    /**
-     * 签发 token（旧 token 失效）
-     */
     public String issue(Long adminId) {
         String previous = redis.opsForValue().get(CURRENT_KEY + adminId);
         if (previous != null) {
@@ -40,9 +33,6 @@ public class TokenStoreService {
         return token;
     }
 
-    /**
-     * 查 token → {adminId, role, cinemaId}；无效/禁用返回 null
-     */
     public TokenAuthenticationFilter.AdminContext resolve(String token) {
         String idStr = redis.opsForValue().get(TOKEN_KEY + token);
         if (idStr == null) return null;
@@ -52,16 +42,10 @@ public class TokenStoreService {
                 admin.getId(), admin.getRole(), admin.getCinemaId());
     }
 
-    /**
-     * 滑动续期
-     */
     public void renew(String token) {
         redis.expire(TOKEN_KEY + token, Duration.ofSeconds(props.getExpireSeconds()));
     }
 
-    /**
-     * 注销当前 token
-     */
     public void revoke(Long adminId) {
         String token = redis.opsForValue().get(CURRENT_KEY + adminId);
         if (token != null) {

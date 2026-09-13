@@ -23,7 +23,6 @@ import java.util.List;
 @RequestMapping("/api/admin/screenings")
 @RequiredArgsConstructor
 public class ScreeningController {
-
     private final ScreeningService screeningService;
 
     @GetMapping

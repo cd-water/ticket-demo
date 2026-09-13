@@ -6,11 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** MyBatis-Plus 配置 */
 @Configuration
 public class MybatisPlusConfig {
-
-    /** 分页插件（缺它 selectPage 不会执行 count，total 恒为 0） */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();

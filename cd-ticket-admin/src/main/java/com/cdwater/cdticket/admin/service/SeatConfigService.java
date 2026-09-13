@@ -8,7 +8,6 @@ import com.cdwater.cdticket.admin.dto.seat.SeatCellVO;
 import com.cdwater.cdticket.admin.dto.seat.SeatGridVO;
 import com.cdwater.cdticket.admin.entity.Hall;
 import com.cdwater.cdticket.admin.entity.SeatConfig;
-import com.cdwater.cdticket.admin.mapper.HallMapper;
 import com.cdwater.cdticket.admin.mapper.SeatConfigMapper;
 import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,30 +16,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SeatConfigService {
-
-    private final HallMapper hallMapper;
+    private final HallService hallService;
     private final SeatConfigMapper configMapper;
 
     public SeatGridVO getGrid(Long hallId) {
-        Hall hall = requireHall(hallId);
+        Hall hall = hallService.requireHall(hallId);
         SecurityUtils.requireScope(hall.getCinemaId());
         List<SeatConfig> configs = configMapper.selectList(new LambdaQueryWrapper<SeatConfig>()
-                .eq(SeatConfig::getHallId, hallId)
-                .orderByAsc(SeatConfig::getSeatRow)
-                .orderByAsc(SeatConfig::getSeatCol));
+                .eq(SeatConfig::getHallId, hallId));
+        Map<String, Integer> statusBySeat = configs.stream()
+                .collect(Collectors.toMap(s -> s.getSeatRow() + "_" + s.getSeatCol(),
+                        SeatConfig::getStatus, (a, b) -> a));
         List<SeatCellVO> cells = new ArrayList<>();
         for (int row = 1; row <= hall.getSeatRows(); row++) {
-            final int r = row;
             for (int col = 1; col <= hall.getSeatCols(); col++) {
-                final int c = col;
-                int status = configs.stream()
-                        .filter(s -> s.getSeatRow() == r && s.getSeatCol() == c)
-                        .findFirst().map(SeatConfig::getStatus).orElse(1);
-                cells.add(new SeatCellVO(r, c, r + "排" + c + "座", status));
+                int status = statusBySeat.getOrDefault(row + "_" + col, 1);
+                cells.add(new SeatCellVO(row, col, row + "排" + col + "座", status));
             }
         }
         return new SeatGridVO(hall.getSeatRows(), hall.getSeatCols(), cells);
@@ -48,7 +45,7 @@ public class SeatConfigService {
 
     @Transactional
     public void replace(Long hallId, List<SeatCellRequest> seats) {
-        Hall hall = requireHall(hallId);
+        Hall hall = hallService.requireHall(hallId);
         SecurityUtils.requireScope(hall.getCinemaId());
         for (SeatCellRequest cell : seats) {
             if (cell.getRow() < 1 || cell.getRow() > hall.getSeatRows()
@@ -70,15 +67,6 @@ public class SeatConfigService {
             return s;
         }).toList();
         configMapper.delete(new LambdaQueryWrapper<SeatConfig>().eq(SeatConfig::getHallId, hallId));
-        for (SeatConfig seat : entities) {
-            configMapper.insert(seat);
-        }
+        configMapper.insert(entities);
     }
-
-    private Hall requireHall(Long id) {
-        Hall hall = hallMapper.selectById(id);
-        if (hall == null) throw new BizException(ResultCode.NOT_FOUND);
-        return hall;
-    }
-
 }

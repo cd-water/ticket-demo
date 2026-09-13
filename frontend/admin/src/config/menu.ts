@@ -25,7 +25,6 @@ export const SUPER_MENUS: MenuItem[] = [
   { key: 'cinemas', title: '影院管理', icon: OfficeBuilding },
   { key: 'users', title: '用户管理', icon: User },
   { key: 'banners', title: '轮播图管理', icon: Picture },
-  { key: 'orders', title: '订单管理', icon: Tickets },
   { key: 'admins', title: '管理员管理', icon: Avatar },
 ]
 

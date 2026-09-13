@@ -9,20 +9,18 @@ import lombok.Data;
 
 @Data
 public class HallSaveRequest {
-
-    /** 修改时传入；新增不填 */
     private Long id;
 
-    
+    @NotBlank
     @Size(max = 50)
     private String name;
 
-    
+    @NotNull
     @Min(value = 1)
     @Max(value = 26)
     private Integer seatRows;
 
-    
+    @NotNull
     @Min(value = 1)
     @Max(value = 26)
     private Integer seatCols;

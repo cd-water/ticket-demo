@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public Result<Void> handleAccessDenied(AccessDeniedException e) {
-        return Result.fail(ResultCode.FORBIDDEN.getCode(), ResultCode.FORBIDDEN.getMessage());
+        return Result.fail(ResultCode.FORBIDDEN);
     }
 
     /**
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSize(MaxUploadSizeExceededException e) {
-        return Result.fail("C001", "图片不能超过 5MB");
+        return Result.fail(ResultCode.BAD_REQUEST.getCode(), "图片不能超过 5MB");
     }
 
     /**
@@ -73,6 +73,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result<Void> handleOther(Exception e) {
         log.error("unexpected error", e);
-        return Result.fail(ResultCode.INTERNAL_ERROR.getCode(), ResultCode.INTERNAL_ERROR.getMessage());
+        return Result.fail(ResultCode.INTERNAL_ERROR);
     }
 }

@@ -8,8 +8,6 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface OrderAdminMapper {
-
-    /** 分页查询订单（JOIN t_user 取手机号/昵称）。分页由 PaginationInnerInterceptor 处理（Page 为首参）。 */
     IPage<OrderVO> selectPage(Page<OrderVO> page,
                                        @Param("orderNo") String orderNo,
                                        @Param("status") Integer status,

@@ -15,12 +15,14 @@ import com.cdwater.cdticket.admin.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MovieService {
-
     private final MovieMapper movieMapper;
 
     public PageResult<MovieVO> page(int page, int size, String title, Integer status) {
@@ -32,7 +34,6 @@ public class MovieService {
         return PageResult.of(p.convert(MovieService::toVO));
     }
 
-    /** 新增/修改（id=null → 新增） */
     public void save(MovieSaveRequest req) {
         if (req.getId() == null) {
             movieMapper.insert(toEntity(req));
@@ -54,13 +55,17 @@ public class MovieService {
         movieMapper.deleteById(id);
     }
 
-    /** 供 screening 模块校验：不存在返回 null */
     public MovieVO getMovie(Long id) {
         Movie movie = movieMapper.selectById(id);
         return movie == null ? null : toVO(movie);
     }
 
-    /** 上架电影下拉（供排场管理） */
+    public Map<Long, String> mapTitlesByIds(Collection<Long> ids) {
+        if (ids.isEmpty()) return Map.of();
+        return movieMapper.selectBatchIds(ids).stream()
+                .collect(Collectors.toMap(Movie::getId, Movie::getTitle));
+    }
+
     public List<MovieOption> listOptions() {
         return movieMapper.selectList(new LambdaQueryWrapper<Movie>()
                 .eq(Movie::getStatus, 1)

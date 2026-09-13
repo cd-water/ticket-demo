@@ -1,14 +1,9 @@
 package com.cdwater.cdticket.admin.dto.hall;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class HallVO {
-
     private Long id;
     private Long cinemaId;
     private String name;

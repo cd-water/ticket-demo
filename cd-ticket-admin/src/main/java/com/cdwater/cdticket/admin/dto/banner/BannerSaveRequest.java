@@ -9,25 +9,21 @@ import lombok.Data;
 
 @Data
 public class BannerSaveRequest {
-
-    /**
-     * 修改时传入；新增不填
-     */
     private Long id;
 
-
+    @NotBlank
     @Size(max = 255)
     private String image;
 
-
+    @NotBlank
     @Size(max = 255)
     private String linkUrl;
 
-
+    @NotNull
     @Min(value = 0)
     private Integer sort;
 
-
+    @NotNull
     @Min(value = 0)
     @Max(value = 1)
     private Integer status;

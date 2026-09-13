@@ -17,9 +17,6 @@
         <if test="role != null">
             AND a.role = #{role}
         </if>
-        <if test="cinemaId != null">
-            AND a.cinema_id = #{cinemaId}
-        </if>
         ORDER BY a.id
     </select>
 </mapper>

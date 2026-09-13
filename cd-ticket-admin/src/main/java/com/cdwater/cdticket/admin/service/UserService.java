@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final UserMapper userMapper;
 
     public PageResult<UserVO> page(int page, int size, String phone) {

@@ -4,7 +4,7 @@ import com.cdwater.cdticket.admin.service.UserService;
 import com.cdwater.cdticket.admin.dto.user.UserVO;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.Result;
-import com.cdwater.cdticket.admin.dto.user.UserStatusRequest;
+import com.cdwater.cdticket.admin.dto.common.StatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 public class UserController {
-
     private final UserService userService;
 
     @GetMapping
@@ -33,7 +32,7 @@ public class UserController {
 
     @PostMapping("/{id}/status")
     @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
-    public Result<Void> toggleStatus(@PathVariable Long id, @RequestBody @Valid UserStatusRequest req) {
+    public Result<Void> toggleStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest req) {
         userService.toggleStatus(id, req.getStatus());
         return Result.success();
     }

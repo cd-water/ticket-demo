@@ -11,30 +11,28 @@ import java.time.LocalDate;
 
 @Data
 public class MovieSaveRequest {
-
-    /** 修改时传入；新增不填 */
     private Long id;
 
-    
+    @NotBlank
     @Size(max = 100)
     private String title;
 
-    
+    @NotBlank
     @Size(max = 255)
     private String poster;
 
-    
+    @NotBlank
     @Size(max = 1024)
     private String description;
 
-    
+    @NotNull
     @Min(value = 1)
     private Integer duration;
 
-    
+    @NotNull
     private LocalDate releaseDate;
 
-    
+    @NotNull
     @Min(value = 0)
     @Max(value = 1)
     private Integer status;
