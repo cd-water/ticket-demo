@@ -2,10 +2,10 @@ package com.cdwater.cdticket.admin.application;
 
 import com.cdwater.cdticket.admin.application.dto.AdminLoginResponse;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
-import com.cdwater.cdticket.common.exception.BizException;
-import com.cdwater.cdticket.common.security.JwtProperties;
-import com.cdwater.cdticket.common.security.JwtUtil;
+import com.cdwater.cdticket.admin.domain.entity.Admin;
+import com.cdwater.cdticket.admin.common.BizException;
+import com.cdwater.cdticket.admin.common.JwtProperties;
+import com.cdwater.cdticket.admin.common.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;

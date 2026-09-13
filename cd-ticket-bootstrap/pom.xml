@@ -28,10 +28,6 @@
         </dependency>
         <dependency>
             <groupId>com.cdwater</groupId>
-            <artifactId>cd-ticket-admin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.cdwater</groupId>
             <artifactId>cd-ticket-movie</artifactId>
         </dependency>
         <dependency>

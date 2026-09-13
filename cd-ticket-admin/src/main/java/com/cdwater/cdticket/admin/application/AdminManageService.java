@@ -5,11 +5,11 @@ import com.cdwater.cdticket.admin.application.dto.AdminManageVO;
 import com.cdwater.cdticket.admin.application.dto.AdminUpdateCommand;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
 import com.cdwater.cdticket.admin.infrastructure.convert.AdminConvert;
-import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
-import com.cdwater.cdticket.cinema.application.CinemaService;
-import com.cdwater.cdticket.common.admin.AdminAuthorizer;
-import com.cdwater.cdticket.common.api.ResultCode;
-import com.cdwater.cdticket.common.exception.BizException;
+import com.cdwater.cdticket.admin.domain.entity.Admin;
+import com.cdwater.cdticket.admin.application.CinemaAdminService;
+import com.cdwater.cdticket.admin.common.AdminAuthorizer;
+import com.cdwater.cdticket.admin.common.ResultCode;
+import com.cdwater.cdticket.admin.common.BizException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.List;
 public class AdminManageService {
 
     private final AdminRepository adminRepository;
-    private final CinemaService cinemaService;
+    private final CinemaAdminService cinemaService;
     private final PasswordEncoder passwordEncoder;
     private final AdminAuthorizer adminAuthorizer;
 

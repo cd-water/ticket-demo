@@ -1,6 +1,6 @@
 package com.cdwater.cdticket.admin.application;
 
-import com.cdwater.cdticket.common.security.JwtProperties;
+import com.cdwater.cdticket.admin.common.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;

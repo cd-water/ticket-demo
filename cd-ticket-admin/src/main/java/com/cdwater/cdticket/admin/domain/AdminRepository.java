@@ -1,6 +1,6 @@
 package com.cdwater.cdticket.admin.domain;
 
-import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
+import com.cdwater.cdticket.admin.domain.entity.Admin;
 
 import java.util.List;
 

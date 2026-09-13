@@ -1,6 +1,5 @@
 package com.cdwater.cdticket.user.infrastructure.convert;
 
-import com.cdwater.cdticket.user.application.dto.UserAdminVO;
 import com.cdwater.cdticket.user.application.dto.UserInfo;
 import com.cdwater.cdticket.user.infrastructure.entity.User;
 import org.mapstruct.Mapper;
@@ -14,6 +13,4 @@ public interface UserConvert {
 
     @Mapping(target = "hasPassword", expression = "java(user.getPassword() != null)")
     UserInfo toUserInfo(User user);
-
-    UserAdminVO toAdminVO(User user);
 }

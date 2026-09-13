@@ -3,11 +3,11 @@ package com.cdwater.cdticket.admin.application;
 import com.cdwater.cdticket.admin.application.dto.AdminCreateCommand;
 import com.cdwater.cdticket.admin.application.dto.AdminUpdateCommand;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.infrastructure.entity.Admin;
-import com.cdwater.cdticket.cinema.application.CinemaService;
-import com.cdwater.cdticket.common.admin.AdminAuthorizer;
-import com.cdwater.cdticket.common.admin.AdminPrincipal;
-import com.cdwater.cdticket.common.exception.BizException;
+import com.cdwater.cdticket.admin.domain.entity.Admin;
+import com.cdwater.cdticket.admin.application.CinemaAdminService;
+import com.cdwater.cdticket.admin.common.AdminAuthorizer;
+import com.cdwater.cdticket.admin.common.AdminPrincipal;
+import com.cdwater.cdticket.admin.common.BizException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,14 +20,14 @@ import static org.mockito.Mockito.*;
 class AdminManageServiceTest {
 
     private AdminRepository repo;
-    private CinemaService cinemaService;
+    private CinemaAdminService cinemaService;
     private AdminAuthorizer authorizer;
     private AdminManageService service;
 
     @BeforeEach
     void setUp() {
         repo = mock(AdminRepository.class);
-        cinemaService = mock(CinemaService.class);
+        cinemaService = mock(CinemaAdminService.class);
         authorizer = mock(AdminAuthorizer.class);
         service = new AdminManageService(repo, cinemaService, new BCryptPasswordEncoder(), authorizer);
     }

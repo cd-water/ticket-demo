@@ -1,9 +1,9 @@
 package com.cdwater.cdticket.admin.interfaces;
 
 import com.cdwater.cdticket.admin.application.dto.UploadResponse;
-import com.cdwater.cdticket.common.admin.AdminAuthorizer;
-import com.cdwater.cdticket.common.api.Result;
-import com.cdwater.cdticket.common.storage.MinioFileService;
+import com.cdwater.cdticket.admin.common.AdminAuthorizer;
+import com.cdwater.cdticket.admin.common.Result;
+import com.cdwater.cdticket.admin.common.MinioFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
