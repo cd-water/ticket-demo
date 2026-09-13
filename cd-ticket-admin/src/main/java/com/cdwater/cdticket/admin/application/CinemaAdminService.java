@@ -3,12 +3,12 @@ package com.cdwater.cdticket.admin.application;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.application.dto.CinemaSaveCommand;
 import com.cdwater.cdticket.admin.application.dto.CinemaVO;
+import com.cdwater.cdticket.admin.common.api.PageResult;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
+import com.cdwater.cdticket.admin.common.exception.BizException;
 import com.cdwater.cdticket.admin.domain.CinemaRepository;
-import com.cdwater.cdticket.admin.infrastructure.convert.CinemaConvert;
 import com.cdwater.cdticket.admin.domain.entity.Cinema;
-import com.cdwater.cdticket.admin.common.PageResult;
-import com.cdwater.cdticket.admin.common.ResultCode;
-import com.cdwater.cdticket.admin.common.BizException;
+import com.cdwater.cdticket.admin.infrastructure.convert.CinemaConvert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -29,7 +29,10 @@ const form = reactive({
 })
 
 const rules = computed(() => ({
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 5, max: 32, message: '用户名需5-32位', trigger: 'blur' },
+  ],
   password:
     editingId.value === null
       ? [

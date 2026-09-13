@@ -5,6 +5,7 @@
 -- =============================================================
 
 TRUNCATE TABLE `t_admin`;
+TRUNCATE TABLE `t_user`;
 TRUNCATE TABLE `t_cinema`;
 TRUNCATE TABLE `t_movie`;
 TRUNCATE TABLE `t_banner`;
@@ -69,3 +70,65 @@ INSERT INTO `t_screening` (`movie_id`, `hall_id`, `cinema_id`, `start_time`, `pr
     (4, 3, 1, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '18:00:00'), 45.00),
     (1, 4, 2, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '13:00:00'), 35.00),
     (2, 4, 2, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '16:00:00'), 35.00);
+
+-- =============================================================
+-- 补充数据
+-- =============================================================
+
+-- C端用户（密码哈希同上，明文 Aa123456）
+INSERT INTO `t_user` (`phone`, `password`, `nickname`, `status`) VALUES
+    ('13800000001', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', '影迷小张', 1),
+    ('13800000002', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', '电影达人', 1),
+    ('13800000003', NULL, '小李飞刀', 1),
+    ('13800000004', NULL, '周末观影团', 1),
+    ('13800000005', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', '爆米花爱好者', 1),
+    ('13800000006', NULL, '夜场常客', 1),
+    ('13800000007', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 'IMAX发烧友', 1),
+    ('13800000008', NULL, '学生党小王', 1),
+    ('13800000009', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', '约会看片', 1),
+    ('13800000010', NULL, '退休老影迷', 1);
+
+-- 更多电影
+INSERT INTO `t_movie` (`title`, `poster`, `description`, `duration`, `release_date`, `status`) VALUES
+    ('封神第三部', 'https://picsum.photos/seed/m6/300/420', '姬发率天下诸侯讨伐纣王，封神大战一触即发。', 148, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1),
+    ('长安三万里', 'https://picsum.photos/seed/m7/300/420', '高适回忆与李白跨越数十年的友情，展现大唐盛世的诗与远方。', 168, DATE_SUB(CURDATE(), INTERVAL 15 DAY), 1),
+    ('年会不能停！', 'https://picsum.photos/seed/m8/300/420', '一场阴差阳错的人事调动，揭露大厂荒诞的职场众生相。', 118, DATE_SUB(CURDATE(), INTERVAL 20 DAY), 1),
+    ('唐探1900', 'https://picsum.photos/seed/m9/300/420', '唐仁与秦风回到1900年的旧金山，破解一起离奇命案。', 130, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 1),
+    ('熊出没·重启未来', 'https://picsum.photos/seed/m10/300/420', '光头强与熊大熊二穿越到未来世界，开启全新冒险。', 99, DATE_ADD(CURDATE(), INTERVAL 15 DAY), 1),
+    ('热辣滚烫', 'https://picsum.photos/seed/m11/300/420', '乐莹在人生低谷决定为自己赢一次，开启拳击生涯。', 129, DATE_SUB(CURDATE(), INTERVAL 45 DAY), 1),
+    ('第二十条', 'https://picsum.photos/seed/m12/300/420', '检察官韩明在办案中陷入情与法的两难抉择。', 120, DATE_SUB(CURDATE(), INTERVAL 50 DAY), 1);
+
+-- 更多轮播图
+INSERT INTO `t_banner` (`image`, `link_url`, `sort`, `status`) VALUES
+    ('https://picsum.photos/seed/b4/1200/500', '/movies/6', 4, 1),
+    ('https://picsum.photos/seed/b5/1200/500', '/movies/7', 5, 1),
+    ('https://picsum.photos/seed/b6/1200/500', '/movies/9', 6, 0);
+
+-- 更多影院
+INSERT INTO `t_cinema` (`name`, `address`, `status`) VALUES
+    ('博纳国际影城（春熙路店）', '四川省成都市锦江区春熙路步行街99号IFS国际金融中心7层', 1),
+    ('太平洋影城（天府广场店）', '四川省成都市青羊区天府广场西侧城市之心3层', 1);
+
+-- 更多影厅
+INSERT INTO `t_hall` (`cinema_id`, `name`, `seat_rows`, `seat_cols`, `status`) VALUES
+    (3, '1号厅', 5, 6, 1),
+    (3, '2号VIP厅', 3, 4, 1),
+    (3, '3号IMAX厅', 7, 10, 1),
+    (4, '1号厅', 4, 6, 1),
+    (4, '2号厅', 5, 5, 1);
+
+-- 更多排场
+INSERT INTO `t_screening` (`movie_id`, `hall_id`, `cinema_id`, `start_time`, `price`) VALUES
+    -- 博纳春熙路店
+    (1, 5, 3, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '10:30:00'), 42.00),
+    (1, 7, 3, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:30:00'), 68.00),
+    (2, 6, 3, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '13:00:00'), 88.00),
+    (3, 5, 3, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '11:00:00'), 42.00),
+    (6, 7, 3, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '19:30:00'), 58.00),
+    (7, 5, 3, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '16:00:00'), 39.90),
+    -- 太平洋天府广场店
+    (1, 8, 4, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '11:30:00'), 36.00),
+    (2, 8, 4, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '19:00:00'), 36.00),
+    (3, 9, 4, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00'), 38.00),
+    (6, 9, 4, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '20:30:00'), 38.00),
+    (7, 8, 4, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '10:00:00'), 32.00);

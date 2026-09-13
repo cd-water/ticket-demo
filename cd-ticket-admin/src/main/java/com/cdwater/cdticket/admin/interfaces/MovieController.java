@@ -1,11 +1,11 @@
 package com.cdwater.cdticket.admin.interfaces;
 
-import com.cdwater.cdticket.admin.common.AdminAuthorizer;
-import com.cdwater.cdticket.admin.common.PageResult;
-import com.cdwater.cdticket.admin.common.Result;
 import com.cdwater.cdticket.admin.application.MovieAdminService;
 import com.cdwater.cdticket.admin.application.dto.MovieSaveCommand;
 import com.cdwater.cdticket.admin.application.dto.MovieVO;
+import com.cdwater.cdticket.admin.common.admin.AdminAuthorizer;
+import com.cdwater.cdticket.admin.common.api.PageResult;
+import com.cdwater.cdticket.admin.common.api.Result;
 import com.cdwater.cdticket.admin.interfaces.dto.MovieSaveRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

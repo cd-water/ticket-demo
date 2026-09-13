@@ -2,8 +2,8 @@ package com.cdwater.cdticket.admin.interfaces;
 
 import com.cdwater.cdticket.admin.application.OrderQueryAdminService;
 import com.cdwater.cdticket.admin.application.dto.OrderAdminRecord;
-import com.cdwater.cdticket.admin.common.PageResult;
-import com.cdwater.cdticket.admin.common.Result;
+import com.cdwater.cdticket.admin.common.api.PageResult;
+import com.cdwater.cdticket.admin.common.api.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -2,9 +2,9 @@ package com.cdwater.cdticket.admin.interfaces;
 
 import com.cdwater.cdticket.admin.application.UserAdminService;
 import com.cdwater.cdticket.admin.application.dto.UserAdminVO;
-import com.cdwater.cdticket.admin.common.AdminAuthorizer;
-import com.cdwater.cdticket.admin.common.PageResult;
-import com.cdwater.cdticket.admin.common.Result;
+import com.cdwater.cdticket.admin.common.admin.AdminAuthorizer;
+import com.cdwater.cdticket.admin.common.api.PageResult;
+import com.cdwater.cdticket.admin.common.api.Result;
 import com.cdwater.cdticket.admin.interfaces.dto.UserStatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

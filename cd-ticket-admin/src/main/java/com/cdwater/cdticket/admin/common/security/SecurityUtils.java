@@ -1,7 +1,9 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
+import com.cdwater.cdticket.admin.common.exception.BizException;
 
 public final class SecurityUtils {
     private SecurityUtils() {}

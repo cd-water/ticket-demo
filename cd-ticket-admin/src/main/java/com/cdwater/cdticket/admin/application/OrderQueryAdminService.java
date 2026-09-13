@@ -2,10 +2,10 @@ package com.cdwater.cdticket.admin.application;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.application.dto.OrderAdminRecord;
-import com.cdwater.cdticket.admin.common.AdminAuthorizer;
-import com.cdwater.cdticket.admin.common.BizException;
-import com.cdwater.cdticket.admin.common.PageResult;
-import com.cdwater.cdticket.admin.common.ResultCode;
+import com.cdwater.cdticket.admin.common.admin.AdminAuthorizer;
+import com.cdwater.cdticket.admin.common.api.PageResult;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
+import com.cdwater.cdticket.admin.common.exception.BizException;
 import com.cdwater.cdticket.admin.infrastructure.mapper.OrderAdminMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

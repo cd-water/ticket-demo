@@ -1,4 +1,5 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.exception;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
 
 /**
  * 业务异常。用于业务逻辑校验失败、状态非法等场景。

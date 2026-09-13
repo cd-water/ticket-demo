@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.api;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.AllArgsConstructor;

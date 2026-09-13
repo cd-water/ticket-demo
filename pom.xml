@@ -20,7 +20,6 @@
         <module>cd-ticket-bootstrap</module>
         <module>cd-ticket-common</module>
         <module>cd-ticket-user</module>
-        <module>cd-ticket-admin</module>
         <module>cd-ticket-movie</module>
         <module>cd-ticket-cinema</module>
         <module>cd-ticket-screening</module>
@@ -47,11 +46,6 @@
             <dependency>
                 <groupId>com.cdwater</groupId>
                 <artifactId>cd-ticket-user</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.cdwater</groupId>
-                <artifactId>cd-ticket-admin</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>

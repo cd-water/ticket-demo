@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.storage;
 
 import lombok.Getter;
 import lombok.Setter;

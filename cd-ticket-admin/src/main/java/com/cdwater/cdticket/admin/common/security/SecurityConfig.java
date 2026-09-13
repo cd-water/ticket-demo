@@ -1,10 +1,12 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.security;
 
+import com.cdwater.cdticket.admin.application.TokenStoreService;
+import com.cdwater.cdticket.admin.common.api.Result;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,12 +26,10 @@ public class SecurityConfig {
             "/api/admin/auth/login"
     };
 
-    private final JwtUtil jwtUtil;
-    private final StringRedisTemplate redisTemplate;
+    private final TokenStoreService tokenStore;
 
-    public SecurityConfig(JwtUtil jwtUtil, StringRedisTemplate redisTemplate) {
-        this.jwtUtil = jwtUtil;
-        this.redisTemplate = redisTemplate;
+    public SecurityConfig(TokenStoreService tokenStore) {
+        this.tokenStore = tokenStore;
     }
 
     @Bean
@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(PERMIT_ALL_PATHS).permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this::writeUnauthorized))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, redisTemplate),
+                .addFilterBefore(new TokenAuthenticationFilter(tokenStore),
                         UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

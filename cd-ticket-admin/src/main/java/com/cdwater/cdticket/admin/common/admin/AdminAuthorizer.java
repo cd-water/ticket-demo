@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.admin;
 
 /**
  * 管理端授权接口。实现位于 admin 模块（AdminAuthorizerImpl）。

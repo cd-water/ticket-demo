@@ -7,7 +7,7 @@ import lombok.Data;
 public class AdminCreateRequest {
 
     @NotBlank(message = "用户名不能为空")
-    @Size(max = 32, message = "用户名最多32字符")
+    @Size(min = 5, max = 32, message = "用户名需5-32位")
     private String username;
 
     @NotBlank(message = "密码不能为空")

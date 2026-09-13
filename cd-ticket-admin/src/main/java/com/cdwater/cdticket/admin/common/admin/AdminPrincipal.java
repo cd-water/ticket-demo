@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

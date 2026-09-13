@@ -1,15 +1,17 @@
 package com.cdwater.cdticket.admin.application;
 
 import com.cdwater.cdticket.admin.application.dto.AdminLoginResponse;
+import com.cdwater.cdticket.admin.common.exception.BizException;
+import com.cdwater.cdticket.admin.common.security.TokenProperties;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
 import com.cdwater.cdticket.admin.domain.entity.Admin;
-import com.cdwater.cdticket.admin.common.BizException;
-import com.cdwater.cdticket.admin.common.JwtProperties;
-import com.cdwater.cdticket.admin.common.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.time.Duration;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,12 +26,10 @@ class AdminAuthServiceTest {
         adminRepository = mock(AdminRepository.class);
         redis = mock(StringRedisTemplate.class);
         when(redis.opsForValue()).thenReturn(mock(org.springframework.data.redis.core.ValueOperations.class));
-        JwtProperties props = new JwtProperties();
-        props.setSecret("cd-ticket-dev-secret-key-0123456789abcdef0123456789abcdef");
-        props.setAccessExpireSeconds(900L);
-        props.setRefreshExpireSeconds(604800L);
+        TokenProperties props = new TokenProperties();
+        props.setExpireSeconds(86400L);
         TokenStoreService tokenStore = new TokenStoreService(redis, props);
-        service = new AdminAuthService(adminRepository, tokenStore, new JwtUtil(props), new BCryptPasswordEncoder());
+        service = new AdminAuthService(adminRepository, tokenStore, new BCryptPasswordEncoder());
     }
 
     @Test
@@ -43,8 +43,13 @@ class AdminAuthServiceTest {
         admin.setStatus(1);
         when(adminRepository.findByUsername("admin")).thenReturn(admin);
         AdminLoginResponse resp = service.login("admin", "Aa123456");
-        assertNotNull(resp.getToken());
-        verify(redis).opsForValue();
+
+        // token 是 UUID（不再带签名/分段），且以 token→adminId、adminId→token 两个 key 落 Redis
+        assertDoesNotThrow(() -> UUID.fromString(resp.getToken()));
+        verify(redis.opsForValue()).set(eq("admin:token:" + resp.getToken()), eq("1"),
+                eq(Duration.ofSeconds(86400)));
+        verify(redis.opsForValue()).set(eq("admin:current:1"), eq(resp.getToken()),
+                eq(Duration.ofSeconds(86400)));
     }
 
     @Test

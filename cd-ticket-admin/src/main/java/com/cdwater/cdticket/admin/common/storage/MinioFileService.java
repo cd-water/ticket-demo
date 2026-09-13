@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.storage;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -12,6 +12,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
+import com.cdwater.cdticket.admin.common.exception.BizException;
 
 @Slf4j
 @Service

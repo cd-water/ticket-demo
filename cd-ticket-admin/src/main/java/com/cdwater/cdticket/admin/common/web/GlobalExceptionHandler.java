@@ -1,8 +1,8 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.web;
 
-import com.cdwater.cdticket.admin.common.AbstractException;
-import com.cdwater.cdticket.admin.common.ResultCode;
-import com.cdwater.cdticket.admin.common.Result;
+import com.cdwater.cdticket.admin.common.api.Result;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
+import com.cdwater.cdticket.admin.common.exception.AbstractException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

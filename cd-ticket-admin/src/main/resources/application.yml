@@ -30,10 +30,8 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-jwt:
-  secret: ${JWT_SECRET:cd-ticket-dev-secret-key-0123456789abcdef0123456789abcdef}
-  access-expire-seconds: 900
-  refresh-expire-seconds: 604800
+token:
+  expire-seconds: 86400   # 24 hour
 
 minio:
   endpoint: http://localhost:9000

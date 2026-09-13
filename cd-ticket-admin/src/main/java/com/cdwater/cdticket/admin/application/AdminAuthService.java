@@ -1,12 +1,11 @@
 package com.cdwater.cdticket.admin.application;
 
 import com.cdwater.cdticket.admin.application.dto.AdminLoginResponse;
+import com.cdwater.cdticket.admin.common.api.ResultCode;
+import com.cdwater.cdticket.admin.common.exception.BizException;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
-import com.cdwater.cdticket.admin.infrastructure.convert.AdminConvert;
 import com.cdwater.cdticket.admin.domain.entity.Admin;
-import com.cdwater.cdticket.admin.common.BizException;
-import com.cdwater.cdticket.admin.common.ResultCode;
-import com.cdwater.cdticket.admin.common.JwtUtil;
+import com.cdwater.cdticket.admin.infrastructure.convert.AdminConvert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ public class AdminAuthService {
 
     private final AdminRepository adminRepository;
     private final TokenStoreService tokenStoreService;
-    private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     public AdminLoginResponse login(String username, String password) {
@@ -27,8 +25,7 @@ public class AdminAuthService {
             // 三种失败（账号不存在 / 账号已禁用 / 密码错误）统一对外，避免用户名枚举攻击
             throw new BizException(ResultCode.LOGIN_FAILED);
         }
-        String token = jwtUtil.createAdminAccessToken(admin.getId());
-        tokenStoreService.store(admin.getId(), token);
+        String token = tokenStoreService.issue(admin.getId());
 
         AdminLoginResponse resp = new AdminLoginResponse();
         resp.setToken(token);
@@ -37,6 +34,6 @@ public class AdminAuthService {
     }
 
     public void logout(Long adminId) {
-        tokenStoreService.remove(adminId);
+        tokenStoreService.revoke(adminId);
     }
 }

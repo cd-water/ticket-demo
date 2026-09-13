@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.common;
+package com.cdwater.cdticket.admin.common.storage;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;

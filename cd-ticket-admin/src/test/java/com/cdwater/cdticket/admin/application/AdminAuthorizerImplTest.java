@@ -1,9 +1,9 @@
 package com.cdwater.cdticket.admin.application;
 
+import com.cdwater.cdticket.admin.common.admin.AdminPrincipal;
+import com.cdwater.cdticket.admin.common.exception.BizException;
 import com.cdwater.cdticket.admin.domain.AdminRepository;
 import com.cdwater.cdticket.admin.domain.entity.Admin;
-import com.cdwater.cdticket.admin.common.AdminPrincipal;
-import com.cdwater.cdticket.admin.common.BizException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
