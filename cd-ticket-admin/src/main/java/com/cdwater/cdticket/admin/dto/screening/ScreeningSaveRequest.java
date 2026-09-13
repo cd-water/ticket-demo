@@ -13,16 +13,16 @@ public class ScreeningSaveRequest {
     /** 修改时传入；新增不填 */
     private Long id;
 
-    @NotNull(message = "电影不能为空")
+    
     private Long movieId;
 
-    @NotNull(message = "影厅不能为空")
+    
     private Long hallId;
 
-    @NotNull(message = "开场时间不能为空")
+    
     private LocalDateTime startTime;
 
-    @NotNull(message = "价格不能为空")
-    @DecimalMin(value = "0.01", message = "价格必须大于0")
+    
+    @DecimalMin(value = "0.01")
     private BigDecimal price;
 }

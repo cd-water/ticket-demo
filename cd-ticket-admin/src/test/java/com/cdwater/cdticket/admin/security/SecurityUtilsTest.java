@@ -21,7 +21,7 @@ class SecurityUtilsTest {
     }
 
     private void authAs(long adminId, int role, long cinemaId) {
-        var auth = new UsernamePasswordAuthenticationToken(adminId, null, List.of());
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(adminId, null, List.of());
         auth.setDetails(new TokenAuthenticationFilter.AdminContext(adminId, role, cinemaId));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }

@@ -1,6 +1,7 @@
 package com.cdwater.cdticket.admin.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.ResultCode;
@@ -30,11 +31,9 @@ public class ScreeningService {
     private final HallService hallAdminService;
 
     public PageResult<ScreeningVO> page(int page, int size, Long movieId) {
-        if (page < 1 || size < 1 || size > 100) {
-            throw new BizException(ResultCode.BAD_REQUEST);
-        }
+        PageResult.check(page, size);
         Long cinemaId = SecurityUtils.isPlatformAdmin() ? null : SecurityUtils.getCinemaId();
-        var p = screeningMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Screening>()
+        IPage<Screening> p = screeningMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Screening>()
                 .eq(movieId != null, Screening::getMovieId, movieId)
                 .eq(cinemaId != null, Screening::getCinemaId, cinemaId)
                 .orderByDesc(Screening::getStartTime));

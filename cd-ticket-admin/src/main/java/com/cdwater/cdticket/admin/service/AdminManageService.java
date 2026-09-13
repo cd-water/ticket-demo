@@ -3,7 +3,7 @@ package com.cdwater.cdticket.admin.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.dto.admin.AdminManageVO;
+import com.cdwater.cdticket.admin.dto.admin.AdminVO;
 import com.cdwater.cdticket.admin.dto.admin.AdminSaveRequest;
 import com.cdwater.cdticket.admin.dto.admin.ResetPasswordRequest;
 import com.cdwater.cdticket.admin.entity.Admin;
@@ -26,20 +26,19 @@ public class AdminManageService {
     private final PasswordEncoder passwordEncoder;
     private final TokenStoreService tokenStore;
 
-    /** 列表 */
+    /**
+     * 列表
+     */
     @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
-    public List<AdminManageVO> list(Integer role) {
+    public List<AdminVO> list(Integer role) {
         return adminMapper.selectListWithCinema(role, null);
     }
 
-    /** 新增 */
+    /**
+     * 新增
+     */
     @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public void create(AdminSaveRequest req) {
-        if (SecurityUtils.getCurrentId() != null
-                && SecurityUtils.getRole() == 1 && req.getRole() != 1) {
-            throw new BizException(ResultCode.FORBIDDEN);
-        }
-
         if (req.getRole() != null && req.getRole() == 1 && req.getCinemaId() == null) {
             throw new BizException(ResultCode.CINEMA_ADMIN_NEED_CINEMA);
         }
@@ -61,21 +60,22 @@ public class AdminManageService {
         adminMapper.insert(admin);
     }
 
-    /** 重置密码；密码更新后立即踢下线 */
+    /**
+     * 重置密码（可重置自己）；密码更新后立即踢下线
+     */
     @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public void resetPassword(Long id, ResetPasswordRequest req) {
-        if (id.equals(SecurityUtils.getCurrentId())) {
-            throw new BizException(ResultCode.CANNOT_OPERATE_SELF);
-        }
         Admin target = requireAdmin(id);
         target.setPassword(passwordEncoder.encode(req.getPassword()));
         adminMapper.updateById(target);
         tokenStore.revoke(id);
     }
 
-    /** 启用/禁用；状态切换后踢下线 */
+    /**
+     * 启用/禁用；状态切换后踢下线
+     */
     @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
-    public void updateStatus(Long id, int status) {
+    public void toggleStatus(Long id, int status) {
         if (id.equals(SecurityUtils.getCurrentId())) {
             throw new BizException(ResultCode.CANNOT_OPERATE_SELF);
         }
@@ -87,7 +87,9 @@ public class AdminManageService {
         }
     }
 
-    /** 删除 */
+    /**
+     * 删除
+     */
     @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public void delete(Long id) {
         if (id.equals(SecurityUtils.getCurrentId())) {

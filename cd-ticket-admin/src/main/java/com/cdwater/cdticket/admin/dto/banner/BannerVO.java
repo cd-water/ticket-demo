@@ -17,4 +17,5 @@ public class BannerVO {
     private Integer sort;
     private Integer status;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

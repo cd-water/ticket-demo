@@ -5,6 +5,7 @@ import type { FormInstance } from 'element-plus'
 import { deleteBanner, listBanners, saveBanner } from '@/api/banners'
 import { uploadImage } from '@/api/files'
 import StatusPill from '@/components/StatusPill.vue'
+import { formatDateTime } from '@/utils/format'
 import type { BannerVO } from '@/types/api'
 
 const loading = ref(false)
@@ -130,6 +131,12 @@ async function remove(row: BannerVO) {
         <template #default="{ row }">
           <StatusPill :label="row.status === 1 ? '上线' : '下线'" :tone="row.status === 1 ? 'ok' : 'muted'" />
         </template>
+      </el-table-column>
+      <el-table-column label="创建时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="150" align="right">
         <template #default="{ row }">

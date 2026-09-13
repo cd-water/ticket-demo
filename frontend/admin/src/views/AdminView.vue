@@ -227,7 +227,7 @@ async function remove(row: AdminManageVO) {
           <el-button link :type="row.status === 1 ? 'warning' : 'success'" :disabled="row.id === auth.admin?.id" @click="toggleStatus(row)">
             {{ row.status === 1 ? '禁用' : '启用' }}
           </el-button>
-          <el-button link type="primary" :disabled="row.id === auth.admin?.id" @click="openReset(row)">
+          <el-button link type="primary" @click="openReset(row)">
             重置密码
           </el-button>
           <el-button

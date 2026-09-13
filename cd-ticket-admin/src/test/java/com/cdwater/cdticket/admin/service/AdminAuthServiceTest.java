@@ -2,7 +2,7 @@ package com.cdwater.cdticket.admin.service;
 
 import com.cdwater.cdticket.admin.common.exception.BizException;
 import com.cdwater.cdticket.admin.config.TokenProperties;
-import com.cdwater.cdticket.admin.dto.admin.AdminLoginResponse;
+import com.cdwater.cdticket.admin.dto.admin.LoginResponse;
 import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
 
@@ -44,7 +44,7 @@ class AdminAuthServiceTest {
         admin.setCinemaId(0L);
         admin.setStatus(1);
         when(adminMapper.selectOne(any())).thenReturn(admin);
-        AdminLoginResponse resp = service.login("admin", "Aa123456");
+        LoginResponse resp = service.login("admin", "Aa123456");
         assertDoesNotThrow(() -> UUID.fromString(resp.getToken()));
         verify(redis.opsForValue()).set(eq("admin:token:" + resp.getToken()), eq("1"),
                 eq(Duration.ofSeconds(86400)));

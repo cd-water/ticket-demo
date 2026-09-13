@@ -2,6 +2,7 @@ package com.cdwater.cdticket.admin.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.ResultCode;
@@ -23,10 +24,8 @@ public class MovieService {
     private final MovieMapper movieMapper;
 
     public PageResult<MovieVO> page(int page, int size, String title, Integer status) {
-        if (page < 1 || size < 1 || size > 100) {
-            throw new BizException(ResultCode.BAD_REQUEST);
-        }
-        var p = movieMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Movie>()
+        PageResult.check(page, size);
+        IPage<Movie> p = movieMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Movie>()
                 .like(title != null && !title.isBlank(), Movie::getTitle, title)
                 .eq(status != null, Movie::getStatus, status)
                 .orderByDesc(Movie::getCreateTime));

@@ -1,12 +1,11 @@
 package com.cdwater.cdticket.admin.service;
 
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.dto.admin.AdminManageVO;
+import com.cdwater.cdticket.admin.dto.admin.AdminVO;
 import com.cdwater.cdticket.admin.dto.admin.AdminSaveRequest;
 import com.cdwater.cdticket.admin.dto.admin.ResetPasswordRequest;
 import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
-import com.cdwater.cdticket.admin.security.SecurityUtils;
 import com.cdwater.cdticket.admin.security.TokenStoreService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +42,7 @@ class AdminManageServiceTest {
     }
 
     private void authAs(long adminId, int role, long cinemaId) {
-        var auth = new UsernamePasswordAuthenticationToken(adminId, null, List.of());
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(adminId, null, List.of());
         auth.setDetails(new com.cdwater.cdticket.admin.security.TokenAuthenticationFilter.AdminContext(adminId, role, cinemaId));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
@@ -70,14 +69,8 @@ class AdminManageServiceTest {
     @Test
     void listAsPlatformAdmin() {
         authAs(1L, 0, 0L);
-        when(mapper.selectListWithCinema(any(), isNull())).thenReturn(List.of(new AdminManageVO()));
+        when(mapper.selectListWithCinema(any(), isNull())).thenReturn(List.of(new AdminVO()));
         assertEquals(1, service.list(null).size());
-    }
-
-    @Test
-    void createRejectedForCinemaAdmin() {
-        authAs(2L, 1, 5L);
-        assertThrows(BizException.class, () -> service.create(createReq("new", "Aa123456", 0, 0L)));
     }
 
     @Test
@@ -102,11 +95,13 @@ class AdminManageServiceTest {
     }
 
     @Test
-    void resetPasswordRejectedForSelf() {
+    void resetPasswordAllowedForSelf() {
         authAs(1L, 0, 0L);
         when(mapper.selectById(1L)).thenReturn(admin(1L, "admin", 0, 0L));
-        assertThrows(BizException.class, () -> service.resetPassword(1L,
-                new ResetPasswordRequest() {{ setPassword("NewPass99"); }}));
+        service.resetPassword(1L, new ResetPasswordRequest() {{ setPassword("NewPass99"); }});
+        verify(mapper).updateById(ArgumentMatchers.<Admin>argThat(a ->
+                new BCryptPasswordEncoder().matches("NewPass99", a.getPassword())));
+        verify(tokenStore).revoke(1L);
     }
 
     @Test

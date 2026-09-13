@@ -3,10 +3,10 @@ import { onMounted, reactive, ref } from 'vue'
 import { listOrders } from '@/api/orders'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatAmount, formatDateTime } from '@/utils/format'
-import type { OrderAdminRecord } from '@/types/api'
+import type { OrderVO } from '@/types/api'
 
 const loading = ref(false)
-const rows = ref<OrderAdminRecord[]>([])
+const rows = ref<OrderVO[]>([])
 const total = ref(0)
 const page = ref(1)
 const size = ref(10)

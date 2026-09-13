@@ -15,13 +15,13 @@ public enum ResultCode {
     BAD_REQUEST("C001", "参数错误"),
     UNAUTHORIZED("C002", "未认证或登录已过期"),
     FORBIDDEN("C003", "无权限"),
-    LOGIN_FAILED("C004", "用户名或密码错误"),
+    NOT_FOUND("C004", "不存在"),
 
     // 客户端-管理员
     ADMIN_USERNAME_EXISTS("C201", "用户名已存在"),
     CINEMA_ADMIN_NEED_CINEMA("C202", "影院管理员必须绑定影院"),
     CANNOT_OPERATE_SELF("C203", "不能操作当前登录管理员"),
-    NOT_FOUND("C204", "记录不存在"),
+    LOGIN_FAILED("C204", "用户名或密码错误"),
 
     // 客户端-排场
     SCREENING_TIME_CONFLICT("C501", "同影厅同一开场时间已有排场"),

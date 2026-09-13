@@ -1,5 +1,5 @@
 import http from '@/api/http'
-import type { OrderAdminRecord, PageResult } from '@/types/api'
+import type { OrderVO, PageResult } from '@/types/api'
 
 export interface OrderListQuery {
   page: number
@@ -9,5 +9,5 @@ export interface OrderListQuery {
 }
 
 export function listOrders(q: OrderListQuery) {
-  return http.get<unknown, PageResult<OrderAdminRecord>>('/admin/orders', { params: q })
+  return http.get<unknown, PageResult<OrderVO>>('/admin/orders', { params: q })
 }

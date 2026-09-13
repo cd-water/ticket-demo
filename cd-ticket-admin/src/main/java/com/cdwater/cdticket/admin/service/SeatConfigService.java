@@ -3,7 +3,7 @@ package com.cdwater.cdticket.admin.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.dto.seat.SeatCellItem;
+import com.cdwater.cdticket.admin.dto.seat.SeatCellRequest;
 import com.cdwater.cdticket.admin.dto.seat.SeatCellVO;
 import com.cdwater.cdticket.admin.dto.seat.SeatGridVO;
 import com.cdwater.cdticket.admin.entity.Hall;
@@ -28,7 +28,7 @@ public class SeatConfigService {
     public SeatGridVO getGrid(Long hallId) {
         Hall hall = requireHall(hallId);
         SecurityUtils.requireScope(hall.getCinemaId());
-        var configs = configMapper.selectList(new LambdaQueryWrapper<SeatConfig>()
+        List<SeatConfig> configs = configMapper.selectList(new LambdaQueryWrapper<SeatConfig>()
                 .eq(SeatConfig::getHallId, hallId)
                 .orderByAsc(SeatConfig::getSeatRow)
                 .orderByAsc(SeatConfig::getSeatCol));
@@ -47,10 +47,10 @@ public class SeatConfigService {
     }
 
     @Transactional
-    public void replace(Long hallId, List<SeatCellItem> seats) {
+    public void replace(Long hallId, List<SeatCellRequest> seats) {
         Hall hall = requireHall(hallId);
         SecurityUtils.requireScope(hall.getCinemaId());
-        for (SeatCellItem cell : seats) {
+        for (SeatCellRequest cell : seats) {
             if (cell.getRow() < 1 || cell.getRow() > hall.getSeatRows()
                     || cell.getCol() < 1 || cell.getCol() > hall.getSeatCols()) {
                 throw new BizException("座位坐标超出影厅范围（" + hall.getSeatRows() + "排" + hall.getSeatCols() + "座）",

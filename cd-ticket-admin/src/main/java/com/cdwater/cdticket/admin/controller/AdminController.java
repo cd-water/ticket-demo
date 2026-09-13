@@ -3,8 +3,8 @@ package com.cdwater.cdticket.admin.controller;
 import com.cdwater.cdticket.admin.service.AdminAuthService;
 import com.cdwater.cdticket.admin.service.AdminManageService;
 import com.cdwater.cdticket.admin.common.Result;
-import com.cdwater.cdticket.admin.dto.admin.AdminLoginResponse;
-import com.cdwater.cdticket.admin.dto.admin.AdminManageVO;
+import com.cdwater.cdticket.admin.dto.admin.LoginResponse;
+import com.cdwater.cdticket.admin.dto.admin.AdminVO;
 import com.cdwater.cdticket.admin.dto.admin.AdminSaveRequest;
 import com.cdwater.cdticket.admin.dto.admin.LoginRequest;
 import com.cdwater.cdticket.admin.dto.admin.ResetPasswordRequest;
@@ -32,7 +32,7 @@ public class AdminController {
     private final AdminManageService adminManageService;
 
     @PostMapping("/auth/login")
-    public Result<AdminLoginResponse> login(@RequestBody @Valid LoginRequest req) {
+    public Result<LoginResponse> login(@RequestBody @Valid LoginRequest req) {
         return Result.success(adminAuthService.login(req.getUsername(), req.getPassword()));
     }
 
@@ -43,7 +43,7 @@ public class AdminController {
     }
 
     @GetMapping("/admins/list")
-    public Result<List<AdminManageVO>> list(@RequestParam(required = false) Integer role) {
+    public Result<List<AdminVO>> list(@RequestParam(required = false) Integer role) {
         return Result.success(adminManageService.list(role));
     }
 
@@ -66,8 +66,8 @@ public class AdminController {
     }
 
     @PostMapping("/admins/{id}/status")
-    public Result<Void> updateStatus(@PathVariable Long id, @RequestParam int status) {
-        adminManageService.updateStatus(id, status);
+    public Result<Void> toggleStatus(@PathVariable Long id, @RequestParam int status) {
+        adminManageService.toggleStatus(id, status);
         return Result.success();
     }
 }

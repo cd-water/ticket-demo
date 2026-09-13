@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class OrderAdminRecord {
+public class OrderVO {
     private Long id;
     private String orderNo;
     private Long userId;

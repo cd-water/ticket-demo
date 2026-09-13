@@ -1,5 +1,5 @@
 import http from '@/api/http'
-import type { PageResult, UserAdminVO } from '@/types/api'
+import type { PageResult, UserVO } from '@/types/api'
 
 export interface UserListQuery {
   page: number
@@ -8,9 +8,9 @@ export interface UserListQuery {
 }
 
 export function listUsers(q: UserListQuery) {
-  return http.get<unknown, PageResult<UserAdminVO>>('/admin/users', { params: q })
+  return http.get<unknown, PageResult<UserVO>>('/admin/users', { params: q })
 }
 
-export function updateUserStatus(id: number, status: number) {
+export function toggleUserStatus(id: number, status: number) {
   return http.post<unknown, void>(`/admin/users/${id}/status`, { status })
 }

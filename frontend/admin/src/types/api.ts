@@ -65,6 +65,7 @@ export interface BannerVO {
   sort: number
   status: number
   createTime: string
+  updateTime: string
 }
 
 export interface BannerSaveRequest {
@@ -118,7 +119,7 @@ export interface SeatCellVO {
   status: number
 }
 
-export interface SeatCellPayload {
+export interface SeatCellRequest {
   row: number
   col: number
   status: number
@@ -153,7 +154,7 @@ export interface ScreeningSaveRequest {
 }
 
 /** 订单（/api/admin/orders，只读） */
-export interface OrderAdminRecord {
+export interface OrderVO {
   id: number
   orderNo: string
   userId: number
@@ -172,12 +173,13 @@ export interface OrderAdminRecord {
 }
 
 /** 用户（/api/admin/users） */
-export interface UserAdminVO {
+export interface UserVO {
   id: number
   phone: string
   nickname: string
   status: number
   createTime: string
+  updateTime: string
 }
 
 /** 管理员管理（/api/admin/admins） */

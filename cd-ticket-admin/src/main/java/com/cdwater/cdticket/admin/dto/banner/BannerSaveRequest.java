@@ -10,23 +10,25 @@ import lombok.Data;
 @Data
 public class BannerSaveRequest {
 
-    /** 修改时传入；新增不填 */
+    /**
+     * 修改时传入；新增不填
+     */
     private Long id;
 
-    @NotBlank(message = "图片地址不能为空")
-    @Size(max = 255, message = "图片地址过长")
+
+    @Size(max = 255)
     private String image;
 
-    @NotBlank(message = "跳转链接不能为空")
-    @Size(max = 255, message = "跳转链接过长")
+
+    @Size(max = 255)
     private String linkUrl;
 
-    @NotNull(message = "排序不能为空")
-    @Min(value = 0, message = "排序非法")
+
+    @Min(value = 0)
     private Integer sort;
 
-    @NotNull(message = "状态不能为空")
-    @Min(value = 0, message = "状态非法")
-    @Max(value = 1, message = "状态非法")
+
+    @Min(value = 0)
+    @Max(value = 1)
     private Integer status;
 }

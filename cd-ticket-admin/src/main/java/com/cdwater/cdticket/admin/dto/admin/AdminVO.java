@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class AdminManageVO {
+public class AdminVO {
     private Long id;
     private String username;
     private Integer role;

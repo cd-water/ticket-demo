@@ -52,6 +52,7 @@ public class BannerService {
         v.setSort(b.getSort());
         v.setStatus(b.getStatus());
         v.setCreateTime(b.getCreateTime());
+        v.setUpdateTime(b.getUpdateTime());
         return v;
     }
 

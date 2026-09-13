@@ -3,7 +3,7 @@ package com.cdwater.cdticket.admin.dto.admin;
 import lombok.Data;
 
 @Data
-public class AdminLoginResponse {
+public class LoginResponse {
 
     private String token;
     private AdminInfo admin;

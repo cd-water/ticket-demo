@@ -1,5 +1,5 @@
 import http from '@/api/http'
-import type { HallSaveRequest, HallVO, SeatCellPayload, SeatGridVO } from '@/types/api'
+import type { HallSaveRequest, HallVO, SeatCellRequest, SeatGridVO } from '@/types/api'
 
 export function listHalls() {
   return http.get<unknown, HallVO[]>('/admin/halls')
@@ -17,6 +17,6 @@ export function getSeatGrid(id: number) {
   return http.get<unknown, SeatGridVO>(`/admin/halls/${id}/seats`)
 }
 
-export function saveSeatGrid(id: number, seats: SeatCellPayload[]) {
+export function saveSeatGrid(id: number, seats: SeatCellRequest[]) {
   return http.post<unknown, void>(`/admin/halls/${id}/seats`, { seats })
 }

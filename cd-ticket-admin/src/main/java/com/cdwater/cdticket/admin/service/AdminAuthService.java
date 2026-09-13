@@ -3,7 +3,7 @@ package com.cdwater.cdticket.admin.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.dto.admin.AdminLoginResponse;
+import com.cdwater.cdticket.admin.dto.admin.LoginResponse;
 import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
 import com.cdwater.cdticket.admin.security.SecurityUtils;
@@ -20,7 +20,7 @@ public class AdminAuthService {
     private final TokenStoreService tokenStoreService;
     private final PasswordEncoder passwordEncoder;
 
-    public AdminLoginResponse login(String username, String password) {
+    public LoginResponse login(String username, String password) {
         Admin admin = adminMapper.selectOne(new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, username));
         if (admin == null || admin.getStatus() == null || admin.getStatus() != 1
                 || !passwordEncoder.matches(password, admin.getPassword())) {
@@ -28,9 +28,9 @@ public class AdminAuthService {
         }
         String token = tokenStoreService.issue(admin.getId());
 
-        AdminLoginResponse resp = new AdminLoginResponse();
+        LoginResponse resp = new LoginResponse();
         resp.setToken(token);
-        AdminLoginResponse.AdminInfo info = new AdminLoginResponse.AdminInfo();
+        LoginResponse.AdminInfo info = new LoginResponse.AdminInfo();
         info.setId(admin.getId());
         info.setUsername(admin.getUsername());
         info.setRole(admin.getRole());

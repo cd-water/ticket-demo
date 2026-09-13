@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SeatCellItem {
+public class SeatCellRequest {
 
     private int row;
     private int col;

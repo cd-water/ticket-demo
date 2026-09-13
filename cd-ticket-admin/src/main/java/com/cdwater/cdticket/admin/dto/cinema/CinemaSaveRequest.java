@@ -13,16 +13,16 @@ public class CinemaSaveRequest {
     /** 修改时传入；新增不填 */
     private Long id;
 
-    @NotBlank(message = "影院名称不能为空")
-    @Size(max = 100, message = "影院名称不能超过100字")
+    
+    @Size(max = 100)
     private String name;
 
-    @NotBlank(message = "影院地址不能为空")
-    @Size(max = 255, message = "影院地址不能超过255字")
+    
+    @Size(max = 255)
     private String address;
 
-    @NotNull(message = "状态不能为空")
-    @Min(value = 0, message = "状态非法")
-    @Max(value = 1, message = "状态非法")
+    
+    @Min(value = 0)
+    @Max(value = 1)
     private Integer status;
 }

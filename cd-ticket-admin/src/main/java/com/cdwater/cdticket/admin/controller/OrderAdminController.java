@@ -1,7 +1,7 @@
 package com.cdwater.cdticket.admin.controller;
 
 import com.cdwater.cdticket.admin.service.OrderQueryService;
-import com.cdwater.cdticket.admin.dto.order.OrderAdminRecord;
+import com.cdwater.cdticket.admin.dto.order.OrderVO;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.Result;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class OrderAdminController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('CINEMA_ADMIN')")
-    public Result<PageResult<OrderAdminRecord>> page(@RequestParam(defaultValue = "1") int page,
+    public Result<PageResult<OrderVO>> page(@RequestParam(defaultValue = "1") int page,
                                                      @RequestParam(defaultValue = "10") int size,
                                                      @RequestParam(required = false) String orderNo,
                                                      @RequestParam(required = false) Integer status) {

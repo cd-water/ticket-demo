@@ -30,12 +30,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring("Bearer ".length());
-            var info = tokenStore.resolve(token);
+            TokenAuthenticationFilter.AdminContext info = tokenStore.resolve(token);
             if (info != null) {
-                var authority = info.role() == 0
+                SimpleGrantedAuthority authority = info.role() == 0
                         ? new SimpleGrantedAuthority(ROLE_PLATFORM_ADMIN)
                         : new SimpleGrantedAuthority(ROLE_CINEMA_ADMIN);
-                var auth = new UsernamePasswordAuthenticationToken(
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         info.adminId(), null, List.of(authority));
                 auth.setDetails(info);
                 SecurityContextHolder.getContext().setAuthentication(auth);

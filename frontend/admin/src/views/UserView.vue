@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listUsers, updateUserStatus } from '@/api/users'
+import { listUsers, toggleUserStatus } from '@/api/users'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
-import type { UserAdminVO } from '@/types/api'
+import type { UserVO } from '@/types/api'
 
 const loading = ref(false)
-const rows = ref<UserAdminVO[]>([])
+const rows = ref<UserVO[]>([])
 const total = ref(0)
 const page = ref(1)
 const size = ref(10)
@@ -38,7 +38,7 @@ function reset() {
   search()
 }
 
-async function toggleStatus(row: UserAdminVO) {
+async function toggleStatus(row: UserVO) {
   const next = row.status === 1 ? 0 : 1
   const action = next === 1 ? '启用' : '禁用'
   try {
@@ -52,7 +52,7 @@ async function toggleStatus(row: UserAdminVO) {
     return
   }
   try {
-    await updateUserStatus(row.id, next)
+    await toggleUserStatus(row.id, next)
     ElMessage.success(`已${action}`)
     load()
   } catch {
@@ -100,6 +100,9 @@ function onSize(s: number) {
       </el-table-column>
       <el-table-column label="注册时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="120" align="right">
         <template #default="{ row }">

@@ -15,27 +15,27 @@ public class MovieSaveRequest {
     /** 修改时传入；新增不填 */
     private Long id;
 
-    @NotBlank(message = "片名不能为空")
-    @Size(max = 100, message = "片名不能超过100字")
+    
+    @Size(max = 100)
     private String title;
 
-    @NotBlank(message = "海报不能为空")
-    @Size(max = 255, message = "海报地址过长")
+    
+    @Size(max = 255)
     private String poster;
 
-    @NotBlank(message = "简介不能为空")
-    @Size(max = 1024, message = "简介不能超过1024字")
+    
+    @Size(max = 1024)
     private String description;
 
-    @NotNull(message = "时长不能为空")
-    @Min(value = 1, message = "时长必须大于0")
+    
+    @Min(value = 1)
     private Integer duration;
 
-    @NotNull(message = "上映日期不能为空")
+    
     private LocalDate releaseDate;
 
-    @NotNull(message = "状态不能为空")
-    @Min(value = 0, message = "状态非法")
-    @Max(value = 1, message = "状态非法")
+    
+    @Min(value = 0)
+    @Max(value = 1)
     private Integer status;
 }
