@@ -10,6 +10,9 @@ import lombok.Data;
 @Data
 public class BannerSaveRequest {
 
+    /** 修改时传入；新增不填 */
+    private Long id;
+
     @NotBlank(message = "图片地址不能为空")
     @Size(max = 255, message = "图片地址过长")
     private String image;

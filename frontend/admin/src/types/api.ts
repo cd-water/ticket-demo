@@ -42,6 +42,8 @@ export interface MovieVO {
 }
 
 export interface MovieSaveRequest {
+  /** 修改时传入；新增不填 */
+  id?: number | null
   title: string
   poster?: string | null
   description?: string | null
@@ -66,6 +68,8 @@ export interface BannerVO {
 }
 
 export interface BannerSaveRequest {
+  /** 修改时传入；新增不填 */
+  id?: number | null
   image: string
   linkUrl?: string
   sort: number
@@ -82,6 +86,8 @@ export interface CinemaVO {
 }
 
 export interface CinemaSaveRequest {
+  /** 修改时传入；新增不填 */
+  id?: number | null
   name: string
   address: string
   status: number
@@ -98,6 +104,8 @@ export interface HallVO {
 }
 
 export interface HallSaveRequest {
+  /** 修改时传入；新增不填 */
+  id?: number | null
   name: string
   seatRows: number
   seatCols: number
@@ -136,6 +144,8 @@ export interface ScreeningVO {
 }
 
 export interface ScreeningSaveRequest {
+  /** 修改时传入；新增不填 */
+  id?: number | null
   movieId: number
   hallId: number
   startTime: string
@@ -181,14 +191,17 @@ export interface AdminManageVO {
   updateTime: string
 }
 
-/** 新增/修改（id=null → 新增，id!=null → 修改） */
+/** 新增管理员 */
 export interface AdminSaveRequest {
-  id?: number | null
   username: string
-  password?: string
+  password: string
   role: number
   cinemaId?: number | null
-  status?: number
+}
+
+/** 重置密码 */
+export interface ResetPasswordRequest {
+  password: string
 }
 
 /** 文件上传（/api/admin/files） */

@@ -1,13 +1,13 @@
 package com.cdwater.cdticket.admin.controller;
 
 import com.cdwater.cdticket.admin.service.AdminAuthService;
-import com.cdwater.cdticket.admin.security.AdminAuthorizer;
 import com.cdwater.cdticket.admin.service.AdminManageService;
 import com.cdwater.cdticket.admin.common.Result;
 import com.cdwater.cdticket.admin.dto.admin.AdminLoginResponse;
 import com.cdwater.cdticket.admin.dto.admin.AdminManageVO;
 import com.cdwater.cdticket.admin.dto.admin.AdminSaveRequest;
 import com.cdwater.cdticket.admin.dto.admin.LoginRequest;
+import com.cdwater.cdticket.admin.dto.admin.ResetPasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +30,6 @@ public class AdminController {
 
     private final AdminAuthService adminAuthService;
     private final AdminManageService adminManageService;
-    private final AdminAuthorizer adminAuthorizer;
 
     @PostMapping("/auth/login")
     public Result<AdminLoginResponse> login(@RequestBody @Valid LoginRequest req) {
@@ -48,15 +47,27 @@ public class AdminController {
         return Result.success(adminManageService.list(role));
     }
 
-    @PostMapping("/admins/save")
-    public Result<Void> save(@RequestBody @Valid AdminSaveRequest req) {
-        adminManageService.save(req);
+    @PostMapping("/admins/create")
+    public Result<Void> create(@RequestBody @Valid AdminSaveRequest req) {
+        adminManageService.create(req);
+        return Result.success();
+    }
+
+    @PostMapping("/admins/{id}/reset-password")
+    public Result<Void> resetPassword(@PathVariable Long id, @RequestBody @Valid ResetPasswordRequest req) {
+        adminManageService.resetPassword(id, req);
         return Result.success();
     }
 
     @PostMapping("/admins/{id}/delete")
     public Result<Void> delete(@PathVariable Long id) {
         adminManageService.delete(id);
+        return Result.success();
+    }
+
+    @PostMapping("/admins/{id}/status")
+    public Result<Void> updateStatus(@PathVariable Long id, @RequestParam int status) {
+        adminManageService.updateStatus(id, status);
         return Result.success();
     }
 }

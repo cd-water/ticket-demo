@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.convert.MovieConvert;
 import com.cdwater.cdticket.admin.dto.movie.MovieOption;
 import com.cdwater.cdticket.admin.dto.movie.MovieSaveRequest;
 import com.cdwater.cdticket.admin.dto.movie.MovieVO;
@@ -19,7 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MovieAdminService {
+public class MovieService {
 
     private final MovieMapper movieMapper;
 
@@ -31,21 +30,20 @@ public class MovieAdminService {
                 .like(title != null && !title.isBlank(), Movie::getTitle, title)
                 .eq(status != null, Movie::getStatus, status)
                 .orderByDesc(Movie::getCreateTime));
-        return PageResult.of(p.convert(MovieConvert.INSTANCE::toVO));
+        return PageResult.of(p.convert(MovieService::toVO));
     }
 
-    public void create(MovieSaveRequest req) {
-        movieMapper.insert(MovieConvert.INSTANCE.toEntity(req));
-    }
-
-    public void update(Long id, MovieSaveRequest req) {
-        requireMovie(id);
-        // poster 列为 NOT NULL DEFAULT ''，置空须写空串（null 会违反约束）
-        String poster = req.getPoster() == null ? "" : req.getPoster();
+    /** 新增/修改（id=null → 新增） */
+    public void save(MovieSaveRequest req) {
+        if (req.getId() == null) {
+            movieMapper.insert(toEntity(req));
+            return;
+        }
+        requireMovie(req.getId());
         movieMapper.update(null, new LambdaUpdateWrapper<Movie>()
-                .eq(Movie::getId, id)
+                .eq(Movie::getId, req.getId())
                 .set(Movie::getTitle, req.getTitle())
-                .set(Movie::getPoster, poster)
+                .set(Movie::getPoster, req.getPoster() == null ? "" : req.getPoster())
                 .set(Movie::getDescription, req.getDescription())
                 .set(Movie::getDuration, req.getDuration())
                 .set(Movie::getReleaseDate, req.getReleaseDate())
@@ -60,14 +58,14 @@ public class MovieAdminService {
     /** 供 screening 模块校验：不存在返回 null */
     public MovieVO getMovie(Long id) {
         Movie movie = movieMapper.selectById(id);
-        return movie == null ? null : MovieConvert.INSTANCE.toVO(movie);
+        return movie == null ? null : toVO(movie);
     }
 
     /** 上架电影下拉（供排场管理） */
     public List<MovieOption> listOptions() {
         return movieMapper.selectList(new LambdaQueryWrapper<Movie>()
                 .eq(Movie::getStatus, 1)
-                .orderByAsc(Movie::getId)).stream().map(MovieConvert.INSTANCE::toOption).toList();
+                .orderByAsc(Movie::getId)).stream().map(MovieService::toOption).toList();
     }
 
     private Movie requireMovie(Long id) {
@@ -76,5 +74,36 @@ public class MovieAdminService {
             throw new BizException(ResultCode.NOT_FOUND);
         }
         return movie;
+    }
+
+    private static MovieVO toVO(Movie m) {
+        MovieVO v = new MovieVO();
+        v.setId(m.getId());
+        v.setTitle(m.getTitle());
+        v.setPoster(m.getPoster());
+        v.setDescription(m.getDescription());
+        v.setDuration(m.getDuration());
+        v.setReleaseDate(m.getReleaseDate());
+        v.setStatus(m.getStatus());
+        v.setCreateTime(m.getCreateTime());
+        return v;
+    }
+
+    private static Movie toEntity(MovieSaveRequest req) {
+        Movie m = new Movie();
+        m.setTitle(req.getTitle());
+        m.setPoster(req.getPoster() == null ? "" : req.getPoster());
+        m.setDescription(req.getDescription());
+        m.setDuration(req.getDuration());
+        m.setReleaseDate(req.getReleaseDate());
+        m.setStatus(req.getStatus());
+        return m;
+    }
+
+    private static MovieOption toOption(Movie m) {
+        MovieOption o = new MovieOption();
+        o.setId(m.getId());
+        o.setTitle(m.getTitle());
+        return o;
     }
 }

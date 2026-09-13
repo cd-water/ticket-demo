@@ -10,6 +10,9 @@ import lombok.Data;
 @Data
 public class CinemaSaveRequest {
 
+    /** 修改时传入；新增不填 */
+    private Long id;
+
     @NotBlank(message = "影院名称不能为空")
     @Size(max = 100, message = "影院名称不能超过100字")
     private String name;

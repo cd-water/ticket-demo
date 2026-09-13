@@ -1,6 +1,8 @@
 package com.cdwater.cdticket.admin.security;
 
 import com.cdwater.cdticket.admin.config.TokenProperties;
+import com.cdwater.cdticket.admin.entity.Admin;
+import com.cdwater.cdticket.admin.mapper.AdminMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -15,16 +17,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TokenStoreService {
 
-    /**
-     * token → adminId
-     */
     private static final String TOKEN_KEY = "admin:token:";
-    /**
-     * adminId → 当前 token
-     */
     private static final String CURRENT_KEY = "admin:current:";
 
     private final StringRedisTemplate redis;
+    private final AdminMapper adminMapper;
     private final TokenProperties props;
 
     /**
@@ -44,19 +41,22 @@ public class TokenStoreService {
     }
 
     /**
-     * 查 token 对应管理员；无效返回 null
+     * 查 token → {adminId, role, cinemaId}；无效/禁用返回 null
      */
-    public Long resolveAdminId(String token) {
-        String value = redis.opsForValue().get(TOKEN_KEY + token);
-        return value == null ? null : Long.valueOf(value);
+    public TokenAuthenticationFilter.AdminContext resolve(String token) {
+        String idStr = redis.opsForValue().get(TOKEN_KEY + token);
+        if (idStr == null) return null;
+        Admin admin = adminMapper.selectById(Long.valueOf(idStr));
+        if (admin == null || admin.getStatus() == null || admin.getStatus() != 1) return null;
+        return new TokenAuthenticationFilter.AdminContext(
+                admin.getId(), admin.getRole(), admin.getCinemaId());
     }
 
     /**
      * 滑动续期
      */
-    public void renew(String token, Long adminId) {
+    public void renew(String token) {
         redis.expire(TOKEN_KEY + token, Duration.ofSeconds(props.getExpireSeconds()));
-        redis.expire(CURRENT_KEY + adminId, Duration.ofSeconds(props.getExpireSeconds()));
     }
 
     /**

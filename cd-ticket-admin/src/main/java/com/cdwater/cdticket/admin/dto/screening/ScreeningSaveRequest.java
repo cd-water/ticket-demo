@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 
 @Data
 public class ScreeningSaveRequest {
+
+    /** 修改时传入；新增不填 */
+    private Long id;
+
     @NotNull(message = "电影不能为空")
     private Long movieId;
 

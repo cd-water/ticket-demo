@@ -15,14 +15,10 @@ export function listCinemasSimple() {
   return http.get<unknown, CinemaVO[]>('/admin/cinemas/simple')
 }
 
-export function createCinema(body: CinemaSaveRequest) {
-  return http.post<unknown, void>('/admin/cinemas', body)
-}
-
-export function updateCinema(id: number, body: CinemaSaveRequest) {
-  return http.put<unknown, void>(`/admin/cinemas/${id}`, body)
+export function saveCinema(body: CinemaSaveRequest) {
+  return http.post<unknown, void>('/admin/cinemas/save', body)
 }
 
 export function deleteCinema(id: number) {
-  return http.delete<unknown, void>(`/admin/cinemas/${id}`)
+  return http.post<unknown, void>(`/admin/cinemas/${id}/delete`)
 }

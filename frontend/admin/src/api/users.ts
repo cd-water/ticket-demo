@@ -12,5 +12,5 @@ export function listUsers(q: UserListQuery) {
 }
 
 export function updateUserStatus(id: number, status: number) {
-  return http.put<unknown, void>(`/admin/users/${id}/status`, { status })
+  return http.post<unknown, void>(`/admin/users/${id}/status`, { status })
 }

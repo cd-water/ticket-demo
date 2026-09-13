@@ -5,6 +5,7 @@ import com.cdwater.cdticket.admin.config.TokenProperties;
 import com.cdwater.cdticket.admin.dto.admin.AdminLoginResponse;
 import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
+
 import com.cdwater.cdticket.admin.security.TokenStoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class AdminAuthServiceTest {
         when(redis.opsForValue()).thenReturn(mock(org.springframework.data.redis.core.ValueOperations.class));
         TokenProperties props = new TokenProperties();
         props.setExpireSeconds(86400L);
-        TokenStoreService tokenStore = new TokenStoreService(redis, props);
+        TokenStoreService tokenStore = new TokenStoreService(redis, mock(AdminMapper.class), props);
         service = new AdminAuthService(adminMapper, tokenStore, new BCryptPasswordEncoder());
     }
 
@@ -44,8 +45,6 @@ class AdminAuthServiceTest {
         admin.setStatus(1);
         when(adminMapper.selectOne(any())).thenReturn(admin);
         AdminLoginResponse resp = service.login("admin", "Aa123456");
-
-        // token 是 UUID（不再带签名/分段），且以 token→adminId、adminId→token 两个 key 落 Redis
         assertDoesNotThrow(() -> UUID.fromString(resp.getToken()));
         verify(redis.opsForValue()).set(eq("admin:token:" + resp.getToken()), eq("1"),
                 eq(Duration.ofSeconds(86400)));

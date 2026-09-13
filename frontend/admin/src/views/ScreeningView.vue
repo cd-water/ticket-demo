@@ -3,13 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { listHalls } from '@/api/halls'
-import {
-  createScreening,
-  deleteScreening,
-  listMovieOptions,
-  listScreenings,
-  updateScreening,
-} from '@/api/screenings'
+import { deleteScreening, listMovieOptions, listScreenings, saveScreening } from '@/api/screenings'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
 import type { HallVO, MovieOption, ScreeningVO } from '@/types/api'
@@ -103,19 +97,15 @@ async function submit() {
   if (!valid) return
   saving.value = true
   const body = {
+    id: editingId.value,
     movieId: form.movieId as number,
     hallId: form.hallId as number,
     startTime: form.startTime,
     price: form.price,
   }
   try {
-    if (editingId.value === null) {
-      await createScreening(body)
-      ElMessage.success('已新增排场')
-    } else {
-      await updateScreening(editingId.value, body)
-      ElMessage.success('已保存')
-    }
+    await saveScreening(body)
+    ElMessage.success(editingId.value === null ? '已新增排场' : '已保存')
     dialogVisible.value = false
     load()
   } catch {

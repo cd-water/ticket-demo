@@ -15,14 +15,10 @@ export function listMovieOptions() {
   return http.get<unknown, MovieOption[]>('/admin/screenings/movie-options')
 }
 
-export function createScreening(body: ScreeningSaveRequest) {
-  return http.post<unknown, void>('/admin/screenings', body)
-}
-
-export function updateScreening(id: number, body: ScreeningSaveRequest) {
-  return http.put<unknown, void>(`/admin/screenings/${id}`, body)
+export function saveScreening(body: ScreeningSaveRequest) {
+  return http.post<unknown, void>('/admin/screenings/save', body)
 }
 
 export function deleteScreening(id: number) {
-  return http.delete<unknown, void>(`/admin/screenings/${id}`)
+  return http.post<unknown, void>(`/admin/screenings/${id}/delete`)
 }

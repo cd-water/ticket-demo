@@ -2,12 +2,12 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { deleteAdmin, listAdmins, saveAdmin } from '@/api/admins'
+import { createAdmin, deleteAdmin, listAdmins, resetPassword, updateAdminStatus } from '@/api/admins'
 import { listCinemasSimple } from '@/api/cinemas'
 import StatusPill from '@/components/StatusPill.vue'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/format'
-import type { AdminManageVO, AdminSaveRequest, CinemaVO } from '@/types/api'
+import type { AdminManageVO, CinemaVO } from '@/types/api'
 
 const auth = useAuthStore()
 const isCinemaAdmin = computed(() => auth.admin?.role === 1)
@@ -17,38 +17,51 @@ const rows = ref<AdminManageVO[]>([])
 const cinemas = ref<CinemaVO[]>([])
 const roleFilter = ref<number | null>(null)
 
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
+const createVisible = ref(false)
+const resetVisible = ref(false)
+const resetTarget = ref<AdminManageVO | null>(null)
 const saving = ref(false)
-const formRef = ref<FormInstance>()
-const form = reactive({
+
+const createFormRef = ref<FormInstance>()
+const resetFormRef = ref<FormInstance>()
+const createForm = reactive({
   username: '',
   password: '',
   role: 0 as number,
   cinemaId: null as number | null,
 })
+const resetForm = reactive({ password: '' })
 
-const rules = computed(() => ({
+const createRules = computed(() => ({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 5, max: 32, message: '用户名需5-32位', trigger: 'blur' },
   ],
-  password:
-    editingId.value === null
-      ? [
-          { required: true, message: '请输入密码', trigger: 'blur' },
-          {
-            pattern: /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/,
-            message: '密码需8-20位，且包含字母与数字',
-            trigger: 'blur',
-          },
-        ]
-      : [],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/,
+      message: '密码需8-20位，且包含字母与数字',
+      trigger: 'blur',
+    },
+  ],
   cinemaId:
-    form.role === 1 ? [{ required: true, message: '请选择所属影院', trigger: 'change' }] : [],
+    createForm.role === 1 ? [{ required: true, message: '请选择所属影院', trigger: 'change' }] : [],
 }))
 
-const cinemaName = (row: AdminManageVO) => row.role === 0 ? '全部影院' : (row.cinemaName ?? '未知影院')
+const resetRules = {
+  password: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    {
+      pattern: /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/,
+      message: '密码需8-20位，且包含字母与数字',
+      trigger: 'blur',
+    },
+  ],
+}
+
+const cinemaName = (row: AdminManageVO) =>
+  row.role === 0 ? '全部影院' : (row.cinemaName ?? '未知影院')
 
 async function load() {
   loading.value = true
@@ -76,57 +89,79 @@ function filterRole(v: number | null) {
 }
 
 function openCreate() {
-  editingId.value = null
-  if (isCinemaAdmin.value) {
-    Object.assign(form, {
-      username: '',
-      password: '',
-      role: 1,
-      cinemaId: auth.admin?.cinemaId ?? null,
-    })
-  } else {
-    Object.assign(form, { username: '', password: '', role: 0, cinemaId: null })
-  }
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function openEdit(row: AdminManageVO) {
-  editingId.value = row.id
-  Object.assign(form, {
-    username: row.username,
+  Object.assign(createForm, {
+    username: '',
     password: '',
-    role: row.role,
-    cinemaId: row.cinemaId === 0 ? null : row.cinemaId,
+    role: isCinemaAdmin.value ? 1 : 0,
+    cinemaId: isCinemaAdmin.value ? (auth.admin?.cinemaId ?? null) : null,
   })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
+  createFormRef.value?.clearValidate()
+  createVisible.value = true
 }
 
-async function submit() {
-  const valid = await formRef.value?.validate().catch(() => false)
+async function submitCreate() {
+  const valid = await createFormRef.value?.validate().catch(() => false)
   if (!valid) return
   saving.value = true
   try {
-    const body: AdminSaveRequest = {
-      username: form.username,
-      role: form.role,
-      cinemaId: form.role === 1 ? form.cinemaId : 0,
-    }
-    if (editingId.value !== null) {
-      body.id = editingId.value
-      body.status = rows.value.find((r) => r.id === editingId.value)?.status ?? 1
-    } else {
-      body.password = form.password
-    }
-    await saveAdmin(body)
-    ElMessage.success(editingId.value === null ? '已新增管理员' : '已保存')
-    dialogVisible.value = false
+    await createAdmin({
+      username: createForm.username,
+      password: createForm.password,
+      role: createForm.role,
+      cinemaId: createForm.role === 1 ? createForm.cinemaId : 0,
+    })
+    ElMessage.success('已新增管理员')
+    createVisible.value = false
     load()
   } catch {
-    /* 错误提示已由 http.ts 统一弹出（C201 用户名已存在 / C202 / C203） */
+    /* 错误提示已由 http.ts 统一弹出 */
   } finally {
     saving.value = false
+  }
+}
+
+function openReset(row: AdminManageVO) {
+  resetTarget.value = row
+  resetForm.password = ''
+  resetFormRef.value?.clearValidate()
+  resetVisible.value = true
+}
+
+async function submitReset() {
+  const valid = await resetFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+  if (!resetTarget.value) return
+  saving.value = true
+  try {
+    await resetPassword(resetTarget.value.id, { password: resetForm.password })
+    ElMessage.success('密码已重置，该账号已下线')
+    resetVisible.value = false
+    load()
+  } catch {
+    /* 错误提示已由 http.ts 统一弹出 */
+  } finally {
+    saving.value = false
+  }
+}
+
+async function toggleStatus(row: AdminManageVO) {
+  const next = row.status === 1 ? 0 : 1
+  const action = next === 1 ? '启用' : '禁用'
+  try {
+    await ElMessageBox.confirm(`确认${action}管理员「${row.username}」？${next === 0 ? '该账号将立即下线。' : ''}`, `${action}确认`, {
+      type: 'warning',
+      confirmButtonText: action,
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+  try {
+    await updateAdminStatus(row.id, next)
+    ElMessage.success(`已${action}`)
+    load()
+  } catch {
+    /* 错误提示已由 http.ts 统一弹出 */
   }
 }
 
@@ -181,26 +216,19 @@ async function remove(row: AdminManageVO) {
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="100">
-        <template #default="{ row }">
-          <StatusPill :label="row.status === 1 ? '启用' : '禁用'" :tone="row.status === 1 ? 'ok' : 'danger'" />
-        </template>
-      </el-table-column>
       <el-table-column label="创建时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
       </el-table-column>
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
-      <el-table-column v-if="!isCinemaAdmin" label="操作" width="150" align="right">
+      <el-table-column v-if="!isCinemaAdmin" label="操作" width="240" align="right">
         <template #default="{ row }">
-          <el-button
-            link
-            type="primary"
-            :disabled="row.id === auth.admin?.id"
-            @click="openEdit(row)"
-          >
-            编辑
+          <el-button link :type="row.status === 1 ? 'warning' : 'success'" :disabled="row.id === auth.admin?.id" @click="toggleStatus(row)">
+            {{ row.status === 1 ? '禁用' : '启用' }}
+          </el-button>
+          <el-button link type="primary" :disabled="row.id === auth.admin?.id" @click="openReset(row)">
+            重置密码
           </el-button>
           <el-button
             link
@@ -215,31 +243,23 @@ async function remove(row: AdminManageVO) {
       <template #empty>暂无管理员</template>
     </el-table>
 
-    <el-dialog
-      v-model="dialogVisible"
-      :title="editingId === null ? '新增管理员' : '编辑管理员'"
-      width="480px"
-    >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="88px">
+    <!-- 新增弹窗 -->
+    <el-dialog v-model="createVisible" title="新增管理员" width="480px">
+      <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="88px">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" maxlength="32" :disabled="editingId !== null" />
+          <el-input v-model="createForm.username" maxlength="32" />
         </el-form-item>
-        <el-form-item v-if="editingId === null" label="密码" prop="password">
-          <el-input v-model="form.password" type="password" show-password placeholder="8-20位，含字母与数字" />
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="createForm.password" type="password" show-password placeholder="8-20位，含字母与数字" />
         </el-form-item>
         <el-form-item label="角色">
-          <el-radio-group v-model="form.role" :disabled="isCinemaAdmin || editingId !== null">
+          <el-radio-group v-model="createForm.role" :disabled="isCinemaAdmin">
             <el-radio :value="0">平台管理员</el-radio>
             <el-radio :value="1">影院管理员</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="form.role === 1" label="所属影院" prop="cinemaId">
-          <el-select
-            v-model="form.cinemaId"
-            placeholder="选择影院"
-            :disabled="isCinemaAdmin"
-            style="width: 100%"
-          >
+        <el-form-item v-if="createForm.role === 1" label="所属影院" prop="cinemaId">
+          <el-select v-model="createForm.cinemaId" placeholder="选择影院" :disabled="isCinemaAdmin" style="width: 100%">
             <el-option
               v-for="c in isCinemaAdmin ? [] : cinemas"
               :key="c.id"
@@ -255,8 +275,24 @@ async function remove(row: AdminManageVO) {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitCreate">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 重置密码弹窗 -->
+    <el-dialog v-model="resetVisible" title="重置密码" width="420px">
+      <el-form ref="resetFormRef" :model="resetForm" :rules="resetRules" label-width="88px">
+        <el-form-item v-if="resetTarget" label="账号">
+          <span>{{ resetTarget.username }}</span>
+        </el-form-item>
+        <el-form-item label="新密码" prop="password">
+          <el-input v-model="resetForm.password" type="password" show-password placeholder="8-20位，含字母与数字" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitReset">确认重置</el-button>
       </template>
     </el-dialog>
   </div>

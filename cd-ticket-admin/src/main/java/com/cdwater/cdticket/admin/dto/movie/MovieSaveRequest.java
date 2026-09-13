@@ -12,6 +12,9 @@ import java.time.LocalDate;
 @Data
 public class MovieSaveRequest {
 
+    /** 修改时传入；新增不填 */
+    private Long id;
+
     @NotBlank(message = "片名不能为空")
     @Size(max = 100, message = "片名不能超过100字")
     private String title;

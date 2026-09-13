@@ -3,7 +3,6 @@ package com.cdwater.cdticket.admin.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.convert.AdminConvert;
 import com.cdwater.cdticket.admin.dto.admin.AdminLoginResponse;
 import com.cdwater.cdticket.admin.entity.Admin;
 import com.cdwater.cdticket.admin.mapper.AdminMapper;
@@ -25,14 +24,18 @@ public class AdminAuthService {
         Admin admin = adminMapper.selectOne(new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, username));
         if (admin == null || admin.getStatus() == null || admin.getStatus() != 1
                 || !passwordEncoder.matches(password, admin.getPassword())) {
-            // 三种失败（账号不存在 / 账号已禁用 / 密码错误）统一对外，避免用户名枚举攻击
             throw new BizException(ResultCode.LOGIN_FAILED);
         }
         String token = tokenStoreService.issue(admin.getId());
 
         AdminLoginResponse resp = new AdminLoginResponse();
         resp.setToken(token);
-        resp.setAdmin(AdminConvert.INSTANCE.toAdminInfo(admin));
+        AdminLoginResponse.AdminInfo info = new AdminLoginResponse.AdminInfo();
+        info.setId(admin.getId());
+        info.setUsername(admin.getUsername());
+        info.setRole(admin.getRole());
+        info.setCinemaId(admin.getCinemaId());
+        resp.setAdmin(info);
         return resp;
     }
 

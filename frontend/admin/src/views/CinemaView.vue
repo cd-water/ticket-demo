@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createCinema, deleteCinema, listCinemas, updateCinema } from '@/api/cinemas'
+import { deleteCinema, listCinemas, saveCinema } from '@/api/cinemas'
 import StatusPill from '@/components/StatusPill.vue'
 import type { CinemaVO } from '@/types/api'
 
@@ -68,13 +68,8 @@ async function submit() {
   if (!valid) return
   saving.value = true
   try {
-    if (editingId.value === null) {
-      await createCinema({ ...form })
-      ElMessage.success('已新增')
-    } else {
-      await updateCinema(editingId.value, { ...form })
-      ElMessage.success('已保存')
-    }
+    await saveCinema({ ...form, id: editingId.value })
+    ElMessage.success(editingId.value === null ? '已新增' : '已保存')
     dialogVisible.value = false
     load()
   } catch {

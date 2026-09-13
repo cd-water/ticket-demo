@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.convert.UserConvert;
 import com.cdwater.cdticket.admin.dto.user.UserAdminVO;
 import com.cdwater.cdticket.admin.entity.User;
 import com.cdwater.cdticket.admin.mapper.UserMapper;
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserAdminService {
+public class UserService {
 
     private final UserMapper userMapper;
 
@@ -25,7 +24,7 @@ public class UserAdminService {
         var p = userMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<User>()
                 .like(phone != null && !phone.isBlank(), User::getPhone, phone)
                 .orderByDesc(User::getId));
-        return PageResult.of(p.convert(UserConvert.INSTANCE::toAdminVO));
+        return PageResult.of(p.convert(UserService::toVO));
     }
 
     public void updateStatus(Long id, int status) {
@@ -35,5 +34,15 @@ public class UserAdminService {
         }
         user.setStatus(status);
         userMapper.updateById(user);
+    }
+
+    private static UserAdminVO toVO(User u) {
+        UserAdminVO v = new UserAdminVO();
+        v.setId(u.getId());
+        v.setPhone(u.getPhone());
+        v.setNickname(u.getNickname());
+        v.setStatus(u.getStatus());
+        v.setCreateTime(u.getCreateTime());
+        return v;
     }
 }

@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -48,6 +49,14 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .orElse(ResultCode.BAD_REQUEST.getMessage());
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), msg);
+    }
+
+    /**
+     * @PreAuthorize 拒绝 → FORBIDDEN
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public Result<Void> handleAccessDenied(AccessDeniedException e) {
+        return Result.fail(ResultCode.FORBIDDEN.getCode(), ResultCode.FORBIDDEN.getMessage());
     }
 
     /**

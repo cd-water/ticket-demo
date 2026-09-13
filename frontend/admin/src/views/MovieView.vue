@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createMovie, deleteMovie, listMovies, updateMovie } from '@/api/movies'
+import { deleteMovie, listMovies, saveMovie } from '@/api/movies'
 import { uploadImage } from '@/api/files'
 import StatusPill from '@/components/StatusPill.vue'
 import type { MovieVO } from '@/types/api'
@@ -119,13 +119,8 @@ async function submit() {
     status: form.status,
   }
   try {
-    if (editingId.value === null) {
-      await createMovie(body)
-      ElMessage.success('已新增')
-    } else {
-      await updateMovie(editingId.value, body)
-      ElMessage.success('已保存')
-    }
+    await saveMovie({ ...body, id: editingId.value })
+    ElMessage.success(editingId.value === null ? '已新增' : '已保存')
     dialogVisible.value = false
     load()
   } catch {

@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createHall, deleteHall, getSeatGrid, listHalls, saveSeatGrid, updateHall } from '@/api/halls'
+import { deleteHall, getSeatGrid, listHalls, saveSeatGrid, saveHall } from '@/api/halls'
 import SeatCanvas from '@/components/SeatCanvas.vue'
 import type { HallVO, SeatCellVO } from '@/types/api'
 
@@ -125,10 +125,10 @@ async function submit() {
   if (!valid) return
   saving.value = true
   try {
+    await saveHall({ ...form, id: editingId.value })
+    dialogVisible.value = false
     if (editingId.value === null) {
-      await createHall({ ...form })
       ElMessage.success('已新增影厅')
-      dialogVisible.value = false
       halls.value = await listHalls()
       const newest = halls.value.reduce<HallVO | null>((a, b) => (!a || b.id > a.id ? b : a), null)
       if (newest) {
@@ -136,9 +136,7 @@ async function submit() {
         await loadSeats(newest.id)
       }
     } else {
-      await updateHall(editingId.value, { ...form })
       ElMessage.success('已保存')
-      dialogVisible.value = false
       await loadHalls(editingId.value)
     }
   } catch {

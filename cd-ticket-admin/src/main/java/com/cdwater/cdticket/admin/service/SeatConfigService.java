@@ -10,7 +10,7 @@ import com.cdwater.cdticket.admin.entity.Hall;
 import com.cdwater.cdticket.admin.entity.SeatConfig;
 import com.cdwater.cdticket.admin.mapper.HallMapper;
 import com.cdwater.cdticket.admin.mapper.SeatConfigMapper;
-import com.cdwater.cdticket.admin.security.AdminAuthorizer;
+import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +20,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SeatConfigAdminService {
+public class SeatConfigService {
 
     private final HallMapper hallMapper;
     private final SeatConfigMapper configMapper;
-    private final AdminAuthorizer adminAuthorizer;
 
-    /** 返回 rows×cols 全量网格；未配置的格子默认 status=1（启用） */
     public SeatGridVO getGrid(Long hallId) {
         Hall hall = requireHall(hallId);
-        adminAuthorizer.requireScope(hall.getCinemaId());
+        SecurityUtils.requireScope(hall.getCinemaId());
         var configs = configMapper.selectList(new LambdaQueryWrapper<SeatConfig>()
                 .eq(SeatConfig::getHallId, hallId)
                 .orderByAsc(SeatConfig::getSeatRow)
@@ -48,11 +46,10 @@ public class SeatConfigAdminService {
         return new SeatGridVO(hall.getSeatRows(), hall.getSeatCols(), cells);
     }
 
-    /** 整体替换：事务内删旧插新（按当前 rows×cols 校验坐标） */
     @Transactional
     public void replace(Long hallId, List<SeatCellItem> seats) {
         Hall hall = requireHall(hallId);
-        adminAuthorizer.requireScope(hall.getCinemaId());
+        SecurityUtils.requireScope(hall.getCinemaId());
         for (SeatCellItem cell : seats) {
             if (cell.getRow() < 1 || cell.getRow() > hall.getSeatRows()
                     || cell.getCol() < 1 || cell.getCol() > hall.getSeatCols()) {
@@ -73,7 +70,6 @@ public class SeatConfigAdminService {
             return s;
         }).toList();
         configMapper.delete(new LambdaQueryWrapper<SeatConfig>().eq(SeatConfig::getHallId, hallId));
-        // 循环插入（单影厅 ≤676 格）；ponytail: 量大再换批量 SQL
         for (SeatConfig seat : entities) {
             configMapper.insert(seat);
         }
@@ -81,9 +77,8 @@ public class SeatConfigAdminService {
 
     private Hall requireHall(Long id) {
         Hall hall = hallMapper.selectById(id);
-        if (hall == null) {
-            throw new BizException(ResultCode.NOT_FOUND);
-        }
+        if (hall == null) throw new BizException(ResultCode.NOT_FOUND);
         return hall;
     }
+
 }

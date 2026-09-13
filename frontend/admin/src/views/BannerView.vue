@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createBanner, deleteBanner, listBanners, updateBanner } from '@/api/banners'
+import { deleteBanner, listBanners, saveBanner } from '@/api/banners'
 import { uploadImage } from '@/api/files'
 import StatusPill from '@/components/StatusPill.vue'
 import type { BannerVO } from '@/types/api'
@@ -74,15 +74,10 @@ async function submit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   saving.value = true
-  const body = { image: form.image, linkUrl: form.linkUrl, sort: form.sort, status: form.status }
+  const body = { id: editingId.value, image: form.image, linkUrl: form.linkUrl, sort: form.sort, status: form.status }
   try {
-    if (editingId.value === null) {
-      await createBanner(body)
-      ElMessage.success('已新增')
-    } else {
-      await updateBanner(editingId.value, body)
-      ElMessage.success('已保存')
-    }
+    await saveBanner(body)
+    ElMessage.success(editingId.value === null ? '已新增' : '已保存')
     dialogVisible.value = false
     load()
   } catch {

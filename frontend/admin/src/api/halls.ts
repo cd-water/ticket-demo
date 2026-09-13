@@ -5,16 +5,12 @@ export function listHalls() {
   return http.get<unknown, HallVO[]>('/admin/halls')
 }
 
-export function createHall(body: HallSaveRequest) {
-  return http.post<unknown, void>('/admin/halls', body)
-}
-
-export function updateHall(id: number, body: HallSaveRequest) {
-  return http.put<unknown, void>(`/admin/halls/${id}`, body)
+export function saveHall(body: HallSaveRequest) {
+  return http.post<unknown, void>('/admin/halls/save', body)
 }
 
 export function deleteHall(id: number) {
-  return http.delete<unknown, void>(`/admin/halls/${id}`)
+  return http.post<unknown, void>(`/admin/halls/${id}/delete`)
 }
 
 export function getSeatGrid(id: number) {
@@ -22,5 +18,5 @@ export function getSeatGrid(id: number) {
 }
 
 export function saveSeatGrid(id: number, seats: SeatCellPayload[]) {
-  return http.put<unknown, void>(`/admin/halls/${id}/seats`, { seats })
+  return http.post<unknown, void>(`/admin/halls/${id}/seats`, { seats })
 }

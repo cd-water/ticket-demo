@@ -4,7 +4,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -14,13 +16,13 @@ import java.util.List;
 /**
  * Token 认证过滤器
  */
+@RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final TokenStoreService tokenStore;
+    private static final String ROLE_PLATFORM_ADMIN = "PLATFORM_ADMIN";
+    private static final String ROLE_CINEMA_ADMIN = "CINEMA_ADMIN";
 
-    public TokenAuthenticationFilter(TokenStoreService tokenStore) {
-        this.tokenStore = tokenStore;
-    }
+    private final TokenStoreService tokenStore;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -28,13 +30,21 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring("Bearer ".length());
-            Long adminId = tokenStore.resolveAdminId(token);
-            if (adminId != null) {
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(adminId, null, List.of()));
-                tokenStore.renew(token, adminId);
+            var info = tokenStore.resolve(token);
+            if (info != null) {
+                var authority = info.role() == 0
+                        ? new SimpleGrantedAuthority(ROLE_PLATFORM_ADMIN)
+                        : new SimpleGrantedAuthority(ROLE_CINEMA_ADMIN);
+                var auth = new UsernamePasswordAuthenticationToken(
+                        info.adminId(), null, List.of(authority));
+                auth.setDetails(info);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                tokenStore.renew(token);
             }
         }
         chain.doFilter(request, response);
     }
+
+    /** SecurityContext details 载体（由 TokenStoreService.resolve 返回，filter 直接塞进去） */
+    public record AdminContext(long adminId, int role, long cinemaId) {}
 }

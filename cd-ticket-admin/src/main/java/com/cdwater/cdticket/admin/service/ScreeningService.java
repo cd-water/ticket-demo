@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.convert.ScreeningConvert;
+import com.cdwater.cdticket.admin.dto.screening.ScreeningVO;
 import com.cdwater.cdticket.admin.dto.hall.HallVO;
 import com.cdwater.cdticket.admin.dto.movie.MovieOption;
 import com.cdwater.cdticket.admin.dto.movie.MovieVO;
@@ -13,7 +13,7 @@ import com.cdwater.cdticket.admin.dto.screening.ScreeningSaveRequest;
 import com.cdwater.cdticket.admin.dto.screening.ScreeningVO;
 import com.cdwater.cdticket.admin.entity.Screening;
 import com.cdwater.cdticket.admin.mapper.ScreeningMapper;
-import com.cdwater.cdticket.admin.security.AdminAuthorizer;
+import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -23,51 +23,37 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ScreeningAdminService {
+public class ScreeningService {
 
     private final ScreeningMapper screeningMapper;
-    private final MovieAdminService movieAdminService;
-    private final HallAdminService hallAdminService;
-    private final AdminAuthorizer adminAuthorizer;
+    private final MovieService movieAdminService;
+    private final HallService hallAdminService;
 
     public PageResult<ScreeningVO> page(int page, int size, Long movieId) {
         if (page < 1 || size < 1 || size > 100) {
             throw new BizException(ResultCode.BAD_REQUEST);
         }
-        Long cinemaId = adminAuthorizer.currentAdmin().getCinemaId();
+        Long cinemaId = SecurityUtils.isPlatformAdmin() ? null : SecurityUtils.getCinemaId();
         var p = screeningMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Screening>()
                 .eq(movieId != null, Screening::getMovieId, movieId)
-                .eq(Screening::getCinemaId, cinemaId)
+                .eq(cinemaId != null, Screening::getCinemaId, cinemaId)
                 .orderByDesc(Screening::getStartTime));
         return PageResult.of(p.convert(s -> toVO(s)));
     }
 
-    /** 排场管理电影下拉：转调 movie 模块（上架电影） */
     public List<MovieOption> movieOptions() {
         return movieAdminService.listOptions();
     }
 
-    public void create(ScreeningSaveRequest req) {
-        save(null, req);
-    }
-
-    public void update(Long id, ScreeningSaveRequest req) {
-        Screening existing = requireScreening(id);
-        if (existing.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new BizException(ResultCode.SCREENING_STARTED);
+    /** 新增/修改（id=null → 新增） */
+    public void save(ScreeningSaveRequest req) {
+        boolean isCreate = req.getId() == null;
+        if (!isCreate) {
+            Screening existing = requireScreening(req.getId());
+            if (existing.getStartTime().isBefore(LocalDateTime.now())) {
+                throw new BizException(ResultCode.SCREENING_STARTED);
+            }
         }
-        save(id, req);
-    }
-
-    public void delete(Long id) {
-        Screening existing = requireScreening(id);
-        if (existing.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new BizException(ResultCode.SCREENING_STARTED);
-        }
-        screeningMapper.deleteById(id);
-    }
-
-    private void save(Long id, ScreeningSaveRequest req) {
         MovieVO movie = movieAdminService.getMovie(req.getMovieId());
         if (movie == null || movie.getStatus() != 1) {
             throw new BizException("电影不存在或已下架", ResultCode.BAD_REQUEST.getCode());
@@ -76,17 +62,14 @@ public class ScreeningAdminService {
         if (hall == null) {
             throw new BizException("影厅不存在", ResultCode.BAD_REQUEST.getCode());
         }
-        adminAuthorizer.requireScope(hall.getCinemaId());
+        SecurityUtils.requireScope(hall.getCinemaId());
         if (!req.getStartTime().isAfter(LocalDateTime.now())) {
             throw new BizException("开场时间必须晚于当前时间", ResultCode.BAD_REQUEST.getCode());
         }
-        Screening s = ScreeningConvert.INSTANCE.toEntity(req);
-        if (id != null) {
-            s.setId(id);
-        }
+        Screening s = toEntity(req);
         s.setCinemaId(hall.getCinemaId());
         try {
-            if (id == null) {
+            if (isCreate) {
                 screeningMapper.insert(s);
             } else {
                 screeningMapper.updateById(s);
@@ -94,6 +77,14 @@ public class ScreeningAdminService {
         } catch (DuplicateKeyException e) {
             throw new BizException(ResultCode.SCREENING_TIME_CONFLICT);
         }
+    }
+
+    public void delete(Long id) {
+        Screening existing = requireScreening(id);
+        if (existing.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new BizException(ResultCode.SCREENING_STARTED);
+        }
+        screeningMapper.deleteById(id);
     }
 
     private ScreeningVO toVO(Screening s) {
@@ -114,9 +105,16 @@ public class ScreeningAdminService {
 
     private Screening requireScreening(Long id) {
         Screening s = screeningMapper.selectById(id);
-        if (s == null) {
-            throw new BizException(ResultCode.NOT_FOUND);
-        }
+        if (s == null) throw new BizException(ResultCode.NOT_FOUND);
+        return s;
+    }
+
+    private static Screening toEntity(ScreeningSaveRequest req) {
+        Screening s = new Screening();
+        s.setMovieId(req.getMovieId());
+        s.setHallId(req.getHallId());
+        s.setStartTime(req.getStartTime());
+        s.setPrice(req.getPrice());
         return s;
     }
 }
