@@ -1,53 +1,30 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listUsers, toggleUserStatus } from '@/api/users'
+import ListPager from '@/components/ListPager.vue'
+import StatusFilter from '@/components/StatusFilter.vue'
 import StatusPill from '@/components/StatusPill.vue'
+import { usePagedList } from '@/composables/useList'
 import { formatDateTime } from '@/utils/format'
 import type { UserVO } from '@/types/api'
 
-const loading = ref(false)
-const rows = ref<UserVO[]>([])
-const total = ref(0)
-const page = ref(1)
-const size = ref(10)
+const STATUS_OPTIONS = [
+  { label: '全部', value: null },
+  { label: '正常', value: 1 },
+  { label: '禁用', value: 0 },
+]
+
 const query = reactive({ phone: '', status: null as number | null })
 
-async function load() {
-  loading.value = true
-  try {
-    const data = await listUsers({
-      page: page.value,
-      size: size.value,
-      phone: query.phone || undefined,
-      status: query.status ?? undefined,
-    })
-    rows.value = data.records
-    total.value = data.total
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(load)
-
-function search() {
-  page.value = 1
-  load()
-}
-
-function reset() {
-  query.phone = ''
-  query.status = null
-  search()
-}
-
-function filterStatus(v: number | null) {
-  query.status = v
-  search()
-}
+const { rows, total, loading, page, size, load, search } = usePagedList<UserVO>((p, s) =>
+  listUsers({
+    page: p,
+    size: s,
+    phone: query.phone || undefined,
+    status: query.status ?? undefined,
+  }),
+)
 
 async function toggleStatus(row: UserVO) {
   const next = row.status === 1 ? 0 : 1
@@ -71,16 +48,13 @@ async function toggleStatus(row: UserVO) {
   }
 }
 
-function onPage(p: number) {
-  page.value = p
-  load()
+function reset() {
+  query.phone = ''
+  query.status = null
+  search()
 }
 
-function onSize(s: number) {
-  size.value = s
-  page.value = 1
-  load()
-}
+onMounted(load)
 </script>
 
 <template>
@@ -92,6 +66,7 @@ function onSize(s: number) {
           v-model="query.phone"
           placeholder="搜索手机号"
           clearable
+          maxlength="20"
           style="width: 200px"
           @keyup.enter="search"
           @clear="search"
@@ -101,18 +76,14 @@ function onSize(s: number) {
       </div>
     </div>
 
-    <div class="filters">
-      <button class="f-btn" :class="{ on: query.status === null }" @click="filterStatus(null)">全部</button>
-      <button class="f-btn" :class="{ on: query.status === 1 }" @click="filterStatus(1)">正常</button>
-      <button class="f-btn" :class="{ on: query.status === 0 }" @click="filterStatus(0)">禁用</button>
-    </div>
+    <StatusFilter v-model="query.status" :options="STATUS_OPTIONS" @change="search" />
 
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">
       <el-table-column label="手机号" min-width="150" prop="phone" />
       <el-table-column label="昵称" min-width="150" prop="nickname" />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
-          <StatusPill :label="row.status === 1 ? '正常' : '禁用'" :tone="row.status === 1 ? 'ok' : 'danger'" />
+          <StatusPill :label="row.status === 1 ? '正常' : '禁用'" :tone="row.status === 1 ? 'ok' : 'muted'" />
         </template>
       </el-table-column>
       <el-table-column label="注册时间" width="170">
@@ -131,17 +102,6 @@ function onSize(s: number) {
       <template #empty>没有符合条件的用户</template>
     </el-table>
 
-    <div class="pager">
-      <span class="total">共 {{ total }} 条</span>
-      <el-pagination
-        layout="sizes, prev, pager, next"
-        :total="total"
-        :current-page="page"
-        :page-size="size"
-        :page-sizes="[10, 20, 50]"
-        @current-change="onPage"
-        @size-change="onSize"
-      />
-    </div>
+    <ListPager v-model:page="page" v-model:size="size" :total="total" @change="load" />
   </div>
 </template>

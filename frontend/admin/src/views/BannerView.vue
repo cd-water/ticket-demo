@@ -1,94 +1,46 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { listBanners, saveBanner } from '@/api/banners'
-import { uploadImage } from '@/api/files'
+import ImageUpload from '@/components/ImageUpload.vue'
 import StatusPill from '@/components/StatusPill.vue'
+import { useFormDialog } from '@/composables/useFormDialog'
+import { useList } from '@/composables/useList'
 import { formatDateTime } from '@/utils/format'
 import type { BannerVO } from '@/types/api'
 
-const loading = ref(false)
-const rows = ref<BannerVO[]>([])
+const { rows, loading, load } = useList<BannerVO>(listBanners)
 
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const saving = ref(false)
-const uploading = ref(false)
-const formRef = ref<FormInstance>()
-const form = reactive({ image: '', linkUrl: '', sort: 0, status: 1 })
+// t_banner 是全库唯一 status 默认 0 的表：新增即禁用，需手动启用
+const form = reactive({ image: '', linkUrl: '', sort: 0, status: 0 })
 
 const rules = {
   image: [{ required: true, message: '请上传轮播图片', trigger: 'change' }],
   linkUrl: [{ required: true, message: '请输入跳转链接', trigger: 'blur' }],
 }
 
-async function load() {
-  loading.value = true
-  try {
-    rows.value = await listBanners()
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  } finally {
-    loading.value = false
-  }
+const formRef = ref<FormInstance>()
+
+const { visible, editingId, saving, openCreate, openEdit, submit } = useFormDialog<
+  typeof form,
+  BannerVO
+>({
+  formRef,
+  form,
+  toForm: (row) =>
+    row
+      ? { image: row.image, linkUrl: row.linkUrl, sort: row.sort, status: row.status }
+      : { image: '', linkUrl: '', sort: 0, status: 0 },
+  save: (f, id) => saveBanner({ ...f, id }),
+  onSaved: load,
+})
+
+/** 上传是程序化写 model，不会触发 el-form-item 的校验，手动补一次 */
+function onUploaded() {
+  formRef.value?.validateField('image').catch(() => undefined)
 }
 
 onMounted(load)
-
-function openCreate() {
-  editingId.value = null
-  Object.assign(form, { image: '', linkUrl: '', sort: 0, status: 1 })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function openEdit(row: BannerVO) {
-  editingId.value = row.id
-  Object.assign(form, {
-    image: row.image,
-    linkUrl: row.linkUrl ?? '',
-    sort: row.sort,
-    status: row.status,
-  })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function onUpload(file: File) {
-  uploading.value = true
-  uploadImage(file)
-    .then((url) => {
-      form.image = url
-      formRef.value?.validateField('image').catch(() => undefined)
-      ElMessage.success('图片已上传')
-    })
-    .catch(() => {
-      /* 错误提示已由 http.ts 统一弹出 */
-    })
-    .finally(() => {
-      uploading.value = false
-    })
-  return false
-}
-
-async function submit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-  saving.value = true
-  const body = { id: editingId.value, image: form.image, linkUrl: form.linkUrl, sort: form.sort, status: form.status }
-  try {
-    await saveBanner(body)
-    ElMessage.success(editingId.value === null ? '已新增' : '已保存')
-    dialogVisible.value = false
-    load()
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  } finally {
-    saving.value = false
-  }
-}
-
 </script>
 
 <template>
@@ -128,19 +80,22 @@ async function submit() {
       <template #empty>暂无轮播图，点右上角「新增轮播图」开始</template>
     </el-table>
 
-    <el-dialog v-model="dialogVisible" :title="editingId === null ? '新增轮播图' : '编辑轮播图'" width="520px">
+    <el-dialog v-model="visible" :title="editingId === null ? '新增轮播图' : '编辑轮播图'" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="88px">
         <el-form-item label="图片" prop="image">
-          <el-upload :show-file-list="false" accept="image/*" :disabled="uploading" :before-upload="onUpload">
-            <img v-if="form.image" class="upload-preview wide" :src="form.image" alt="轮播图预览" />
-            <div v-else class="upload-slot wide">{{ uploading ? '上传中…' : '＋ 上传图片' }}</div>
-          </el-upload>
+          <ImageUpload
+            v-model="form.image"
+            placeholder="＋ 上传图片"
+            alt="轮播图预览"
+            wide
+            @uploaded="onUploaded"
+          />
         </el-form-item>
         <el-form-item label="跳转链接" prop="linkUrl">
-          <el-input v-model="form.linkUrl" maxlength="255" placeholder="如 /movies/1" />
+          <el-input v-model="form.linkUrl" maxlength="255" />
         </el-form-item>
         <el-form-item label="排序">
-          <el-input-number v-model="form.sort" :min="0" :max="999" :value-on-clear="0" />
+          <el-input-number v-model="form.sort" :min="0" :value-on-clear="0" />
           <span class="hint">数字小者靠前</span>
         </el-form-item>
         <el-form-item label="状态">
@@ -151,7 +106,7 @@ async function submit() {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="visible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
       </template>
     </el-dialog>

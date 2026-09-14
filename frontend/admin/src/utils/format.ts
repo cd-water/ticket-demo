@@ -1,7 +1,7 @@
-/** "2026-09-13T10:00:00" → "2026-09-13 10:00"；空值返回 "—" */
+/** 后端日期时间统一输出 "yyyy-MM-dd HH:mm:ss"，这里截到分钟；空值返回 "—" */
 export function formatDateTime(value?: string | null): string {
   if (!value) return '—'
-  return value.replace('T', ' ').slice(0, 16)
+  return value.slice(0, 16)
 }
 
 /** 金额：59.9 → "¥59.90"；空值返回 "—" */

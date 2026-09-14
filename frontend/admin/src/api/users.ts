@@ -1,12 +1,5 @@
 import http from '@/api/http'
-import type { PageResult, UserVO } from '@/types/api'
-
-export interface UserListQuery {
-  page: number
-  size: number
-  phone?: string
-  status?: number
-}
+import type { PageResult, UserListQuery, UserVO } from '@/types/api'
 
 export function listUsers(q: UserListQuery) {
   return http.get<unknown, PageResult<UserVO>>('/admin/users', { params: q })

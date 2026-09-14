@@ -1,18 +1,16 @@
 import http from '@/api/http'
-import type { MovieOption, PageResult, ScreeningSaveRequest, ScreeningVO } from '@/types/api'
+import type {
+  MovieOption,
+  PageResult,
+  ScreeningListQuery,
+  ScreeningSaveRequest,
+  ScreeningVO,
+} from '@/types/api'
 
-export interface CinemaScreeningQuery {
-  cinemaId: number
-  page: number
-  size: number
-  movieId?: number
-}
-
-export function listScreeningsByCinema(q: CinemaScreeningQuery) {
-  return http.get<unknown, PageResult<ScreeningVO>>(
-    `/admin/cinemas/${q.cinemaId}/screenings`,
-    { params: { page: q.page, size: q.size, movieId: q.movieId } },
-  )
+export function listScreeningsByCinema(cinemaId: number, q: ScreeningListQuery) {
+  return http.get<unknown, PageResult<ScreeningVO>>(`/admin/cinemas/${cinemaId}/screenings`, {
+    params: q,
+  })
 }
 
 export function listMovieOptions() {

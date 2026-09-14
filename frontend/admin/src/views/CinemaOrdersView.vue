@@ -1,50 +1,44 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { listOrdersByCinema } from '@/api/orders'
+import ListPager from '@/components/ListPager.vue'
+import StatusFilter from '@/components/StatusFilter.vue'
 import StatusPill from '@/components/StatusPill.vue'
+import { useCinemaId } from '@/composables/useCinemaId'
+import { usePagedList } from '@/composables/useList'
 import { formatAmount, formatDateTime } from '@/utils/format'
 import type { OrderVO } from '@/types/api'
 
-const route = useRoute()
-const cinemaId = Number(route.params.cinemaId)
+/** t_order.status：0-待支付 1-已支付 2-已取消 */
+const STATUS_LABEL: Record<number, string> = { 0: '待支付', 1: '已支付', 2: '已取消' }
+const STATUS_TONE: Record<number, 'warn' | 'ok' | 'muted'> = { 0: 'warn', 1: 'ok', 2: 'muted' }
+const STATUS_OPTIONS = [
+  { label: '全部', value: null as number | null },
+  ...Object.entries(STATUS_LABEL).map(([value, label]) => ({ label, value: Number(value) })),
+]
 
-const loading = ref(false)
-const rows = ref<OrderVO[]>([])
-const total = ref(0)
-const page = ref(1)
-const size = ref(10)
+const cinemaId = useCinemaId()
 const query = reactive({ orderNo: '', status: null as number | null })
 
-const STATUS_TONE: Record<number, 'warn' | 'ok' | 'muted'> = { 0: 'warn', 1: 'ok', 2: 'muted' }
-const STATUS_LABEL: Record<number, string> = { 0: '待支付', 1: '已支付', 2: '已取消' }
+/**
+ * 订单号是 BIGINT 雪花 ID（后端按 long 解析），输入非数字会被拒成「参数类型错误」。
+ * 按字符串透传，不要 Number()——19 位雪花超出 JS 安全整数范围。
+ */
+const orderNo = computed({
+  get: () => query.orderNo,
+  set: (v: string) => {
+    query.orderNo = v.replace(/\D/g, '')
+  },
+})
 
-async function load() {
-  loading.value = true
-  try {
-    const data = await listOrdersByCinema({
-      cinemaId,
-      page: page.value,
-      size: size.value,
-      orderNo: query.orderNo || undefined,
-      status: query.status ?? undefined,
-    })
-    rows.value = data.records
-    total.value = data.total
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(load)
-watch(() => route.params.cinemaId, () => load())
-
-function search() {
-  page.value = 1
-  load()
-}
+const { rows, total, loading, page, size, load, search } = usePagedList<OrderVO>((p, s) =>
+  listOrdersByCinema(cinemaId.value, {
+    page: p,
+    size: s,
+    orderNo: query.orderNo || undefined,
+    status: query.status ?? undefined,
+  }),
+)
 
 function reset() {
   query.orderNo = ''
@@ -52,21 +46,12 @@ function reset() {
   search()
 }
 
-function filterStatus(v: number | null) {
-  query.status = v
+onMounted(load)
+watch(cinemaId, () => {
+  query.orderNo = ''
+  query.status = null
   search()
-}
-
-function onPage(p: number) {
-  page.value = p
-  load()
-}
-
-function onSize(s: number) {
-  size.value = s
-  page.value = 1
-  load()
-}
+})
 </script>
 
 <template>
@@ -75,9 +60,10 @@ function onSize(s: number) {
       <h3>订单管理</h3>
       <div class="search">
         <el-input
-          v-model="query.orderNo"
+          v-model="orderNo"
           placeholder="搜索订单号"
           clearable
+          maxlength="19"
           style="width: 220px"
           @keyup.enter="search"
           @clear="search"
@@ -87,12 +73,7 @@ function onSize(s: number) {
       </div>
     </div>
 
-    <div class="filters">
-      <button class="f-btn" :class="{ on: query.status === null }" @click="filterStatus(null)">全部</button>
-      <button class="f-btn" :class="{ on: query.status === 0 }" @click="filterStatus(0)">待支付</button>
-      <button class="f-btn" :class="{ on: query.status === 1 }" @click="filterStatus(1)">已支付</button>
-      <button class="f-btn" :class="{ on: query.status === 2 }" @click="filterStatus(2)">已取消</button>
-    </div>
+    <StatusFilter v-model="query.status" :options="STATUS_OPTIONS" @change="search" />
 
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">
       <el-table-column label="订单号" min-width="180" prop="orderNo" />
@@ -123,85 +104,6 @@ function onSize(s: number) {
       <template #empty>当前筛选下没有订单</template>
     </el-table>
 
-    <div class="pager">
-      <span class="total">共 {{ total }} 条</span>
-      <el-pagination
-        layout="sizes, prev, pager, next"
-        :total="total"
-        :current-page="page"
-        :page-size="size"
-        :page-sizes="[10, 20, 50]"
-        @current-change="onPage"
-        @size-change="onSize"
-      />
-    </div>
+    <ListPager v-model:page="page" v-model:size="size" :total="total" @change="load" />
   </div>
 </template>
-
-<style scoped>
-.panel-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.panel-head h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.panel-head .search {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filters {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0 4px;
-}
-
-.f-btn {
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  font-family: inherit;
-  font-size: 12px;
-  color: var(--ink-2);
-  cursor: pointer;
-}
-
-.f-btn:hover {
-  color: var(--brand);
-  border-color: var(--brand);
-}
-
-.f-btn.on {
-  background: var(--brand);
-  color: var(--on-brand);
-  border-color: var(--brand);
-}
-
-.detail-text {
-  margin-left: 6px;
-  color: var(--ink-2);
-  font-size: 12px;
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.pager .total {
-  font-size: 12px;
-  color: var(--ink-2);
-}
-</style>

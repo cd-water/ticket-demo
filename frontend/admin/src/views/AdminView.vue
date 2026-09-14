@@ -4,102 +4,70 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { createAdmin, listAdmins, resetPassword, updateAdminStatus } from '@/api/admins'
 import StatusPill from '@/components/StatusPill.vue'
+import { useFormDialog } from '@/composables/useFormDialog'
+import { useList } from '@/composables/useList'
 import { formatDateTime } from '@/utils/format'
+import { passwordRules, usernameRules } from '@/utils/rules'
 import type { AdminManageVO } from '@/types/api'
 
-const loading = ref(false)
-const rows = ref<AdminManageVO[]>([])
+const { rows, loading, load } = useList<AdminManageVO>(listAdmins)
 
-const createVisible = ref(false)
-const resetVisible = ref(false)
-const resetTarget = ref<AdminManageVO | null>(null)
-const saving = ref(false)
+/* ---- 新增管理员 ---- */
 
-const createFormRef = ref<FormInstance>()
-const resetFormRef = ref<FormInstance>()
 const createForm = reactive({ username: '', password: '' })
+const createFormRef = ref<FormInstance>()
+const createRules = { username: usernameRules, password: passwordRules() }
+
+const {
+  visible: createVisible,
+  saving: createSaving,
+  openCreate,
+  submit: submitCreate,
+} = useFormDialog<typeof createForm, AdminManageVO>({
+  formRef: createFormRef,
+  form: createForm,
+  toForm: () => ({ username: '', password: '' }),
+  save: (form) => createAdmin(form),
+  messages: { created: '已新增管理员' },
+  onSaved: load,
+})
+
+/* ---- 重置密码 ---- */
+
 const resetForm = reactive({ password: '' })
+const resetFormRef = ref<FormInstance>()
+const resetTarget = ref<AdminManageVO | null>(null)
+const resetRules = { password: passwordRules('请输入新密码') }
 
-const createRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 5, max: 32, message: '用户名需5-32位', trigger: 'blur' },
-  ],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-}
+const {
+  visible: resetVisible,
+  saving: resetSaving,
+  openEdit: openReset,
+  submit: submitReset,
+} = useFormDialog<typeof resetForm, AdminManageVO>({
+  formRef: resetFormRef,
+  form: resetForm,
+  toForm: () => ({ password: '' }),
+  // 重置弹窗只由 openEdit 打开，id 不会为 null
+  save: (form, id) => (id === null ? Promise.resolve() : resetPassword(id, { password: form.password })),
+  messages: { updated: '密码已重置，该账号已下线' },
+  onSaved: load,
+})
 
-const resetRules = {
-  password: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
-}
-
-async function load() {
-  loading.value = true
-  try {
-    rows.value = await listAdmins()
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(load)
-
-function openCreate() {
-  Object.assign(createForm, { username: '', password: '' })
-  createFormRef.value?.clearValidate()
-  createVisible.value = true
-}
-
-async function submitCreate() {
-  const valid = await createFormRef.value?.validate().catch(() => false)
-  if (!valid) return
-  saving.value = true
-  try {
-    await createAdmin({ username: createForm.username, password: createForm.password })
-    ElMessage.success('已新增管理员')
-    createVisible.value = false
-    load()
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  } finally {
-    saving.value = false
-  }
-}
-
-function openReset(row: AdminManageVO) {
+function openResetDialog(row: AdminManageVO) {
   resetTarget.value = row
-  resetForm.password = ''
-  resetFormRef.value?.clearValidate()
-  resetVisible.value = true
-}
-
-async function submitReset() {
-  const valid = await resetFormRef.value?.validate().catch(() => false)
-  if (!valid) return
-  if (!resetTarget.value) return
-  saving.value = true
-  try {
-    await resetPassword(resetTarget.value.id, { password: resetForm.password })
-    ElMessage.success('密码已重置，该账号已下线')
-    resetVisible.value = false
-    load()
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  } finally {
-    saving.value = false
-  }
+  openReset(row)
 }
 
 async function toggleStatus(row: AdminManageVO) {
   const next = row.status === 1 ? 0 : 1
   const action = next === 1 ? '启用' : '禁用'
   try {
-    await ElMessageBox.confirm(`确认${action}管理员「${row.username}」？${next === 0 ? '该账号将立即下线。' : ''}`, `${action}确认`, {
-      type: 'warning',
-      confirmButtonText: action,
-      cancelButtonText: '取消',
-    })
+    await ElMessageBox.confirm(
+      `确认${action}管理员「${row.username}」？${next === 0 ? '该账号将立即下线。' : ''}`,
+      `${action}确认`,
+      { type: 'warning', confirmButtonText: action, cancelButtonText: '取消' },
+    )
   } catch {
     return
   }
@@ -112,6 +80,7 @@ async function toggleStatus(row: AdminManageVO) {
   }
 }
 
+onMounted(load)
 </script>
 
 <template>
@@ -136,16 +105,16 @@ async function toggleStatus(row: AdminManageVO) {
       </el-table-column>
       <el-table-column label="操作" width="160" align="right">
         <template #default="{ row }">
+          <!-- 后端不允许操作当前登录的管理员自己（403），但仍给到按钮，由后端判定 -->
           <el-button link :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">
             {{ row.status === 1 ? '禁用' : '启用' }}
           </el-button>
-          <el-button link type="primary" @click="openReset(row)">重置密码</el-button>
+          <el-button link type="primary" @click="openResetDialog(row)">重置密码</el-button>
         </template>
       </el-table-column>
       <template #empty>暂无管理员</template>
     </el-table>
 
-    <!-- 新增弹窗 -->
     <el-dialog v-model="createVisible" title="新增管理员" width="420px">
       <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="88px">
         <el-form-item label="用户名" prop="username">
@@ -157,11 +126,10 @@ async function toggleStatus(row: AdminManageVO) {
       </el-form>
       <template #footer>
         <el-button @click="createVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submitCreate">保存</el-button>
+        <el-button type="primary" :loading="createSaving" @click="submitCreate">保存</el-button>
       </template>
     </el-dialog>
 
-    <!-- 重置密码弹窗 -->
     <el-dialog v-model="resetVisible" title="重置密码" width="420px">
       <el-form ref="resetFormRef" :model="resetForm" :rules="resetRules" label-width="88px">
         <el-form-item v-if="resetTarget" label="账号">
@@ -173,23 +141,8 @@ async function toggleStatus(row: AdminManageVO) {
       </el-form>
       <template #footer>
         <el-button @click="resetVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submitReset">确认重置</el-button>
+        <el-button type="primary" :loading="resetSaving" @click="submitReset">确认重置</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
-
-<style scoped>
-.panel-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.panel-head h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-}
-</style>

@@ -1,7 +1,5 @@
 import http from '@/api/http'
-import type { AdminManageVO } from '@/types/api'
-import type { AdminSaveRequest } from '@/types/api'
-import type { ResetPasswordRequest } from '@/types/api'
+import type { AdminManageVO, AdminSaveRequest, ResetPasswordRequest } from '@/types/api'
 
 export function listAdmins() {
   return http.get<unknown, AdminManageVO[]>('/admin/admins/list')

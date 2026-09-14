@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type { SeatCellVO } from '@/types/api'
 
-const props = defineProps<{ rows: number; cols: number; seats: SeatCellVO[] }>()
+defineProps<{ rows: number; cols: number; seats: SeatCellVO[] }>()
 const emit = defineEmits<{ toggle: [row: number, col: number] }>()
+
+/** 座位按钮没有可见文字，title 与 aria-label 共用同一份描述 */
+function seatLabel(seat: SeatCellVO) {
+  return `${seat.seatNo} ${seat.status === 1 ? '启用' : '禁用'}`
+}
 </script>
 
 <template>
@@ -10,16 +15,18 @@ const emit = defineEmits<{ toggle: [row: number, col: number] }>()
     <div class="mini-screen">银幕</div>
     <div
       class="seat-canvas"
-      :aria-label="`座位图 ${props.rows}排${props.cols}列`"
-      :style="{ gridTemplateColumns: `repeat(${props.cols}, 26px)` }"
+      :aria-label="`座位图 ${rows}排${cols}列`"
+      :style="{ gridTemplateColumns: `repeat(${cols}, 26px)` }"
     >
       <button
-        v-for="s in props.seats"
+        v-for="s in seats"
         :key="`${s.row}-${s.col}`"
         type="button"
         class="cseat"
         :class="{ off: s.status === 0 }"
-        :title="`${s.seatNo} ${s.status === 1 ? '启用' : '禁用'}`"
+        :title="seatLabel(s)"
+        :aria-label="seatLabel(s)"
+        :aria-pressed="s.status === 1"
         @click="emit('toggle', s.row, s.col)"
       />
     </div>
@@ -29,6 +36,8 @@ const emit = defineEmits<{ toggle: [row: number, col: number] }>()
 <style scoped>
 .canvas {
   text-align: center;
+  /* 26 列时固定 26px 网格会超出半宽面板，在面板内横向滚动而不是撑破布局 */
+  overflow-x: auto;
 }
 
 .mini-screen {

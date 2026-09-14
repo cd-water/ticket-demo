@@ -1,37 +1,37 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { listHallsByCinema } from '@/api/halls'
 import { listMovieOptions, listScreeningsByCinema, saveScreening } from '@/api/screenings'
+import ListPager from '@/components/ListPager.vue'
 import StatusPill from '@/components/StatusPill.vue'
-import { formatDateTime } from '@/utils/format'
+import { useCinemaId } from '@/composables/useCinemaId'
+import { useFormDialog } from '@/composables/useFormDialog'
+import { usePagedList } from '@/composables/useList'
+import { formatAmount, formatDateTime } from '@/utils/format'
 import type { HallVO, MovieOption, ScreeningVO } from '@/types/api'
 
-const route = useRoute()
-const cinemaId = Number(route.params.cinemaId)
-
-const loading = ref(false)
-const rows = ref<ScreeningVO[]>([])
-const total = ref(0)
-const page = ref(1)
-const size = ref(10)
+const cinemaId = useCinemaId()
 const query = reactive({ movieId: null as number | null })
-
 const movies = ref<MovieOption[]>([])
 const halls = ref<HallVO[]>([])
 
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const saving = ref(false)
-const formRef = ref<FormInstance>()
+const { rows, total, loading, page, size, load, search } = usePagedList<ScreeningVO>((p, s) =>
+  listScreeningsByCinema(cinemaId.value, {
+    page: p,
+    size: s,
+    movieId: query.movieId ?? undefined,
+  }),
+)
+
 const form = reactive({
   movieId: null as number | null,
   hallId: null as number | null,
   startTime: '',
   price: 45,
 })
+const formRef = ref<FormInstance>()
 
 const rules = {
   movieId: [{ required: true, message: '请选择电影', trigger: 'change' }],
@@ -39,104 +39,64 @@ const rules = {
   startTime: [{ required: true, message: '请选择开场时间', trigger: 'change' }],
 }
 
-async function load() {
-  loading.value = true
-  try {
-    const data = await listScreeningsByCinema({
-      cinemaId,
-      page: page.value,
-      size: size.value,
-      movieId: query.movieId ?? undefined,
-    })
-    rows.value = data.records
-    total.value = data.total
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  } finally {
-    loading.value = false
-  }
+const { visible, editingId, saving, openCreate, openEdit, submit: submitDialog } = useFormDialog<
+  typeof form,
+  ScreeningVO
+>({
+  formRef,
+  form,
+  toForm: (row) =>
+    row
+      ? { movieId: row.movieId, hallId: row.hallId, startTime: row.startTime, price: row.price }
+      : { movieId: null, hallId: null, startTime: '', price: 45 },
+  save: (f, id) => {
+    // 表单规则已保证二者非空
+    if (f.movieId === null || f.hallId === null) return Promise.resolve()
+    return saveScreening({ id, movieId: f.movieId, hallId: f.hallId, startTime: f.startTime, price: f.price })
+  },
+  messages: { created: '已新增排场' },
+  onSaved: load,
+})
+
+/** 是否已开场（前端按 startTime 计算，后端 409 兜底） */
+function started(row: ScreeningVO) {
+  // 后端的 "yyyy-MM-dd HH:mm:ss" 不是 ES 规范的 Date 字面量，Safari 直接 new 会得到 Invalid Date
+  return new Date(row.startTime.replace(' ', 'T')).getTime() < Date.now()
 }
 
-onMounted(async () => {
+async function submit() {
+  // 后端「开场时间必须晚于当前时间」的前置校验，放在提交时判以免选完时间后过期
+  if (new Date(form.startTime.replace(' ', 'T')).getTime() <= Date.now()) {
+    ElMessage.warning('开场时间必须晚于当前时间')
+    return
+  }
+  await submitDialog()
+}
+
+/** 影片下拉是全量的，影厅下拉跟随当前影院，切影院时要一起刷新 */
+async function loadOptions() {
   try {
-    const [opts, hallList] = await Promise.all([listMovieOptions(), listHallsByCinema(cinemaId)])
+    const [opts, hallList] = await Promise.all([
+      listMovieOptions(),
+      listHallsByCinema(cinemaId.value),
+    ])
     movies.value = opts
     halls.value = hallList
   } catch {
     /* 错误由 http.ts 统一弹 */
   }
+}
+
+onMounted(() => {
+  loadOptions()
   load()
 })
 
-watch(() => route.params.cinemaId, () => load())
-
-function filterMovies(v: number | null) {
-  query.movieId = v
-  page.value = 1
-  load()
-}
-
-/** 是否已开场（前端按 startTime 计算，后端 C503 兜底） */
-function started(row: ScreeningVO) {
-  return new Date(row.startTime.replace(' ', 'T')).getTime() < Date.now()
-}
-
-function openCreate() {
-  editingId.value = null
-  Object.assign(form, { movieId: null, hallId: null, startTime: '', price: 45 })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function openEdit(row: ScreeningVO) {
-  if (started(row)) {
-    ElMessage.warning('已开场的排场不能修改')
-    return
-  }
-  editingId.value = row.id
-  Object.assign(form, {
-    movieId: row.movieId,
-    hallId: row.hallId,
-    startTime: row.startTime,
-    price: row.price,
-  })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-async function submit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-  saving.value = true
-  const body = {
-    id: editingId.value,
-    movieId: form.movieId as number,
-    hallId: form.hallId as number,
-    startTime: form.startTime,
-    price: form.price,
-  }
-  try {
-    await saveScreening(body)
-    ElMessage.success(editingId.value === null ? '已新增排场' : '已保存')
-    dialogVisible.value = false
-    load()
-  } catch {
-    /* 错误由 http.ts 统一弹（含同影厅时间冲突） */
-  } finally {
-    saving.value = false
-  }
-}
-
-function onPage(p: number) {
-  page.value = p
-  load()
-}
-
-function onSize(s: number) {
-  size.value = s
-  page.value = 1
-  load()
-}
+watch(cinemaId, () => {
+  query.movieId = null
+  loadOptions()
+  search()
+})
 </script>
 
 <template>
@@ -149,7 +109,7 @@ function onSize(s: number) {
           placeholder="全部电影"
           clearable
           style="width: 200px"
-          @change="filterMovies"
+          @change="search"
         >
           <el-option v-for="m in movies" :key="m.id" :label="m.title" :value="m.id" />
         </el-select>
@@ -164,7 +124,7 @@ function onSize(s: number) {
         <template #default="{ row }">{{ formatDateTime(row.startTime) }}</template>
       </el-table-column>
       <el-table-column label="票价" width="110">
-        <template #default="{ row }">¥{{ row.price.toFixed(2) }}</template>
+        <template #default="{ row }">{{ formatAmount(row.price) }}</template>
       </el-table-column>
       <el-table-column label="状态" width="110">
         <template #default="{ row }">
@@ -182,20 +142,9 @@ function onSize(s: number) {
       <template #empty>暂无排场，点右上角「新增排场」开始</template>
     </el-table>
 
-    <div class="pager">
-      <span class="total">共 {{ total }} 条</span>
-      <el-pagination
-        layout="sizes, prev, pager, next"
-        :total="total"
-        :current-page="page"
-        :page-size="size"
-        :page-sizes="[10, 20, 50]"
-        @current-change="onPage"
-        @size-change="onSize"
-      />
-    </div>
+    <ListPager v-model:page="page" v-model:size="size" :total="total" @change="load" />
 
-    <el-dialog v-model="dialogVisible" :title="editingId === null ? '新增排场' : '编辑排场'" width="520px">
+    <el-dialog v-model="visible" :title="editingId === null ? '新增排场' : '编辑排场'" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="88px">
         <el-form-item label="电影" prop="movieId">
           <el-select v-model="form.movieId" placeholder="选择电影" style="width: 100%">
@@ -208,63 +157,32 @@ function onSize(s: number) {
           </el-select>
         </el-form-item>
         <el-form-item label="开场时间" prop="startTime">
+          <!-- 线格式是 "yyyy-MM-dd HH:mm:ss"（空格），后端 @JsonFormat 不接受 T 分隔 -->
           <el-date-picker
             v-model="form.startTime"
             type="datetime"
-            value-format="YYYY-MM-DDTHH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
             placeholder="选择开场时间"
             style="width: 100%"
           />
         </el-form-item>
         <el-form-item label="票价">
-          <el-input-number v-model="form.price" :min="0.01" :max="999" :precision="2" :step="5" :value-on-clear="45" />
+          <!-- 上限取 DECIMAL(10,2) 的容量，不再自造 999 -->
+          <el-input-number
+            v-model="form.price"
+            :min="0.01"
+            :max="99999999.99"
+            :precision="2"
+            :step="5"
+            :value-on-clear="45"
+          />
           <span class="hint">元</span>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="visible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
-
-<style scoped>
-.panel-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.panel-head h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.panel-head .search {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.pager .total {
-  font-size: 12px;
-  color: var(--ink-2);
-}
-
-.hint {
-  margin-left: 8px;
-  color: var(--ink-2);
-  font-size: 12px;
-}
-</style>

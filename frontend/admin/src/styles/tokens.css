@@ -1,6 +1,6 @@
 /**
  * 设计令牌（暗场放映厅 · 票根黄）
- * 参考 docs/demo/admin-demo.html；Element Plus 暗色主题在此统一覆盖。
+ * Element Plus 的暗色 CSS 变量在此统一覆盖，管理端只有暗色一套主题。
  */
 
 :root {
@@ -19,7 +19,6 @@
   /* 字体（系统栈，Noto 本机装了即生效） */
   --font-serif: 'Noto Serif SC', 'Songti SC', SimSun, serif;
   --font-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-  --font-din: 'DIN Alternate', 'Bahnschrift', var(--font-sans);
 
   color-scheme: dark;
 }

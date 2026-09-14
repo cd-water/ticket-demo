@@ -1,25 +1,33 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { listMovies, saveMovie } from '@/api/movies'
-import { uploadImage } from '@/api/files'
+import ImageUpload from '@/components/ImageUpload.vue'
+import ListPager from '@/components/ListPager.vue'
+import StatusFilter from '@/components/StatusFilter.vue'
 import StatusPill from '@/components/StatusPill.vue'
+import { useFormDialog } from '@/composables/useFormDialog'
+import { usePagedList } from '@/composables/useList'
 import { formatDateTime } from '@/utils/format'
 import type { MovieVO } from '@/types/api'
 
-const loading = ref(false)
-const rows = ref<MovieVO[]>([])
-const total = ref(0)
-const page = ref(1)
-const size = ref(10)
+const STATUS_OPTIONS = [
+  { label: '全部', value: null },
+  { label: '上架', value: 1 },
+  { label: '下架', value: 0 },
+]
+
 const query = reactive({ title: '', status: null as number | null })
 
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const saving = ref(false)
-const uploading = ref(false)
-const formRef = ref<FormInstance>()
+const { rows, total, loading, page, size, load, search } = usePagedList<MovieVO>((p, s) =>
+  listMovies({
+    page: p,
+    size: s,
+    title: query.title || undefined,
+    status: query.status ?? undefined,
+  }),
+)
+
 const form = reactive({
   title: '',
   poster: '',
@@ -37,29 +45,32 @@ const rules = {
   releaseDate: [{ required: true, message: '请选择上映日期', trigger: 'change' }],
 }
 
-async function load() {
-  loading.value = true
-  try {
-    const data = await listMovies({
-      page: page.value,
-      size: size.value,
-      title: query.title || undefined,
-      status: query.status ?? undefined,
-    })
-    rows.value = data.records
-    total.value = data.total
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  } finally {
-    loading.value = false
-  }
-}
+const formRef = ref<FormInstance>()
 
-onMounted(load)
+const { visible, editingId, saving, openCreate, openEdit, submit } = useFormDialog<
+  typeof form,
+  MovieVO
+>({
+  formRef,
+  form,
+  toForm: (row) =>
+    row
+      ? {
+          title: row.title,
+          poster: row.poster,
+          description: row.description,
+          duration: row.duration,
+          releaseDate: row.releaseDate,
+          status: row.status,
+        }
+      : { title: '', poster: '', description: '', duration: 90, releaseDate: '', status: 1 },
+  save: (f, id) => saveMovie({ ...f, id }),
+  onSaved: load,
+})
 
-function search() {
-  page.value = 1
-  load()
+/** 上传是程序化写 model，不会触发 el-form-item 的校验，手动补一次 */
+function onUploaded() {
+  formRef.value?.validateField('poster').catch(() => undefined)
 }
 
 function reset() {
@@ -68,83 +79,7 @@ function reset() {
   search()
 }
 
-function filterStatus(v: number | null) {
-  query.status = v
-  search()
-}
-
-function openCreate() {
-  editingId.value = null
-  Object.assign(form, { title: '', poster: '', description: '', duration: 90, releaseDate: '', status: 1 })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function openEdit(row: MovieVO) {
-  editingId.value = row.id
-  Object.assign(form, {
-    title: row.title,
-    poster: row.poster ?? '',
-    description: row.description ?? '',
-    duration: row.duration,
-    releaseDate: row.releaseDate ?? '',
-    status: row.status,
-  })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function onUpload(file: File) {
-  uploading.value = true
-  uploadImage(file)
-    .then((url) => {
-      form.poster = url
-      formRef.value?.validateField('poster').catch(() => undefined)
-      ElMessage.success('海报已上传')
-    })
-    .catch(() => {
-      /* 错误提示已由 http.ts 统一弹出 */
-    })
-    .finally(() => {
-      uploading.value = false
-    })
-  return false
-}
-
-async function submit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-  saving.value = true
-  const body = {
-    title: form.title,
-    poster: form.poster || null,
-    description: form.description || null,
-    duration: form.duration,
-    releaseDate: form.releaseDate || null,
-    status: form.status,
-  }
-  try {
-    await saveMovie({ ...body, id: editingId.value })
-    ElMessage.success(editingId.value === null ? '已新增' : '已保存')
-    dialogVisible.value = false
-    load()
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  } finally {
-    saving.value = false
-  }
-}
-
-function onPage(p: number) {
-  page.value = p
-  load()
-}
-
-function onSize(s: number) {
-  size.value = s
-  page.value = 1
-  load()
-}
+onMounted(load)
 </script>
 
 <template>
@@ -156,6 +91,7 @@ function onSize(s: number) {
           v-model="query.title"
           placeholder="搜索片名"
           clearable
+          maxlength="100"
           style="width: 200px"
           @keyup.enter="search"
           @clear="search"
@@ -166,11 +102,7 @@ function onSize(s: number) {
       <el-button type="primary" @click="openCreate">＋ 新增电影</el-button>
     </div>
 
-    <div class="filters">
-      <button class="f-btn" :class="{ on: query.status === null }" @click="filterStatus(null)">全部</button>
-      <button class="f-btn" :class="{ on: query.status === 1 }" @click="filterStatus(1)">上架</button>
-      <button class="f-btn" :class="{ on: query.status === 0 }" @click="filterStatus(0)">下架</button>
-    </div>
+    <StatusFilter v-model="query.status" :options="STATUS_OPTIONS" @change="search" />
 
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">
       <el-table-column label="海报" width="90">
@@ -208,35 +140,26 @@ function onSize(s: number) {
       <template #empty>暂无电影，点右上角「新增电影」开始</template>
     </el-table>
 
-    <div class="pager">
-      <span class="total">共 {{ total }} 条</span>
-      <el-pagination
-        layout="sizes, prev, pager, next"
-        :total="total"
-        :current-page="page"
-        :page-size="size"
-        :page-sizes="[10, 20, 50]"
-        @current-change="onPage"
-        @size-change="onSize"
-      />
-    </div>
+    <ListPager v-model:page="page" v-model:size="size" :total="total" @change="load" />
 
-    <el-dialog v-model="dialogVisible" :title="editingId === null ? '新增电影' : '编辑电影'" width="520px">
+    <el-dialog v-model="visible" :title="editingId === null ? '新增电影' : '编辑电影'" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="片名" prop="title">
           <el-input v-model="form.title" maxlength="100" show-word-limit />
         </el-form-item>
         <el-form-item label="海报" prop="poster">
-          <el-upload :show-file-list="false" accept="image/*" :disabled="uploading" :before-upload="onUpload">
-            <img v-if="form.poster" class="upload-preview" :src="form.poster" alt="海报预览" />
-            <div v-else class="upload-slot">{{ uploading ? '上传中…' : '＋ 上传海报' }}</div>
-          </el-upload>
+          <ImageUpload
+            v-model="form.poster"
+            placeholder="＋ 上传海报"
+            alt="海报预览"
+            @uploaded="onUploaded"
+          />
         </el-form-item>
         <el-form-item label="简介" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="3" maxlength="1024" />
         </el-form-item>
         <el-form-item label="时长" prop="duration">
-          <el-input-number v-model="form.duration" :min="1" :max="600" />
+          <el-input-number v-model="form.duration" :min="1" />
           <span class="hint">分钟</span>
         </el-form-item>
         <el-form-item label="上映日期" prop="releaseDate">
@@ -256,7 +179,7 @@ function onSize(s: number) {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="visible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
       </template>
     </el-dialog>

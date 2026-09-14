@@ -1,26 +1,28 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCinema } from '@/api/cinemas'
+import { useCinemaId } from '@/composables/useCinemaId'
 import type { CinemaVO } from '@/types/api'
 
 const route = useRoute()
 const router = useRouter()
-const cinemaId = computed(() => Number(route.params.cinemaId))
+const cinemaId = useCinemaId()
 const cinema = ref<CinemaVO | null>(null)
 
-const active = computed(() => {
-  const tail = route.path.split('/').pop() ?? 'halls'
-  return tail
-})
+/** 当前 tab，取自路径最后一段 */
+const active = computed(() => route.path.split('/').pop() ?? 'halls')
 
-onMounted(async () => {
+async function loadCinema() {
   try {
     cinema.value = await getCinema(cinemaId.value)
   } catch {
     /* 错误由 http.ts 统一弹 */
   }
-})
+}
+
+onMounted(loadCinema)
+watch(cinemaId, loadCinema)
 
 function back() {
   router.push('/cinemas')

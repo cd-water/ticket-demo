@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getSeatGrid, listHallsByCinema, saveHall, saveSeatGrid } from '@/api/halls'
 import SeatCanvas from '@/components/SeatCanvas.vue'
 import StatusPill from '@/components/StatusPill.vue'
+import { useCinemaId } from '@/composables/useCinemaId'
+import { useFormDialog } from '@/composables/useFormDialog'
 import type { HallVO, SeatCellVO } from '@/types/api'
 
-const route = useRoute()
-const cinemaId = Number(route.params.cinemaId)
+const cinemaId = useCinemaId()
 
 const halls = ref<HallVO[]>([])
 const current = ref<HallVO | null>(null)
@@ -19,14 +19,43 @@ const loadingSeats = ref(false)
 const dirty = ref(false)
 const savingSeats = ref(false)
 
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const saving = ref(false)
-const formRef = ref<FormInstance>()
 const form = reactive({ name: '', seatRows: 8, seatCols: 10, status: 1 })
+const formRef = ref<FormInstance>()
+const rules = { name: [{ required: true, message: '请输入影厅名称', trigger: 'blur' }] }
 
-const rules = {
-  name: [{ required: true, message: '请输入影厅名称', trigger: 'blur' }],
+/** 打开「新增影厅」时快照的影厅 id，用于保存后认出新影厅 */
+let knownHallIds = new Set<number>()
+
+const { visible, editingId, saving, openCreate, openEdit, submit } = useFormDialog<
+  typeof form,
+  HallVO
+>({
+  formRef,
+  form,
+  toForm: (row) =>
+    row
+      ? { name: row.name, seatRows: row.seatRows, seatCols: row.seatCols, status: row.status }
+      : { name: '', seatRows: 8, seatCols: 10, status: 1 },
+  save: (f, id) => saveHall({ ...f, cinemaId: cinemaId.value, id }),
+  messages: { created: '已新增影厅' },
+  onSaved: async (id) => {
+    if (id !== null) {
+      await loadHalls(id)
+      return
+    }
+    // 保存接口不返回 id：新影厅就是打开弹窗时不存在的那个（id 自增，兜底取第一个）
+    halls.value = await listHallsByCinema(cinemaId.value)
+    const created = halls.value.find((h) => !knownHallIds.has(h.id)) ?? halls.value[0]
+    if (created) {
+      current.value = created
+      await loadSeats(created.id)
+    }
+  },
+})
+
+function openCreateHall() {
+  knownHallIds = new Set(halls.value.map((h) => h.id))
+  openCreate()
 }
 
 async function loadSeats(hallId: number) {
@@ -46,7 +75,7 @@ async function loadSeats(hallId: number) {
 
 async function loadHalls(selectId?: number) {
   try {
-    halls.value = await listHallsByCinema(cinemaId)
+    halls.value = await listHallsByCinema(cinemaId.value)
     const target =
       (selectId !== undefined ? halls.value.find((h) => h.id === selectId) : undefined) ?? halls.value[0]
     if (target) {
@@ -65,7 +94,7 @@ async function loadHalls(selectId?: number) {
 }
 
 onMounted(() => loadHalls())
-watch(() => route.params.cinemaId, () => loadHalls())
+watch(cinemaId, () => loadHalls())
 
 async function selectHall(hall: HallVO) {
   if (current.value?.id === hall.id) return
@@ -107,57 +136,15 @@ async function saveSeats() {
     savingSeats.value = false
   }
 }
-
-function openCreate() {
-  editingId.value = null
-  Object.assign(form, { name: '', seatRows: 8, seatCols: 10, status: 1 })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function openEdit(hall: HallVO) {
-  editingId.value = hall.id
-  Object.assign(form, { name: hall.name, seatRows: hall.seatRows, seatCols: hall.seatCols, status: hall.status })
-  formRef.value?.clearValidate()
-  dialogVisible.value = true
-}
-
-function editCurrent() {
-  if (current.value) openEdit(current.value)
-}
-
-async function submit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-  saving.value = true
-  try {
-    await saveHall({ ...form, cinemaId, id: editingId.value })
-    dialogVisible.value = false
-    if (editingId.value === null) {
-      ElMessage.success('已新增影厅')
-      halls.value = await listHallsByCinema(cinemaId)
-      const newest = halls.value.reduce<HallVO | null>((a, b) => (!a || b.id > a.id ? b : a), null)
-      if (newest) {
-        current.value = newest
-        await loadSeats(newest.id)
-      }
-    } else {
-      ElMessage.success('已保存')
-      await loadHalls(editingId.value)
-    }
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  } finally {
-    saving.value = false
-  }
-}
-
 </script>
 
 <template>
   <div class="seat-editor">
     <div class="hall-list">
-      <h3>影厅列表</h3>
+      <div class="hall-head">
+        <h3>影厅列表</h3>
+        <el-button size="small" @click="openCreateHall">＋ 新增影厅</el-button>
+      </div>
       <div
         v-for="h in halls"
         :key="h.id"
@@ -168,13 +155,10 @@ async function submit() {
         <span>{{ h.name }}</span>
         <span class="meta">{{ h.seatRows }}×{{ h.seatCols }}</span>
         <StatusPill :label="h.status === 1 ? '启用' : '禁用'" :tone="h.status === 1 ? 'ok' : 'muted'" />
+        <!-- 阻止冒泡，避免同时触发整行的选中 -->
+        <el-button link type="primary" size="small" @click.stop="openEdit(h)">编辑</el-button>
       </div>
       <p v-if="!halls.length" class="hall-empty">本影院暂无影厅</p>
-
-      <div class="hall-actions">
-        <el-button size="small" :disabled="!current" @click="editCurrent">编辑影厅</el-button>
-      </div>
-      <button class="hall-add" type="button" @click="openCreate">＋ 新增影厅</button>
     </div>
 
     <div class="canvas-panel">
@@ -193,10 +177,10 @@ async function submit() {
       <p v-else class="canvas-hint">先在左侧新增影厅。</p>
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="editingId === null ? '新增影厅' : '编辑影厅'" width="460px">
+    <el-dialog v-model="visible" :title="editingId === null ? '新增影厅' : '编辑影厅'" width="460px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="88px">
         <el-form-item label="影厅名称" prop="name">
-          <el-input v-model="form.name" maxlength="50" placeholder="如 1号厅" />
+          <el-input v-model="form.name" maxlength="50" />
         </el-form-item>
         <el-form-item label="座位排数">
           <el-input-number v-model="form.seatRows" :min="1" :max="26" :value-on-clear="8" />
@@ -212,7 +196,7 @@ async function submit() {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="visible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
       </template>
     </el-dialog>
@@ -234,16 +218,28 @@ async function submit() {
   padding: 16px;
 }
 
-.hall-list h3,
+.hall-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.hall-head h3,
 .canvas-panel h3 {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 14px;
   font-weight: 700;
 }
 
+.canvas-panel h3 {
+  margin-bottom: 12px;
+}
+
 .hall-row {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   padding: 12px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -260,6 +256,7 @@ async function submit() {
 }
 
 .hall-row .meta {
+  margin-left: auto;
   color: var(--ink-2);
 }
 
@@ -267,30 +264,6 @@ async function submit() {
   margin: 8px 0;
   font-size: 13px;
   color: var(--ink-2);
-}
-
-.hall-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.hall-add {
-  margin-top: 12px;
-  width: 100%;
-  padding: 9px;
-  border: 1px dashed var(--line);
-  border-radius: 8px;
-  background: none;
-  font-family: inherit;
-  font-size: 12px;
-  color: var(--ink-2);
-  cursor: pointer;
-}
-
-.hall-add:hover {
-  color: var(--brand);
-  border-color: var(--brand);
 }
 
 .canvas-body {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type Tone = 'ok' | 'warn' | 'muted' | 'danger'
+type Tone = 'ok' | 'warn' | 'muted'
 
 defineProps<{ label: string; tone?: Tone }>()
 </script>

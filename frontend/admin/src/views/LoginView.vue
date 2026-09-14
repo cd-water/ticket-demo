@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { adminLogin } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
+import { passwordRules, usernameRules } from '@/utils/rules'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -14,11 +15,8 @@ const loading = ref(false)
 const form = reactive({ username: '', password: '' })
 
 const rules: FormRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 5, max: 32, message: '用户名需5-32位', trigger: 'blur' },
-  ],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  username: usernameRules,
+  password: passwordRules(),
 }
 
 async function doLogin() {

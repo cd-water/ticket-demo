@@ -9,7 +9,6 @@ const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
-const menus = computed(() => MENUS)
 const activeTitle = computed(() => (route.meta.title as string) || '')
 
 async function onLogout() {
@@ -36,7 +35,7 @@ async function onLogout() {
 
       <nav class="menu">
         <div
-          v-for="m in menus"
+          v-for="m in MENUS"
           :key="m.key"
           class="menu-item"
           :class="{ on: route.path.startsWith(`/${m.key}`) }"
@@ -213,7 +212,7 @@ async function onLogout() {
   padding: 26px 28px;
 }
 
-/* ---- 窄屏：侧边栏收成图标栏（同 demo） ---- */
+/* ---- 窄屏：侧边栏收成图标栏 ---- */
 @media (max-width: 900px) {
   .sidebar {
     width: 70px;

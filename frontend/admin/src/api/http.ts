@@ -1,6 +1,8 @@
 import axios from 'axios'
 import type { AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
+// 注意：router 里的页面组件必须保持动态 import()，否则这里会构成循环依赖
+import router, { loginRedirect } from '@/router'
 import type { Result } from '@/types/api'
 import { useAuthStore } from '@/stores/auth'
 
@@ -35,10 +37,10 @@ http.interceptors.response.use(
     const status = error.response?.status
     const body = error.response?.data as Result | undefined
     if (status === 401) {
-      // 单设备踢线 / Token 过期：清会话回登录页
+      // 单设备踢线 / Token 过期：清会话回登录页，并记住原页面以便登录后跳回
       useAuthStore().clear()
-      if (!location.pathname.startsWith('/login')) {
-        location.href = '/login'
+      if (router.currentRoute.value.path !== '/login') {
+        void router.replace(loginRedirect(router.currentRoute.value.fullPath))
       }
       ElMessage.error(body?.message || '登录已过期，请重新登录')
     } else {
