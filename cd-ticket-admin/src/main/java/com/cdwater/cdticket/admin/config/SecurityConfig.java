@@ -1,5 +1,7 @@
 package com.cdwater.cdticket.admin.config;
 
+import com.cdwater.cdticket.admin.common.Result;
+import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.security.TokenAuthenticationFilter;
 import com.cdwater.cdticket.admin.security.TokenStoreService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +31,7 @@ public class SecurityConfig {
     /**
      * 登录接口免鉴权
      */
-    public static final String[] PERMIT_ALL_PATHS = {
+    private static final String[] PERMIT_ALL_PATHS = {
             "/api/admin/auth/login"
     };
 
@@ -57,6 +59,6 @@ public class SecurityConfig {
                                    org.springframework.security.core.AuthenticationException e) throws IOException {
         response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"code\":401,\"message\":\"未认证或登录已过期\",\"data\":null}");
+        response.getWriter().write(Result.fail(ResultCode.UNAUTHORIZED).toJson());
     }
 }

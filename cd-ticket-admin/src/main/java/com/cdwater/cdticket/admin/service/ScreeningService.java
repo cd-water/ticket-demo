@@ -30,7 +30,7 @@ public class ScreeningService {
     private final HallMapper hallMapper;
 
     public PageResult<ScreeningVO> pageByCinema(int page, int size, Long movieId, Long cinemaId) {
-        IPage<ScreeningVO> p = screeningMapper.selectPage(Page.of(page, size), cinemaId, movieId);
+        IPage<ScreeningVO> p = screeningMapper.selectVOPage(Page.of(page, size), cinemaId, movieId);
         return PageResult.of(p);
     }
 

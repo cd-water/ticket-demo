@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface ScreeningMapper extends BaseMapper<Screening> {
-    IPage<ScreeningVO> selectPage(Page<ScreeningVO> page,
-                                  @Param("cinemaId") Long cinemaId,
-                                  @Param("movieId") Long movieId);
+    IPage<ScreeningVO> selectVOPage(Page<ScreeningVO> page,
+                                    @Param("cinemaId") Long cinemaId,
+                                    @Param("movieId") Long movieId);
 }

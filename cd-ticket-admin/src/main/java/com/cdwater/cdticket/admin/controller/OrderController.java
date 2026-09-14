@@ -10,16 +10,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @Validated
 public class OrderController {
     private final OrderService orderService;
 
-    @GetMapping("/api/admin/cinemas/{cinemaId}/orders")
+    @GetMapping("/cinemas/{cinemaId}/orders")
     public Result<PageResult<OrderVO>> pageByCinema(@PathVariable @Min(1) Long cinemaId,
                                                     @RequestParam(defaultValue = "1") @Min(1) int page,
                                                     @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,

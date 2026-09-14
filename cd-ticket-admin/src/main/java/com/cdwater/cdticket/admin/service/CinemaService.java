@@ -13,8 +13,6 @@ import com.cdwater.cdticket.admin.mapper.CinemaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class CinemaService {
