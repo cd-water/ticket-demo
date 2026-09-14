@@ -4,6 +4,7 @@ import com.cdwater.cdticket.app.common.Result;
 import com.cdwater.cdticket.app.common.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +20,7 @@ import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     public static final String[] PERMIT_ALL_PATHS = {
@@ -29,10 +31,6 @@ public class SecurityConfig {
     };
 
     private final JwtUtil jwtUtil;
-
-    public SecurityConfig(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -56,9 +54,6 @@ public class SecurityConfig {
                                    org.springframework.security.core.AuthenticationException e) throws IOException {
         response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(Result.fail(
-                ResultCode.UNAUTHORIZED.getCode(),
-                ResultCode.UNAUTHORIZED.getMessage()
-        ).toJson());
+        response.getWriter().write(Result.fail(ResultCode.UNAUTHORIZED).toJson());
     }
 }

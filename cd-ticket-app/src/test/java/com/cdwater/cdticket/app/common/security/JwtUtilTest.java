@@ -20,7 +20,7 @@ class JwtUtilTest {
 
     @Test
     void userTokenRoundTrip() {
-        String token = jwtUtil.createUserAccessToken(123L);
+        String token = jwtUtil.createAccessToken(123L);
         assertEquals(123L, jwtUtil.parseUserId(token));
     }
 

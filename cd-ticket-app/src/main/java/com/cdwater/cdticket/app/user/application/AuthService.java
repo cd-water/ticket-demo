@@ -57,7 +57,7 @@ public class AuthService {
         Long userId = refreshTokenService.getUserId(refreshToken);
         String newRefresh = refreshTokenService.rotate(refreshToken);
         RefreshResponse resp = new RefreshResponse();
-        resp.setAccessToken(jwtUtil.createUserAccessToken(userId));
+        resp.setAccessToken(jwtUtil.createAccessToken(userId));
         resp.setRefreshToken(newRefresh);
         return resp;
     }
@@ -92,7 +92,7 @@ public class AuthService {
 
     private LoginResponse issueTokens(User user) {
         LoginResponse resp = new LoginResponse();
-        resp.setAccessToken(jwtUtil.createUserAccessToken(user.getId()));
+        resp.setAccessToken(jwtUtil.createAccessToken(user.getId()));
         resp.setRefreshToken(refreshTokenService.create(user.getId()));
         resp.setUser(UserConvert.INSTANCE.toUserInfo(user));
         return resp;

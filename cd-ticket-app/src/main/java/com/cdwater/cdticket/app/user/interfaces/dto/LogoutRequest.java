@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class LogoutRequest {
 
-    @NotBlank(message = "refreshToken不能为空")
+    @NotBlank
     private String refreshToken;
 }

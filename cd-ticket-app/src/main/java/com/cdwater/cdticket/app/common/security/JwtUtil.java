@@ -1,8 +1,5 @@
 package com.cdwater.cdticket.app.common.security;
 
-import com.cdwater.cdticket.app.common.ResultCode;
-
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -14,7 +11,6 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private static final String USER_PREFIX = "u";
 
     private final SecretKey key;
     private final long accessExpireSeconds;
@@ -24,21 +20,19 @@ public class JwtUtil {
         this.accessExpireSeconds = properties.getAccessExpireSeconds();
     }
 
-    public String createUserAccessToken(Long userId) {
-        return createToken(USER_PREFIX + userId);
-    }
-
-    private String createToken(String subject) {
+    public String createAccessToken(Long userId) {
         Instant now = Instant.now();
         return Jwts.builder()
-                .subject(subject)
+                .subject(String.valueOf(userId))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(accessExpireSeconds)))
                 .signWith(key)
                 .compact();
     }
 
-    /** 解析任意类型 JWT 的 subject；无效/过期抛 JwtException。 */
+    /**
+     * 解析 JWT 的 subject；无效/过期抛 JwtException。
+     */
     public String parseSubject(String token) {
         return Jwts.parser()
                 .verifyWith(key)
@@ -49,10 +43,6 @@ public class JwtUtil {
     }
 
     public Long parseUserId(String token) {
-        String sub = parseSubject(token);
-        if (!sub.startsWith(USER_PREFIX)) {
-            throw new JwtException("token type mismatch, expected user");
-        }
-        return Long.valueOf(sub.substring(1));
+        return Long.valueOf(parseSubject(token));
     }
 }
