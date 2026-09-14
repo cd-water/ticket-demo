@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,7 +24,9 @@ public class GlobalExceptionHandler {
         return Result.fail(e.getCode(), e.getMessage());
     }
 
-    /** @Valid 校验失败 */
+    /**
+     * @Valid 校验失败
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<Void> handleValid(MethodArgumentNotValidException e) {
         String msg = e.getBindingResult().getFieldErrors().stream()
@@ -33,7 +36,9 @@ public class GlobalExceptionHandler {
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), msg);
     }
 
-    /** @Validated 校验失败 */
+    /**
+     * @Validated 校验失败
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public Result<Void> handleConstraintViolation(ConstraintViolationException e) {
         String msg = e.getConstraintViolations().stream()
@@ -43,13 +48,25 @@ public class GlobalExceptionHandler {
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), msg);
     }
 
-    /** 上传文件超限 */
+    /**
+     * 上传文件超限
+     */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSize(MaxUploadSizeExceededException e) {
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), "图片不能超过 5MB");
     }
 
-    /** 兜底 */
+    /**
+     * 唯一键冲突
+     */
+    @ExceptionHandler(DuplicateKeyException.class)
+    public Result<Void> handleDuplicateKey(DuplicateKeyException e) {
+        return Result.fail(ResultCode.BAD_REQUEST.getCode(), "数据已存在或冲突");
+    }
+
+    /**
+     * 兜底
+     */
     @ExceptionHandler(Exception.class)
     public Result<Void> handleOther(Exception e) {
         log.error("unexpected error", e);

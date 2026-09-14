@@ -15,10 +15,6 @@ export function resetPassword(id: number, body: ResetPasswordRequest) {
   return http.post<unknown, void>(`/admin/admins/${id}/reset-password`, body)
 }
 
-export function deleteAdmin(id: number) {
-  return http.post<unknown, void>(`/admin/admins/${id}/delete`)
-}
-
 export function updateAdminStatus(id: number, status: number) {
   return http.post<unknown, void>(`/admin/admins/${id}/status`, { status })
 }

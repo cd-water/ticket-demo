@@ -2,7 +2,8 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createAdmin, deleteAdmin, listAdmins, resetPassword, updateAdminStatus } from '@/api/admins'
+import { createAdmin, listAdmins, resetPassword, updateAdminStatus } from '@/api/admins'
+import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
 import type { AdminManageVO } from '@/types/api'
 
@@ -111,25 +112,6 @@ async function toggleStatus(row: AdminManageVO) {
   }
 }
 
-async function remove(row: AdminManageVO) {
-  try {
-    await ElMessageBox.confirm(`删除管理员「${row.username}」？该账号将立即失效。`, '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
-  try {
-    await deleteAdmin(row.id)
-    ElMessage.success('已删除')
-    load()
-  } catch {
-    /* 错误由 http.ts 统一弹 */
-  }
-}
 </script>
 
 <template>
@@ -141,19 +123,23 @@ async function remove(row: AdminManageVO) {
 
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">
       <el-table-column label="用户名" min-width="160" prop="username" />
+      <el-table-column label="状态" width="100">
+        <template #default="{ row }">
+          <StatusPill :label="row.status === 1 ? '启用' : '禁用'" :tone="row.status === 1 ? 'ok' : 'muted'" />
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
       </el-table-column>
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="240" align="right">
+      <el-table-column label="操作" width="160" align="right">
         <template #default="{ row }">
           <el-button link :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">
             {{ row.status === 1 ? '禁用' : '启用' }}
           </el-button>
           <el-button link type="primary" @click="openReset(row)">重置密码</el-button>
-          <el-button link type="danger" @click="remove(row)">删除</el-button>
         </template>
       </el-table-column>
       <template #empty>暂无管理员</template>

@@ -16,7 +16,6 @@ public class Banner {
     private String linkUrl;
     private Integer sort;
     private Integer status;
-    private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

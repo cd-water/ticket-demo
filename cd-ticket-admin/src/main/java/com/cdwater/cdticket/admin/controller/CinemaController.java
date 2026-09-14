@@ -47,10 +47,4 @@ public class CinemaController {
         cinemaService.save(req);
         return Result.success();
     }
-
-    @PostMapping("/{id}/delete")
-    public Result<Void> delete(@PathVariable Long id) {
-        cinemaService.delete(id);
-        return Result.success();
-    }
 }

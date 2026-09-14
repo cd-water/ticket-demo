@@ -24,7 +24,7 @@ public class CinemaService {
         IPage<Cinema> p = cinemaMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Cinema>()
                 .like(name != null && !name.isBlank(), Cinema::getName, name)
                 .eq(status != null, Cinema::getStatus, status)
-                .orderByDesc(Cinema::getCreateTime));
+                .orderByDesc(Cinema::getId));
         return PageResult.of(p.convert(CinemaService::toVO));
     }
 
@@ -33,27 +33,19 @@ public class CinemaService {
         if (req.getId() == null) {
             cinemaMapper.insert(cinema);
         } else {
-            requireCinema(req.getId());
+            if (cinemaMapper.selectById(req.getId()) == null) {
+                throw new BizException(ResultCode.NOT_FOUND);
+            }
             cinemaMapper.updateById(cinema);
         }
     }
 
-    public void delete(Long id) {
-        requireCinema(id);
-        cinemaMapper.deleteById(id);
-    }
-
     public CinemaVO getCinema(Long id) {
-        Cinema cinema = cinemaMapper.selectById(id);
-        return cinema == null ? null : toVO(cinema);
-    }
-
-    private Cinema requireCinema(Long id) {
         Cinema cinema = cinemaMapper.selectById(id);
         if (cinema == null) {
             throw new BizException(ResultCode.NOT_FOUND);
         }
-        return cinema;
+        return toVO(cinema);
     }
 
     private static CinemaVO toVO(Cinema c) {

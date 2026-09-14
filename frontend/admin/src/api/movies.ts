@@ -15,7 +15,3 @@ export function listMovies(q: MovieListQuery) {
 export function saveMovie(body: MovieSaveRequest) {
   return http.post<unknown, void>('/admin/movies/save', body)
 }
-
-export function deleteMovie(id: number) {
-  return http.post<unknown, void>(`/admin/movies/${id}/delete`)
-}

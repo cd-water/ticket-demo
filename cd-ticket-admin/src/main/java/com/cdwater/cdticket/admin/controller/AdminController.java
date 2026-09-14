@@ -1,7 +1,7 @@
 package com.cdwater.cdticket.admin.controller;
 
-import com.cdwater.cdticket.admin.service.AdminAuthService;
-import com.cdwater.cdticket.admin.service.AdminManageService;
+import com.cdwater.cdticket.admin.service.AuthService;
+import com.cdwater.cdticket.admin.service.AdminService;
 import com.cdwater.cdticket.admin.common.Result;
 import com.cdwater.cdticket.admin.dto.admin.LoginResponse;
 import com.cdwater.cdticket.admin.dto.admin.AdminVO;
@@ -24,46 +24,41 @@ import java.util.List;
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    private final AdminAuthService adminAuthService;
-    private final AdminManageService adminManageService;
+
+    private final AuthService authService;
+    private final AdminService adminService;
 
     @PostMapping("/auth/login")
     public Result<LoginResponse> login(@RequestBody @Valid LoginRequest req) {
-        return Result.success(adminAuthService.login(req.getUsername(), req.getPassword()));
+        return Result.success(authService.login(req.getUsername(), req.getPassword()));
     }
 
     @PostMapping("/auth/logout")
     public Result<Void> logout() {
-        adminAuthService.logout();
+        authService.logout();
         return Result.success();
     }
 
     @GetMapping("/admins/list")
     public Result<List<AdminVO>> list() {
-        return Result.success(adminManageService.list());
+        return Result.success(adminService.list());
     }
 
     @PostMapping("/admins/create")
     public Result<Void> create(@RequestBody @Valid AdminSaveRequest req) {
-        adminManageService.create(req);
+        adminService.create(req);
         return Result.success();
     }
 
     @PostMapping("/admins/{id}/reset-password")
     public Result<Void> resetPassword(@PathVariable Long id, @RequestBody @Valid ResetPasswordRequest req) {
-        adminManageService.resetPassword(id, req);
-        return Result.success();
-    }
-
-    @PostMapping("/admins/{id}/delete")
-    public Result<Void> delete(@PathVariable Long id) {
-        adminManageService.delete(id);
+        adminService.resetPassword(id, req);
         return Result.success();
     }
 
     @PostMapping("/admins/{id}/status")
     public Result<Void> toggleStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest req) {
-        adminManageService.toggleStatus(id, req.getStatus());
+        adminService.toggleStatus(id, req.getStatus());
         return Result.success();
     }
 }

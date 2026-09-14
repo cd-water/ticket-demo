@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AdminAuthService {
+public class AuthService {
     private final AdminMapper adminMapper;
     private final TokenStoreService tokenStoreService;
     private final PasswordEncoder passwordEncoder;

@@ -19,7 +19,6 @@ public class Movie {
     private Integer duration;
     private LocalDate releaseDate;
     private Integer status;
-    private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

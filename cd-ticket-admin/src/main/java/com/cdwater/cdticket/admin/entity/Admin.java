@@ -15,7 +15,6 @@ public class Admin {
     private String username;
     private String password;
     private Integer status;
-    private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

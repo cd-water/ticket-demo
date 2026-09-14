@@ -19,7 +19,3 @@ export function getCinema(id: number) {
 export function saveCinema(body: CinemaSaveRequest) {
   return http.post<unknown, void>('/admin/cinemas/save', body)
 }
-
-export function deleteCinema(id: number) {
-  return http.post<unknown, void>(`/admin/cinemas/${id}/delete`)
-}

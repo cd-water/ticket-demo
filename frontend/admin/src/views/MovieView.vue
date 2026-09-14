@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { deleteMovie, listMovies, saveMovie } from '@/api/movies'
+import { listMovies, saveMovie } from '@/api/movies'
 import { uploadImage } from '@/api/files'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
@@ -31,8 +31,10 @@ const form = reactive({
 
 const rules = {
   title: [{ required: true, message: '请输入片名', trigger: 'blur' }],
+  poster: [{ required: true, message: '请上传海报', trigger: 'change' }],
   description: [{ required: true, message: '请输入简介', trigger: 'blur' }],
   duration: [{ required: true, message: '请输入时长', trigger: 'blur' }],
+  releaseDate: [{ required: true, message: '请选择上映日期', trigger: 'change' }],
 }
 
 async function load() {
@@ -97,6 +99,7 @@ function onUpload(file: File) {
   uploadImage(file)
     .then(({ url }) => {
       form.poster = url
+      formRef.value?.validateField('poster').catch(() => undefined)
       ElMessage.success('海报已上传')
     })
     .catch(() => {
@@ -129,26 +132,6 @@ async function submit() {
     /* 错误提示已由 http.ts 统一弹出 */
   } finally {
     saving.value = false
-  }
-}
-
-async function remove(row: MovieVO) {
-  try {
-    await ElMessageBox.confirm(`删除电影「${row.title}」？删除后 C 端不再展示。`, '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
-  try {
-    await deleteMovie(row.id)
-    ElMessage.success('已删除')
-    load()
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
   }
 }
 
@@ -217,10 +200,9 @@ function onSize(s: number) {
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="150" align="right">
+      <el-table-column label="操作" width="90" align="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button link type="danger" @click="remove(row)">删除</el-button>
         </template>
       </el-table-column>
       <template #empty>暂无电影，点右上角「新增电影」开始</template>
@@ -244,7 +226,7 @@ function onSize(s: number) {
         <el-form-item label="片名" prop="title">
           <el-input v-model="form.title" maxlength="100" show-word-limit />
         </el-form-item>
-        <el-form-item label="海报">
+        <el-form-item label="海报" prop="poster">
           <el-upload :show-file-list="false" accept="image/*" :disabled="uploading" :before-upload="onUpload">
             <img v-if="form.poster" class="upload-preview" :src="form.poster" alt="海报预览" />
             <div v-else class="upload-slot">{{ uploading ? '上传中…' : '＋ 上传海报' }}</div>
@@ -257,7 +239,7 @@ function onSize(s: number) {
           <el-input-number v-model="form.duration" :min="1" :max="600" />
           <span class="hint">分钟</span>
         </el-form-item>
-        <el-form-item label="上映日期">
+        <el-form-item label="上映日期" prop="releaseDate">
           <el-date-picker
             v-model="form.releaseDate"
             type="date"

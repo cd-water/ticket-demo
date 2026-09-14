@@ -1,7 +1,6 @@
 package com.cdwater.cdticket.admin.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
@@ -23,37 +22,27 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MovieService {
+
     private final MovieMapper movieMapper;
 
     public PageResult<MovieVO> page(int page, int size, String title, Integer status) {
         IPage<Movie> p = movieMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Movie>()
                 .like(title != null && !title.isBlank(), Movie::getTitle, title)
                 .eq(status != null, Movie::getStatus, status)
-                .orderByDesc(Movie::getCreateTime));
+                .orderByDesc(Movie::getId));
         return PageResult.of(p.convert(MovieService::toVO));
     }
 
     public void save(MovieSaveRequest req) {
+        Movie movie = toEntity(req);
         if (req.getId() == null) {
-            movieMapper.insert(toEntity(req));
-            return;
+            movieMapper.insert(movie);
+        } else {
+            if (movieMapper.selectById(req.getId()) == null) {
+                throw new BizException(ResultCode.NOT_FOUND);
+            }
+            movieMapper.updateById(movie);
         }
-        requireMovie(req.getId());
-        String poster = req.getPoster() == null ? "" : req.getPoster();
-        String description = req.getDescription() == null ? "" : req.getDescription();
-        movieMapper.update(null, new LambdaUpdateWrapper<Movie>()
-                .eq(Movie::getId, req.getId())
-                .set(Movie::getTitle, req.getTitle())
-                .set(Movie::getPoster, poster)
-                .set(Movie::getDescription, description)
-                .set(Movie::getDuration, req.getDuration())
-                .set(Movie::getReleaseDate, req.getReleaseDate())
-                .set(Movie::getStatus, req.getStatus()));
-    }
-
-    public void delete(Long id) {
-        requireMovie(id);
-        movieMapper.deleteById(id);
     }
 
     public MovieVO getMovie(Long id) {
@@ -73,14 +62,6 @@ public class MovieService {
                 .orderByAsc(Movie::getId)).stream().map(MovieService::toOption).toList();
     }
 
-    private Movie requireMovie(Long id) {
-        Movie movie = movieMapper.selectById(id);
-        if (movie == null) {
-            throw new BizException(ResultCode.NOT_FOUND);
-        }
-        return movie;
-    }
-
     private static MovieVO toVO(Movie m) {
         MovieVO v = new MovieVO();
         v.setId(m.getId());
@@ -97,8 +78,9 @@ public class MovieService {
 
     private static Movie toEntity(MovieSaveRequest req) {
         Movie m = new Movie();
+        m.setId(req.getId());
         m.setTitle(req.getTitle());
-        m.setPoster(req.getPoster() == null ? "" : req.getPoster());
+        m.setPoster(req.getPoster());
         m.setDescription(req.getDescription());
         m.setDuration(req.getDuration());
         m.setReleaseDate(req.getReleaseDate());

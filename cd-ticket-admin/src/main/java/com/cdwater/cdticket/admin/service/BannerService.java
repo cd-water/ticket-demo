@@ -19,7 +19,7 @@ public class BannerService {
 
     public List<BannerVO> list() {
         return bannerMapper.selectList(new LambdaQueryWrapper<Banner>()
-                .orderByAsc(Banner::getSort).orderByDesc(Banner::getId))
+                        .orderByAsc(Banner::getSort).orderByDesc(Banner::getId))
                 .stream().map(BannerService::toVO).toList();
     }
 
@@ -33,13 +33,6 @@ public class BannerService {
             }
             bannerMapper.updateById(banner);
         }
-    }
-
-    public void delete(Long id) {
-        if (bannerMapper.selectById(id) == null) {
-            throw new BizException(ResultCode.NOT_FOUND);
-        }
-        bannerMapper.deleteById(id);
     }
 
     private static BannerVO toVO(Banner b) {

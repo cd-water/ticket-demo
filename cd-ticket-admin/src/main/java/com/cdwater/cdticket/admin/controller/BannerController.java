@@ -7,7 +7,6 @@ import com.cdwater.cdticket.admin.dto.banner.BannerSaveRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,12 +29,6 @@ public class BannerController {
     @PostMapping("/save")
     public Result<Void> save(@RequestBody @Valid BannerSaveRequest req) {
         bannerService.save(req);
-        return Result.success();
-    }
-
-    @PostMapping("/{id}/delete")
-    public Result<Void> delete(@PathVariable Long id) {
-        bannerService.delete(id);
         return Result.success();
     }
 }

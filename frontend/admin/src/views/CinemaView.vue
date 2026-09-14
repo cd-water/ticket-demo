@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { deleteCinema, listCinemas, saveCinema } from '@/api/cinemas'
+import { listCinemas, saveCinema } from '@/api/cinemas'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
 import type { CinemaVO } from '@/types/api'
@@ -97,26 +97,6 @@ async function submit() {
   }
 }
 
-async function remove(row: CinemaVO) {
-  try {
-    await ElMessageBox.confirm(`删除影院「${row.name}」？`, '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
-  try {
-    await deleteCinema(row.id)
-    ElMessage.success('已删除')
-    load()
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  }
-}
-
 function onPage(p: number) {
   page.value = p
   load()
@@ -168,11 +148,10 @@ function onSize(s: number) {
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="220" align="right">
+      <el-table-column label="操作" width="160" align="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="enterCinema(row)">进入</el-button>
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button link type="danger" @click="remove(row)">删除</el-button>
         </template>
       </el-table-column>
       <template #empty>暂无影院，点右上角「新增影院」开始</template>

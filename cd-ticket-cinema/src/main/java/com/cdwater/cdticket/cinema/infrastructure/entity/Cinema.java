@@ -19,7 +19,6 @@ public class Cinema {
     private String name;
     private String address;
     private Integer status;
-    private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

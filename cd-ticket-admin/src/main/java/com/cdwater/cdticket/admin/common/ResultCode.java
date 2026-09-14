@@ -16,7 +16,6 @@ public enum ResultCode {
     NOT_FOUND("C004", "不存在"),
 
     ADMIN_USERNAME_EXISTS("C201", "用户名已存在"),
-    CANNOT_OPERATE_SELF("C203", "不能操作当前登录管理员"),
     LOGIN_FAILED("C204", "用户名或密码错误"),
 
     SCREENING_TIME_CONFLICT("C501", "同影厅同一开场时间已有排场"),

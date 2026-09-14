@@ -7,7 +7,6 @@ CREATE TABLE `t_admin`
     `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态（0-禁用 1-启用）',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`)
 ) ENGINE = InnoDB
@@ -24,7 +23,6 @@ CREATE TABLE `t_user`
     `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态（0-禁用 1-启用）',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_phone` (`phone`)
 ) ENGINE = InnoDB
@@ -43,7 +41,6 @@ CREATE TABLE `t_movie`
     `status`       TINYINT       NOT NULL DEFAULT 1 COMMENT '状态（0-下架 1-上架；热映/待映由 release_date 与当前时间比对得出）',
     `create_time`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`      TINYINT       NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     KEY `idx_status_release` (`status`, `release_date`)
 ) ENGINE = InnoDB
@@ -60,7 +57,6 @@ CREATE TABLE `t_banner`
     `status`      TINYINT      NOT NULL DEFAULT 0 COMMENT '状态（0-禁用 1-启用）',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -75,7 +71,6 @@ CREATE TABLE `t_cinema`
     `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态（0-停业 1-营业）',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

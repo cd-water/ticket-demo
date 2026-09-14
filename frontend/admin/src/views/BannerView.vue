@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { deleteBanner, listBanners, saveBanner } from '@/api/banners'
+import { listBanners, saveBanner } from '@/api/banners'
 import { uploadImage } from '@/api/files'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
@@ -20,6 +20,7 @@ const form = reactive({ image: '', linkUrl: '', sort: 0, status: 1 })
 
 const rules = {
   image: [{ required: true, message: '请上传轮播图片', trigger: 'change' }],
+  linkUrl: [{ required: true, message: '请输入跳转链接', trigger: 'blur' }],
 }
 
 async function load() {
@@ -88,25 +89,6 @@ async function submit() {
   }
 }
 
-async function remove(row: BannerVO) {
-  try {
-    await ElMessageBox.confirm('删除这张轮播图？', '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
-  try {
-    await deleteBanner(row.id)
-    ElMessage.success('已删除')
-    load()
-  } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
-  }
-}
 </script>
 
 <template>
@@ -138,10 +120,9 @@ async function remove(row: BannerVO) {
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="150" align="right">
+      <el-table-column label="操作" width="90" align="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button link type="danger" @click="remove(row)">删除</el-button>
         </template>
       </el-table-column>
       <template #empty>暂无轮播图，点右上角「新增轮播图」开始</template>
@@ -155,7 +136,7 @@ async function remove(row: BannerVO) {
             <div v-else class="upload-slot wide">{{ uploading ? '上传中…' : '＋ 上传图片' }}</div>
           </el-upload>
         </el-form-item>
-        <el-form-item label="跳转链接">
+        <el-form-item label="跳转链接" prop="linkUrl">
           <el-input v-model="form.linkUrl" maxlength="255" placeholder="如 /movies/1" />
         </el-form-item>
         <el-form-item label="排序">
