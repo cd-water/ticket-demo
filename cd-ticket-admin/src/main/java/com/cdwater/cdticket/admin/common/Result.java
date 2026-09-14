@@ -40,7 +40,9 @@ public class Result<T> {
         return fail(resultCode.getCode(), resultCode.getMessage());
     }
 
-    /** 手动写响应的场景（如 Spring Security 入口）用 */
+    /**
+     * 手动写响应的场景（如 Spring Security 入口）用
+     */
     public String toJson() {
         try {
             return MAPPER.writeValueAsString(this);

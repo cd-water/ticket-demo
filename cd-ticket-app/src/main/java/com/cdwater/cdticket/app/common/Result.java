@@ -35,7 +35,9 @@ public class Result<T> {
         return fail(resultCode.getCode(), resultCode.getMessage());
     }
 
-    /** 序列化为 JSON。Spring MVC 的 @RestControllerAdvice 走 Jackson 自动序列化，本方法用于 Spring Security 入口等需手动写响应的场景。 */
+    /**
+     * 手动写响应的场景（如 Spring Security 入口）用
+     */
     public String toJson() {
         try {
             return MAPPER.writeValueAsString(this);

@@ -3,31 +3,33 @@ package com.cdwater.cdticket.app.common;
 import lombok.Getter;
 
 /**
- * 错误码
- *
- * 格式：[类别字母] + 3 位数字；SUCCESS 单独用 "0000"
- *   O = 成功
- *   C = 客户端错误
- *   S = 服务端错误
- *   T = 第三方错误（暂未使用）
+ * 错误码：O=成功，C=客户端错误，S=服务端错误，T=第三方错误
  */
 @Getter
 public enum ResultCode {
     SUCCESS("0000", "ok"),
 
-    // C0xx 公共
-    BAD_REQUEST("C001", "参数错误"),
-    UNAUTHORIZED("C002", "未认证或登录已过期"),
+    // C0xx 通用客户端错误（对应 HTTP 状态码）
+    BAD_REQUEST("C001", "Bad Request"),
+    UNAUTHORIZED("C002", "Unauthorized"),
+    FORBIDDEN("C003", "Forbidden"),
+    NOT_FOUND("C004", "Not Found"),
+    CONFLICT("C005", "Conflict"),
 
-    // C1xx 用户
+    // C1xx 认证与账号
     LOGIN_FAILED("C101", "用户名或密码错误"),
     SMS_CODE_INVALID("C102", "验证码错误或已过期"),
     USER_DISABLED("C103", "用户已禁用"),
     PASSWORD_SAME_AS_OLD("C104", "新密码与旧密码相同"),
     PASSWORD_CONFIRM_MISMATCH("C105", "两次输入密码不一致"),
 
-    // S0xx 公共
-    INTERNAL_ERROR("S001", "系统异常");
+    // C2xx 电影 / C3xx 影院 / C4xx 排场 / C5xx 订单 / C6xx 支付（预留）
+
+    // S0xx 服务端
+    INTERNAL_ERROR("S001", "Internal Server Error"),
+
+    // T0xx 第三方
+    SMS_SERVICE_ERROR("T001", "短信服务异常");
 
     private final String code;
     private final String message;
