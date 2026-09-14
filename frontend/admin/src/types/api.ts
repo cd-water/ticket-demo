@@ -260,6 +260,65 @@ export interface UserListQuery extends PageQuery {
   status?: number
 }
 
+/* ---------- 仪表盘 ---------- */
+
+/** GET /api/admin/dashboard */
+export interface DashboardVO {
+  /** 热映：上架中且已上映（release_date ≤ 今天） */
+  hotMovieCount: number
+  /** 待映：上架中且未上映（release_date > 今天） */
+  upcomingMovieCount: number
+  /** 营业中的影院数（status=1） */
+  cinemaOpenCount: number
+  /** 停业的影院数（status=0） */
+  cinemaClosedCount: number
+  /** 用户总数（不论状态） */
+  userCount: number
+  todayPendingCount: number
+  todayPaidCount: number
+  todayCancelledCount: number
+  /** 今日已支付订单营收 */
+  todayRevenue: number
+  /** 全部已支付订单营收 */
+  totalRevenue: number
+  totalOrderCount: number
+  totalPendingCount: number
+  totalPaidCount: number
+  totalCancelledCount: number
+  /** 各影院经营汇总（已支付营收降序） */
+  perCinemaStats: CinemaStat[]
+  /** 影片票房排行 Top 5（已支付营收降序） */
+  movieRanking: MovieRank[]
+  /** 近 7 日已支付订单/营收，缺失日期补 0 */
+  dailyStats: DailyOrderStat[]
+}
+
+/** 单个影院的经营汇总（仅已支付订单计营收与订单数） */
+export interface CinemaStat {
+  name: string
+  /** 已支付订单数 */
+  orderCount: number
+  /** 已支付订单营收 */
+  revenue: number
+}
+
+/** 影片票房排行条目（仅已支付订单） */
+export interface MovieRank {
+  title: string
+  /** 已支付订单数 */
+  orderCount: number
+  /** 已支付订单营收 */
+  revenue: number
+}
+
+/** 单日订单统计（仅已支付订单） */
+export interface DailyOrderStat {
+  /** yyyy-MM-dd */
+  date: string
+  orderCount: number
+  revenue: number
+}
+
 /* ---------- 轮播图 ---------- */
 
 /** GET /api/admin/banners 的元素，按 sort 升序、同 sort 按 id 倒序 */

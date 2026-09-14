@@ -4,7 +4,7 @@ import { MENUS, type MenuKey } from '@/config/menu'
 
 /** 菜单 key → 页面组件。漏登记会在 vue-tsc 阶段报错，而不是静默渲染成空页面。 */
 const VIEWS: Record<MenuKey, () => Promise<unknown>> = {
-  dashboard: () => import('@/views/PlaceholderView.vue'),
+  dashboard: () => import('@/views/DashboardView.vue'),
   movies: () => import('@/views/MovieView.vue'),
   cinemas: () => import('@/views/CinemaView.vue'),
   banners: () => import('@/views/BannerView.vue'),

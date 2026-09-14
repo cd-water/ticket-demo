@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cdwater.cdticket.admin.mapper.CinemaMapper">
+
+    <select id="selectCinemaStats" resultType="com.cdwater.cdticket.admin.dto.dashboard.CinemaStat">
+        SELECT c.name,
+        (SELECT COUNT(*) FROM t_order o WHERE o.cinema_id = c.id AND o.status = 1) AS order_count,
+        (SELECT COALESCE(SUM(o.total_amount), 0) FROM t_order o WHERE o.cinema_id = c.id AND o.status = 1) AS revenue
+        FROM t_cinema c
+        ORDER BY revenue DESC, c.id ASC
+    </select>
+</mapper>

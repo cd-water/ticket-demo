@@ -25,4 +25,30 @@
         </where>
         ORDER BY o.create_time DESC
     </select>
+
+    <select id="countByStatus" resultType="long">
+        SELECT COUNT(*) FROM t_order WHERE status = #{status}
+    </select>
+
+    <select id="countByStatusSince" resultType="long">
+        SELECT COUNT(*) FROM t_order WHERE status = #{status} AND create_time &gt;= #{start}
+    </select>
+
+    <select id="sumPaidTotal" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0) FROM t_order WHERE status = 1
+    </select>
+
+    <select id="sumPaidSince" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0) FROM t_order WHERE status = 1 AND create_time &gt;= #{start}
+    </select>
+
+    <select id="selectDailyStats" resultType="com.cdwater.cdticket.admin.dto.dashboard.DailyOrderStat">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+               COUNT(*) AS order_count,
+               COALESCE(SUM(total_amount), 0) AS revenue
+        FROM t_order
+        WHERE status = 1 AND create_time &gt;= #{start}
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date
+    </select>
 </mapper>
