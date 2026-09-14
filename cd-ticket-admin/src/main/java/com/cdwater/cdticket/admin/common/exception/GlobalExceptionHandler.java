@@ -7,7 +7,9 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -61,7 +63,23 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DuplicateKeyException.class)
     public Result<Void> handleDuplicateKey(DuplicateKeyException e) {
-        return Result.fail(ResultCode.BAD_REQUEST.getCode(), "数据已存在或冲突");
+        return Result.fail(ResultCode.CONFLICT.getCode(), "数据已存在（唯一键冲突）");
+    }
+
+    /**
+     * 请求参数缺失
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public Result<Void> handleMissingParam(MissingServletRequestParameterException e) {
+        return Result.fail(ResultCode.BAD_REQUEST.getCode(), "缺少参数: " + e.getParameterName());
+    }
+
+    /**
+     * 请求体缺失或格式错误
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public Result<Void> handleNotReadable(HttpMessageNotReadableException e) {
+        return Result.fail(ResultCode.BAD_REQUEST.getCode(), "请求体缺失或格式错误");
     }
 
     /**

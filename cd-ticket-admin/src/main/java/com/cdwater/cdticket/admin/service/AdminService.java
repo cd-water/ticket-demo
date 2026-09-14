@@ -31,7 +31,7 @@ public class AdminService {
 
     public void create(AdminSaveRequest req) {
         if (adminMapper.selectOne(new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, req.getUsername())) != null) {
-            throw new BizException(ResultCode.ADMIN_USERNAME_EXISTS);
+            throw new BizException("用户名已存在", ResultCode.CONFLICT.getCode());
         }
         Admin admin = new Admin();
         admin.setUsername(req.getUsername());

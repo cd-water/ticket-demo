@@ -9,9 +9,9 @@ import lombok.Getter;
 @Getter
 public class BizException extends RuntimeException {
 
-    private final String code;
+    private final int code;
 
-    public BizException(String message, String code) {
+    public BizException(String message, int code) {
         super(message);
         this.code = code;
     }

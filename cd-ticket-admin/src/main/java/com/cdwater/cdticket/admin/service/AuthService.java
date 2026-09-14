@@ -23,7 +23,7 @@ public class AuthService {
         Admin admin = adminMapper.selectOne(new LambdaQueryWrapper<Admin>().eq(Admin::getUsername, username));
         if (admin == null || admin.getStatus() == null || admin.getStatus() != 1
                 || !passwordEncoder.matches(password, admin.getPassword())) {
-            throw new BizException(ResultCode.LOGIN_FAILED);
+            throw new BizException("用户名或密码错误", ResultCode.UNAUTHORIZED.getCode());
         }
         String token = tokenStoreService.issue(admin.getId());
 

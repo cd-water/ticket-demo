@@ -97,10 +97,7 @@ function onSize(s: number) {
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">
       <el-table-column label="订单号" min-width="180" prop="orderNo" />
       <el-table-column label="用户" min-width="160">
-        <template #default="{ row }">
-          {{ row.userNickname || '—' }}
-          <span class="detail-text">{{ row.userPhone || '' }}</span>
-        </template>
+        <template #default="{ row }">{{ row.userPhone || '—' }}</template>
       </el-table-column>
       <el-table-column label="影片" min-width="150" prop="movieTitle" />
       <el-table-column label="金额" width="110">
@@ -111,11 +108,14 @@ function onSize(s: number) {
           <StatusPill :label="STATUS_LABEL[row.status] ?? '未知'" :tone="STATUS_TONE[row.status] ?? 'muted'" />
         </template>
       </el-table-column>
-      <el-table-column label="下单时间" width="150">
-        <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
-      </el-table-column>
       <el-table-column label="支付截止" width="150">
         <template #default="{ row }">{{ formatDateTime(row.payExpireTime) }}</template>
+      </el-table-column>
+      <el-table-column label="支付时间" width="150">
+        <template #default="{ row }">{{ formatDateTime(row.payTime) }}</template>
+      </el-table-column>
+      <el-table-column label="创建时间" width="150">
+        <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
       </el-table-column>
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>

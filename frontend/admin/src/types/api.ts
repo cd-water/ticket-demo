@@ -1,6 +1,6 @@
-/** 后端统一响应信封（code 为字符串，"0000" 成功） */
+/** 后端统一响应信封（code 为数字，200 成功，其余沿用 HTTP 语义） */
 export interface Result<T = unknown> {
-  code: string
+  code: number
   message: string
   data: T
 }
@@ -138,14 +138,12 @@ export interface ScreeningVO {
   cinemaId: number
   startTime: string
   price: number
-  status: number
   createTime: string
   updateTime: string
 }
 
 export interface ScreeningSaveRequest {
   id?: number | null
-  cinemaId: number
   movieId: number
   hallId: number
   startTime: string
@@ -158,16 +156,13 @@ export interface OrderVO {
   orderNo: string
   userId: number
   userPhone: string | null
-  userNickname: string | null
   screeningId: number
   movieId: number
   movieTitle: string
-  cinemaId: number
   status: number
   totalAmount: number
   payExpireTime: string | null
   payTime: string | null
-  cancelType: number | null
   createTime: string
   updateTime: string
 }
@@ -200,9 +195,4 @@ export interface AdminSaveRequest {
 /** 重置密码 */
 export interface ResetPasswordRequest {
   password: string
-}
-
-/** 文件上传（/api/admin/files） */
-export interface UploadResponse {
-  url: string
 }

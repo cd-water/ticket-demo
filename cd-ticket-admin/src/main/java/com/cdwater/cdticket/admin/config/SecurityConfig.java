@@ -57,6 +57,6 @@ public class SecurityConfig {
                                    org.springframework.security.core.AuthenticationException e) throws IOException {
         response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"code\":\"C002\",\"message\":\"未认证或登录已过期\",\"data\":null}");
+        response.getWriter().write("{\"code\":401,\"message\":\"未认证或登录已过期\",\"data\":null}");
     }
 }

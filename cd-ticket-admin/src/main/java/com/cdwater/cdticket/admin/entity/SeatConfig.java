@@ -17,7 +17,6 @@ public class SeatConfig {
     private Integer seatCol;
     private String seatNo;
     private Integer status;
-    private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

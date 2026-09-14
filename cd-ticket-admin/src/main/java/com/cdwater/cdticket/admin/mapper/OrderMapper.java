@@ -7,9 +7,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface OrderAdminMapper {
+public interface OrderMapper {
     IPage<OrderVO> selectPage(Page<OrderVO> page,
-                                       @Param("orderNo") String orderNo,
-                                       @Param("status") Integer status,
-                                       @Param("cinemaId") Long cinemaId);
+                              @Param("orderNo") Long orderNo,
+                              @Param("status") Integer status,
+                              @Param("cinemaId") Long cinemaId);
 }

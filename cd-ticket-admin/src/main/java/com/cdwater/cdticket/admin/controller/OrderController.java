@@ -1,12 +1,11 @@
 package com.cdwater.cdticket.admin.controller;
 
-import com.cdwater.cdticket.admin.service.OrderQueryService;
+import com.cdwater.cdticket.admin.service.OrderService;
 import com.cdwater.cdticket.admin.dto.order.OrderVO;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.Result;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,15 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class OrderAdminController {
-    private final OrderQueryService orderQueryService;
+public class OrderController {
+    private final OrderService orderService;
 
     @GetMapping("/api/admin/cinemas/{cinemaId}/orders")
     public Result<PageResult<OrderVO>> pageByCinema(@PathVariable @Min(1) Long cinemaId,
-                                                   @RequestParam(defaultValue = "1") @Min(1) int page,
-                                                   @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-                                                   @RequestParam(required = false) @Size(max = 32) String orderNo,
-                                                   @RequestParam(required = false) @Min(0) @Max(2) Integer status) {
-        return Result.success(orderQueryService.pageByCinema(page, size, orderNo, status, cinemaId));
+                                                    @RequestParam(defaultValue = "1") @Min(1) int page,
+                                                    @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+                                                    @RequestParam(required = false) Long orderNo,
+                                                    @RequestParam(required = false) @Min(0) @Max(2) Integer status) {
+        return Result.success(orderService.pageByCinema(page, size, orderNo, status, cinemaId));
     }
 }

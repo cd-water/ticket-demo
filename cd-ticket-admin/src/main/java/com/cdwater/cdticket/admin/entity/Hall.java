@@ -17,7 +17,6 @@ public class Hall {
     private Integer seatRows;
     private Integer seatCols;
     private Integer status;
-    private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

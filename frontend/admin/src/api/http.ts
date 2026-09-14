@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 
 /**
  * axios 实例：统一拆包 Result<T>、401 踢出、错误提示。
- * 调用方拿到的是 data 本身；业务失败（HTTP 200 + code≠0000）走 reject。
+ * 调用方拿到的是 data 本身；业务失败（HTTP 200 + code≠200）走 reject。
  */
 const http = axios.create({
   baseURL: '/api',
@@ -24,7 +24,7 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
   (resp) => {
     const body = resp.data as Result
-    if (body.code === '0000') {
+    if (body.code === 200) {
       // 约定：拦截器直接把业务 data 交给调用方，调用方用 http.post<unknown, T> 声明真实类型
       return body.data as unknown as AxiosResponse
     }

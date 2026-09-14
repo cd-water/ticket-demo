@@ -58,7 +58,7 @@ function openEdit(row: BannerVO) {
 function onUpload(file: File) {
   uploading.value = true
   uploadImage(file)
-    .then(({ url }) => {
+    .then((url) => {
       form.image = url
       formRef.value?.validateField('image').catch(() => undefined)
       ElMessage.success('图片已上传')

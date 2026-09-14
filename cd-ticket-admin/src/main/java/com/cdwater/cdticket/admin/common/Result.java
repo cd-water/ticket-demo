@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class Result<T> {
 
-    private String code;
+    private int code;
     private String message;
     private T data;
 
@@ -24,7 +24,7 @@ public class Result<T> {
         return r;
     }
 
-    public static <T> Result<T> fail(String code, String message) {
+    public static <T> Result<T> fail(int code, String message) {
         Result<T> r = new Result<>();
         r.code = code;
         r.message = message;

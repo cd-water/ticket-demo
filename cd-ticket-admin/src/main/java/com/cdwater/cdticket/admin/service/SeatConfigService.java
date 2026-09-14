@@ -3,11 +3,12 @@ package com.cdwater.cdticket.admin.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.dto.seat.SeatCellRequest;
-import com.cdwater.cdticket.admin.dto.seat.SeatCellVO;
-import com.cdwater.cdticket.admin.dto.seat.SeatGridVO;
+import com.cdwater.cdticket.admin.dto.hall.SeatCellRequest;
+import com.cdwater.cdticket.admin.dto.hall.SeatCellVO;
+import com.cdwater.cdticket.admin.dto.hall.SeatGridVO;
 import com.cdwater.cdticket.admin.entity.Hall;
 import com.cdwater.cdticket.admin.entity.SeatConfig;
+import com.cdwater.cdticket.admin.mapper.HallMapper;
 import com.cdwater.cdticket.admin.mapper.SeatConfigMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SeatConfigService {
-    private final HallService hallService;
+    private final HallMapper hallMapper;
     private final SeatConfigMapper configMapper;
 
     public SeatGridVO getGrid(Long hallId) {
-        Hall hall = hallService.requireHall(hallId);
+        Hall hall = hallMapper.selectById(hallId);
+        if (hall == null) {
+            throw new BizException(ResultCode.NOT_FOUND);
+        }
         List<SeatConfig> configs = configMapper.selectList(new LambdaQueryWrapper<SeatConfig>()
                 .eq(SeatConfig::getHallId, hallId));
         Map<String, Integer> statusBySeat = configs.stream()
@@ -43,7 +47,10 @@ public class SeatConfigService {
 
     @Transactional
     public void replace(Long hallId, List<SeatCellRequest> seats) {
-        Hall hall = hallService.requireHall(hallId);
+        Hall hall = hallMapper.selectById(hallId);
+        if (hall == null) {
+            throw new BizException(ResultCode.NOT_FOUND);
+        }
         for (SeatCellRequest cell : seats) {
             if (cell.getRow() < 1 || cell.getRow() > hall.getSeatRows()
                     || cell.getCol() < 1 || cell.getCol() > hall.getSeatCols()) {
@@ -63,7 +70,7 @@ public class SeatConfigService {
             s.setStatus(c.getStatus());
             return s;
         }).toList();
-        configMapper.deleteByHallId(hallId);
+        configMapper.delete(new LambdaQueryWrapper<SeatConfig>().eq(SeatConfig::getHallId, hallId));
         configMapper.insert(entities);
     }
 }

@@ -4,8 +4,6 @@ import com.cdwater.cdticket.admin.service.UserService;
 import com.cdwater.cdticket.admin.dto.user.UserVO;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.Result;
-import com.cdwater.cdticket.admin.dto.common.StatusRequest;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -36,8 +34,8 @@ public class UserController {
     }
 
     @PostMapping("/{id}/status")
-    public Result<Void> toggleStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest req) {
-        userService.toggleStatus(id, req.getStatus());
+    public Result<Void> toggleStatus(@PathVariable Long id, @RequestParam @Min(0) @Max(1) Integer status) {
+        userService.toggleStatus(id, status);
         return Result.success();
     }
 }

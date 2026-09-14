@@ -97,7 +97,7 @@ function openEdit(row: MovieVO) {
 function onUpload(file: File) {
   uploading.value = true
   uploadImage(file)
-    .then(({ url }) => {
+    .then((url) => {
       form.poster = url
       formRef.value?.validateField('poster').catch(() => undefined)
       ElMessage.success('海报已上传')

@@ -22,7 +22,3 @@ export function listMovieOptions() {
 export function saveScreening(body: ScreeningSaveRequest) {
   return http.post<unknown, void>('/admin/screenings/save', body)
 }
-
-export function deleteScreening(id: number) {
-  return http.post<unknown, void>(`/admin/screenings/${id}/delete`)
-}

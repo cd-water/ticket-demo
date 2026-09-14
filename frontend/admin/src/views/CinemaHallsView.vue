@@ -3,8 +3,9 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { deleteHall, getSeatGrid, listHallsByCinema, saveHall, saveSeatGrid } from '@/api/halls'
+import { getSeatGrid, listHallsByCinema, saveHall, saveSeatGrid } from '@/api/halls'
 import SeatCanvas from '@/components/SeatCanvas.vue'
+import StatusPill from '@/components/StatusPill.vue'
 import type { HallVO, SeatCellVO } from '@/types/api'
 
 const route = useRoute()
@@ -22,7 +23,7 @@ const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
 const saving = ref(false)
 const formRef = ref<FormInstance>()
-const form = reactive({ name: '', seatRows: 8, seatCols: 10 })
+const form = reactive({ name: '', seatRows: 8, seatCols: 10, status: 1 })
 
 const rules = {
   name: [{ required: true, message: '请输入影厅名称', trigger: 'blur' }],
@@ -109,14 +110,14 @@ async function saveSeats() {
 
 function openCreate() {
   editingId.value = null
-  Object.assign(form, { name: '', seatRows: 8, seatCols: 10 })
+  Object.assign(form, { name: '', seatRows: 8, seatCols: 10, status: 1 })
   formRef.value?.clearValidate()
   dialogVisible.value = true
 }
 
 function openEdit(hall: HallVO) {
   editingId.value = hall.id
-  Object.assign(form, { name: hall.name, seatRows: hall.seatRows, seatCols: hall.seatCols })
+  Object.assign(form, { name: hall.name, seatRows: hall.seatRows, seatCols: hall.seatCols, status: hall.status })
   formRef.value?.clearValidate()
   dialogVisible.value = true
 }
@@ -151,29 +152,6 @@ async function submit() {
   }
 }
 
-async function removeHall(hall: HallVO) {
-  try {
-    await ElMessageBox.confirm(`删除影厅「${hall.name}」？`, '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
-  try {
-    await deleteHall(hall.id)
-    ElMessage.success('已删除')
-    await loadHalls()
-  } catch {
-    /* 已排场影厅后端返回 C502，提示已由 http.ts 弹出 */
-  }
-}
-
-function removeCurrent() {
-  if (current.value) removeHall(current.value)
-}
 </script>
 
 <template>
@@ -189,12 +167,12 @@ function removeCurrent() {
       >
         <span>{{ h.name }}</span>
         <span class="meta">{{ h.seatRows }}×{{ h.seatCols }}</span>
+        <StatusPill :label="h.status === 1 ? '启用' : '禁用'" :tone="h.status === 1 ? 'ok' : 'muted'" />
       </div>
       <p v-if="!halls.length" class="hall-empty">本影院暂无影厅</p>
 
       <div class="hall-actions">
         <el-button size="small" :disabled="!current" @click="editCurrent">编辑影厅</el-button>
-        <el-button size="small" type="danger" plain :disabled="!current" @click="removeCurrent">删除影厅</el-button>
       </div>
       <button class="hall-add" type="button" @click="openCreate">＋ 新增影厅</button>
     </div>
@@ -225,6 +203,12 @@ function removeCurrent() {
         </el-form-item>
         <el-form-item label="每排座位">
           <el-input-number v-model="form.seatCols" :min="1" :max="26" :value-on-clear="10" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="form.status">
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>

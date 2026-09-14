@@ -87,7 +87,6 @@ CREATE TABLE `t_hall`
     `status`      TINYINT     NOT NULL DEFAULT 1 COMMENT '状态（0-禁用 1-启用）',
     `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT     NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -104,7 +103,6 @@ CREATE TABLE `t_seat_config`
     `status`      TINYINT     NOT NULL DEFAULT 1 COMMENT '状态（0-禁用 1-启用）',
     `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT     NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_hall_row_col` (`hall_id`, `seat_row`, `seat_col`)
 ) ENGINE = InnoDB
@@ -122,7 +120,6 @@ CREATE TABLE `t_screening`
     `price`       DECIMAL(10, 2) NOT NULL COMMENT '票价（元）',
     `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT        NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_hall_start` (`hall_id`, `start_time`),
     KEY `idx_movie_time` (`movie_id`, `start_time`),
@@ -135,27 +132,23 @@ CREATE TABLE `t_screening`
 CREATE TABLE `t_order`
 (
     `id`              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID（主键）',
-    `order_no`        VARCHAR(32)    NOT NULL COMMENT '订单号（取票码复用此号）',
+    `order_no`        BIGINT         NOT NULL COMMENT '订单号（雪花ID，取票码复用此号）',
     `user_id`         BIGINT         NOT NULL COMMENT '关联用户ID',
     `screening_id`    BIGINT         NOT NULL COMMENT '关联排场ID',
-    `movie_id`        BIGINT         NOT NULL COMMENT '关联电影ID（冗余）',
-    `movie_title`     VARCHAR(100)   NOT NULL COMMENT '影片名快照',
+    `movie_id`        BIGINT         NOT NULL COMMENT '关联电影ID',
     `cinema_id`       BIGINT         NOT NULL COMMENT '关联影院ID',
     `status`          TINYINT        NOT NULL DEFAULT 0 COMMENT '状态（0-待支付 1-已支付 2-已取消）',
     `total_amount`    DECIMAL(10, 2) NOT NULL COMMENT '总金额',
     `version`         INT            NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
-    `pay_expire_time` DATETIME       NOT NULL COMMENT '支付截止时间（创建+15分钟）',
-    `pay_time`        DATETIME       NULL COMMENT '支付时间（冗余）',
-    `cancel_type`     TINYINT        NULL COMMENT '取消类型（1-手动 2-超时）',
+    `pay_expire_time` DATETIME       NOT NULL COMMENT '支付截止时间',
+    `pay_time`        DATETIME       NULL COMMENT '支付时间',
     `create_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`         TINYINT        NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_order_no` (`order_no`),
     KEY `idx_user_status` (`user_id`, `status`),
     KEY `idx_cinema_status` (`cinema_id`, `status`),
-    KEY `idx_screening` (`screening_id`),
-    KEY `idx_pay_expire` (`pay_expire_time`)
+    KEY `idx_status_expire` (`status`, `pay_expire_time`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单表';
@@ -171,7 +164,6 @@ CREATE TABLE `t_order_item`
     `price`       DECIMAL(10, 2) NOT NULL COMMENT '该座票价快照',
     `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT        NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     KEY `idx_order` (`order_id`)
 ) ENGINE = InnoDB
@@ -190,7 +182,6 @@ CREATE TABLE `t_payment_record`
     `pay_time`    DATETIME       NULL COMMENT '支付成功时间',
     `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT        NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_payment_no` (`payment_no`),
     KEY `idx_order_no` (`order_no`),
@@ -210,7 +201,6 @@ CREATE TABLE `t_local_message`
     `retry_count` INT         NOT NULL DEFAULT 0 COMMENT '重试次数',
     `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`     TINYINT     NOT NULL DEFAULT 0 COMMENT '逻辑删除（0-否 1-是）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_type_biz` (`msg_type`, `biz_id`),
     KEY `idx_status` (`status`)

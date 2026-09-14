@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { listHallsByCinema } from '@/api/halls'
-import { deleteScreening, listMovieOptions, listScreeningsByCinema, saveScreening } from '@/api/screenings'
+import { listMovieOptions, listScreeningsByCinema, saveScreening } from '@/api/screenings'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
 import type { HallVO, MovieOption, ScreeningVO } from '@/types/api'
@@ -76,6 +76,11 @@ function filterMovies(v: number | null) {
   load()
 }
 
+/** 是否已开场（前端按 startTime 计算，后端 C503 兜底） */
+function started(row: ScreeningVO) {
+  return new Date(row.startTime.replace(' ', 'T')).getTime() < Date.now()
+}
+
 function openCreate() {
   editingId.value = null
   Object.assign(form, { movieId: null, hallId: null, startTime: '', price: 45 })
@@ -84,7 +89,7 @@ function openCreate() {
 }
 
 function openEdit(row: ScreeningVO) {
-  if (row.status === 1) {
+  if (started(row)) {
     ElMessage.warning('已开场的排场不能修改')
     return
   }
@@ -105,7 +110,6 @@ async function submit() {
   saving.value = true
   const body = {
     id: editingId.value,
-    cinemaId,
     movieId: form.movieId as number,
     hallId: form.hallId as number,
     startTime: form.startTime,
@@ -117,37 +121,9 @@ async function submit() {
     dialogVisible.value = false
     load()
   } catch {
-    /* 错误由 http.ts 统一弹（含 C501 时间冲突） */
+    /* 错误由 http.ts 统一弹（含同影厅时间冲突） */
   } finally {
     saving.value = false
-  }
-}
-
-async function remove(row: ScreeningVO) {
-  if (row.status === 1) {
-    ElMessage.warning('已开场的排场不能删除')
-    return
-  }
-  try {
-    await ElMessageBox.confirm(
-      `删除「${row.movieTitle}」${formatDateTime(row.startTime)} 的排场？`,
-      '删除确认',
-      {
-        type: 'warning',
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
-        confirmButtonClass: 'el-button--danger',
-      },
-    )
-  } catch {
-    return
-  }
-  try {
-    await deleteScreening(row.id)
-    ElMessage.success('已删除')
-    load()
-  } catch {
-    /* 错误由 http.ts 统一弹 */
   }
 }
 
@@ -192,16 +168,15 @@ function onSize(s: number) {
       </el-table-column>
       <el-table-column label="状态" width="110">
         <template #default="{ row }">
-          <StatusPill :label="row.status === 1 ? '已开场' : '未开始'" :tone="row.status === 1 ? 'muted' : 'ok'" />
+          <StatusPill :label="started(row) ? '已开场' : '未开始'" :tone="started(row) ? 'muted' : 'ok'" />
         </template>
       </el-table-column>
       <el-table-column label="更新时间" width="170">
         <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="150" align="right">
+      <el-table-column label="操作" width="90" align="right">
         <template #default="{ row }">
-          <el-button link type="primary" :disabled="row.status === 1" @click="openEdit(row)">编辑</el-button>
-          <el-button link type="danger" :disabled="row.status === 1" @click="remove(row)">删除</el-button>
+          <el-button link type="primary" :disabled="started(row)" @click="openEdit(row)">编辑</el-button>
         </template>
       </el-table-column>
       <template #empty>暂无排场，点右上角「新增排场」开始</template>

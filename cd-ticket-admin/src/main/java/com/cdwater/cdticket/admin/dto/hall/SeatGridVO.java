@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.admin.dto.seat;
+package com.cdwater.cdticket.admin.dto.hall;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

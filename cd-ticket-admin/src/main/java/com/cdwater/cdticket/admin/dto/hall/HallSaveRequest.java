@@ -27,4 +27,8 @@ public class HallSaveRequest {
     @Min(value = 1)
     @Max(value = 26)
     private Integer seatCols;
+
+    @Min(value = 0)
+    @Max(value = 1)
+    private Integer status;
 }

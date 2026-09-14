@@ -6,18 +6,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.ResultCode;
 import com.cdwater.cdticket.admin.common.exception.BizException;
-import com.cdwater.cdticket.admin.dto.movie.MovieOption;
 import com.cdwater.cdticket.admin.dto.movie.MovieSaveRequest;
 import com.cdwater.cdticket.admin.dto.movie.MovieVO;
 import com.cdwater.cdticket.admin.entity.Movie;
 import com.cdwater.cdticket.admin.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,23 +39,6 @@ public class MovieService {
         }
     }
 
-    public MovieVO getMovie(Long id) {
-        Movie movie = movieMapper.selectById(id);
-        return movie == null ? null : toVO(movie);
-    }
-
-    public Map<Long, String> mapTitlesByIds(Collection<Long> ids) {
-        if (ids.isEmpty()) return Map.of();
-        return movieMapper.selectBatchIds(ids).stream()
-                .collect(Collectors.toMap(Movie::getId, Movie::getTitle));
-    }
-
-    public List<MovieOption> listOptions() {
-        return movieMapper.selectList(new LambdaQueryWrapper<Movie>()
-                .eq(Movie::getStatus, 1)
-                .orderByAsc(Movie::getId)).stream().map(MovieService::toOption).toList();
-    }
-
     private static MovieVO toVO(Movie m) {
         MovieVO v = new MovieVO();
         v.setId(m.getId());
@@ -86,12 +63,5 @@ public class MovieService {
         m.setReleaseDate(req.getReleaseDate());
         m.setStatus(req.getStatus());
         return m;
-    }
-
-    private static MovieOption toOption(Movie m) {
-        MovieOption o = new MovieOption();
-        o.setId(m.getId());
-        o.setTitle(m.getTitle());
-        return o;
     }
 }

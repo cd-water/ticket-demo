@@ -13,5 +13,5 @@ export function listUsers(q: UserListQuery) {
 }
 
 export function toggleUserStatus(id: number, status: number) {
-  return http.post<unknown, void>(`/admin/users/${id}/status`, { status })
+  return http.post<unknown, void>(`/admin/users/${id}/status`, null, { params: { status } })
 }

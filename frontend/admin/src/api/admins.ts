@@ -16,5 +16,5 @@ export function resetPassword(id: number, body: ResetPasswordRequest) {
 }
 
 export function updateAdminStatus(id: number, status: number) {
-  return http.post<unknown, void>(`/admin/admins/${id}/status`, { status })
+  return http.post<unknown, void>(`/admin/admins/${id}/status`, null, { params: { status } })
 }

@@ -13,9 +13,6 @@ public class ScreeningSaveRequest {
     private Long id;
 
     @NotNull
-    private Long cinemaId;
-
-    @NotNull
     private Long movieId;
 
     @NotNull

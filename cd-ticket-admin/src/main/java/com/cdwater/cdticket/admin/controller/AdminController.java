@@ -8,14 +8,16 @@ import com.cdwater.cdticket.admin.dto.admin.AdminVO;
 import com.cdwater.cdticket.admin.dto.admin.AdminSaveRequest;
 import com.cdwater.cdticket.admin.dto.admin.LoginRequest;
 import com.cdwater.cdticket.admin.dto.admin.ResetPasswordRequest;
-import com.cdwater.cdticket.admin.dto.common.StatusRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -57,8 +59,8 @@ public class AdminController {
     }
 
     @PostMapping("/admins/{id}/status")
-    public Result<Void> toggleStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest req) {
-        adminService.toggleStatus(id, req.getStatus());
+    public Result<Void> toggleStatus(@PathVariable Long id, @RequestParam @Min(0) @Max(1) Integer status) {
+        adminService.toggleStatus(id, status);
         return Result.success();
     }
 }
