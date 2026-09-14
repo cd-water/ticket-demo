@@ -6,10 +6,12 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
@@ -49,6 +51,14 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .orElse(ResultCode.BAD_REQUEST.getMessage());
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), msg);
+    }
+
+    /**
+     * 请求参数类型不匹配（如 ?page=abc）/ 请求体格式错误（如日期串解析失败）
+     */
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
+    public Result<Void> handleUnreadableRequest(Exception e) {
+        return Result.fail(ResultCode.BAD_REQUEST);
     }
 
     /**

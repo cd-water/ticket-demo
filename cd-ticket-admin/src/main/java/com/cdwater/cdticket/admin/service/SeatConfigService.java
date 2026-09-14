@@ -66,7 +66,7 @@ public class SeatConfigService {
             s.setStatus(c.getStatus());
             return s;
         }).toList();
-        configMapper.delete(new LambdaQueryWrapper<SeatConfig>().eq(SeatConfig::getHallId, hallId));
+        configMapper.deleteByHallId(hallId);
         configMapper.insert(entities);
     }
 }

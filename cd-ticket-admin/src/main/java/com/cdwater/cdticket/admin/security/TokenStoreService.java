@@ -42,8 +42,11 @@ public class TokenStoreService {
                 admin.getId(), admin.getRole(), admin.getCinemaId());
     }
 
-    public void renew(String token) {
-        redis.expire(TOKEN_KEY + token, Duration.ofSeconds(props.getExpireSeconds()));
+    /** 两个 key 必须同寿命续期，否则 CURRENT_KEY 先过期后 revoke 找不到 token，登出/踢线失效 */
+    public void renew(String token, Long adminId) {
+        Duration ttl = Duration.ofSeconds(props.getExpireSeconds());
+        redis.expire(TOKEN_KEY + token, ttl);
+        redis.expire(CURRENT_KEY + adminId, ttl);
     }
 
     public void revoke(Long adminId) {

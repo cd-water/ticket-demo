@@ -53,6 +53,7 @@ public class ScreeningService {
         boolean isCreate = req.getId() == null;
         if (!isCreate) {
             Screening existing = requireScreening(req.getId());
+            SecurityUtils.requireScope(existing.getCinemaId());
             if (existing.getStartTime().isBefore(LocalDateTime.now())) {
                 throw new BizException(ResultCode.SCREENING_STARTED);
             }
@@ -84,10 +85,11 @@ public class ScreeningService {
 
     public void delete(Long id) {
         Screening existing = requireScreening(id);
+        SecurityUtils.requireScope(existing.getCinemaId());
         if (existing.getStartTime().isBefore(LocalDateTime.now())) {
             throw new BizException(ResultCode.SCREENING_STARTED);
         }
-        screeningMapper.deleteById(id);
+        screeningMapper.deletePhysicallyById(id);
     }
 
     private ScreeningVO toVO(Screening s, Map<Long, String> movieTitles, Map<Long, String> hallNames) {

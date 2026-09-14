@@ -20,9 +20,9 @@ public class OrderAdminController {
     @GetMapping
     @PreAuthorize("hasAuthority('CINEMA_ADMIN')")
     public Result<PageResult<OrderVO>> page(@RequestParam(defaultValue = "1") int page,
-                                                     @RequestParam(defaultValue = "10") int size,
-                                                     @RequestParam(required = false) String orderNo,
-                                                     @RequestParam(required = false) Integer status) {
+                                            @RequestParam(defaultValue = "10") int size,
+                                            @RequestParam(required = false) String orderNo,
+                                            @RequestParam(required = false) Integer status) {
         return Result.success(orderQueryService.page(page, size, orderNo, status));
     }
 }

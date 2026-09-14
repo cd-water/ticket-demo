@@ -35,7 +35,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                         info.adminId(), null, List.of(authority));
                 auth.setDetails(info);
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                tokenStore.renew(token);
+                tokenStore.renew(token, info.adminId());
             }
         }
         chain.doFilter(request, response);
