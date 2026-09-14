@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { createAdmin, listAdmins, resetPassword, updateAdminStatus } from '@/api/admins'
 import StatusPill from '@/components/StatusPill.vue'
 import { useFormDialog } from '@/composables/useFormDialog'
 import { useList } from '@/composables/useList'
+import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/format'
 import { passwordRules, usernameRules } from '@/utils/rules'
 import type { AdminManageVO } from '@/types/api'
+
+const auth = useAuthStore()
+const currentAdminId = computed(() => auth.admin?.id)
 
 const { rows, loading, load } = useList<AdminManageVO>(listAdmins)
 
@@ -105,8 +109,13 @@ onMounted(load)
       </el-table-column>
       <el-table-column label="操作" width="160" align="right">
         <template #default="{ row }">
-          <!-- 后端不允许操作当前登录的管理员自己（403），但仍给到按钮，由后端判定 -->
-          <el-button link :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">
+          <!-- 当前账号不允许禁用自己（后端 403 双保险） -->
+          <el-button
+            link
+            :type="row.status === 1 ? 'danger' : 'success'"
+            :disabled="row.id === currentAdminId"
+            @click="toggleStatus(row)"
+          >
             {{ row.status === 1 ? '禁用' : '启用' }}
           </el-button>
           <el-button link type="primary" @click="openResetDialog(row)">重置密码</el-button>

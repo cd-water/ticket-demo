@@ -115,7 +115,7 @@ CREATE TABLE `t_screening`
     `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '排场ID（主键）',
     `movie_id`    BIGINT         NOT NULL COMMENT '关联电影ID',
     `hall_id`     BIGINT         NOT NULL COMMENT '关联影厅ID',
-    `cinema_id`   BIGINT         NOT NULL COMMENT '关联影院ID（冗余）',
+    `cinema_id`   BIGINT         NOT NULL COMMENT '关联影院ID',
     `start_time`  DATETIME       NOT NULL COMMENT '开场时间',
     `price`       DECIMAL(10, 2) NOT NULL COMMENT '票价（元）',
     `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -132,13 +132,13 @@ CREATE TABLE `t_screening`
 CREATE TABLE `t_order`
 (
     `id`              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID（主键）',
-    `order_no`        BIGINT         NOT NULL COMMENT '订单号（雪花ID，取票码复用此号）',
+    `order_no`        BIGINT         NOT NULL COMMENT '订单号（雪花ID）',
     `user_id`         BIGINT         NOT NULL COMMENT '关联用户ID',
     `screening_id`    BIGINT         NOT NULL COMMENT '关联排场ID',
     `movie_id`        BIGINT         NOT NULL COMMENT '关联电影ID',
     `cinema_id`       BIGINT         NOT NULL COMMENT '关联影院ID',
     `status`          TINYINT        NOT NULL DEFAULT 0 COMMENT '状态（0-待支付 1-已支付 2-已取消）',
-    `total_amount`    DECIMAL(10, 2) NOT NULL COMMENT '总金额',
+    `total_amount`    DECIMAL(10, 2) NOT NULL COMMENT '总金额（元）',
     `version`         INT            NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
     `pay_expire_time` DATETIME       NOT NULL COMMENT '支付截止时间',
     `pay_time`        DATETIME       NULL COMMENT '支付时间',
@@ -153,57 +153,87 @@ CREATE TABLE `t_order`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单表';
 
--- 10. 订单座位明细表
+-- 10. 订单明细表
 CREATE TABLE `t_order_item`
 (
-    `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '明细ID（主键）',
-    `order_id`    BIGINT         NOT NULL COMMENT '关联订单ID',
-    `seat_row`    INT            NOT NULL COMMENT '排快照',
-    `seat_col`    INT            NOT NULL COMMENT '座快照',
-    `seat_no`     VARCHAR(10)    NOT NULL COMMENT '座位号快照',
-    `price`       DECIMAL(10, 2) NOT NULL COMMENT '该座票价快照',
-    `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `id`           BIGINT         NOT NULL AUTO_INCREMENT COMMENT '明细ID（主键）',
+    `order_id`     BIGINT         NOT NULL COMMENT '关联订单ID',
+    `screening_id` BIGINT         NOT NULL COMMENT '关联场次ID',
+    `seat_row`     INT            NOT NULL COMMENT '排（从1起）',
+    `seat_col`     INT            NOT NULL COMMENT '座（从1起）',
+    `seat_no`      VARCHAR(10)    NOT NULL COMMENT '展示座位号（如"3排5座"）',
+    `price`        DECIMAL(10, 2) NOT NULL COMMENT '票价（元）',
+    `create_time`  DATETIME(3)    NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_order` (`order_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单座位明细表';
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单明细表';
 
--- 11. 支付记录表
-CREATE TABLE `t_payment_record`
+-- 11. 支付流水表
+CREATE TABLE `t_payment`
 (
-    `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '支付记录ID（主键）',
-    `payment_no`  VARCHAR(32)    NOT NULL COMMENT '支付流水号',
-    `order_id`    BIGINT         NOT NULL COMMENT '关联订单ID',
-    `order_no`    VARCHAR(32)    NOT NULL COMMENT '订单号',
-    `amount`      DECIMAL(10, 2) NOT NULL COMMENT '支付金额',
-    `status`      TINYINT        NOT NULL DEFAULT 0 COMMENT '状态（0-待支付 1-成功 2-退款）',
-    `pay_time`    DATETIME       NULL COMMENT '支付成功时间',
-    `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `id`           BIGINT         NOT NULL AUTO_INCREMENT COMMENT '支付流水ID（主键）',
+    `payment_no`   BIGINT         NOT NULL COMMENT '支付流水号（雪花ID）',
+    `order_id`     BIGINT         NOT NULL COMMENT '关联订单ID',
+    `channel`      TINYINT        NOT NULL COMMENT '支付渠道（1-支付宝 2-微信）',
+    `amount`       DECIMAL(10, 2) NOT NULL COMMENT '支付金额（元）',
+    `status`       TINYINT        NOT NULL DEFAULT 0 COMMENT '状态（0-待支付 1-成功 2-失败 3-已关闭）',
+    `out_trade_no` VARCHAR(64)    NOT NULL COMMENT '商户订单号（给第三方，与 channel 联合唯一）',
+    `trade_no`     VARCHAR(64)    NULL COMMENT '第三方交易号（alipay trade_no / wxpay transaction_id）',
+    `paid_time`    DATETIME       NULL COMMENT '支付成功时间',
+    `notify_raw`   VARCHAR(2048)  NULL COMMENT '第三方回调原始报文',
+    `create_time`  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_payment_no` (`payment_no`),
-    KEY `idx_order_no` (`order_no`),
-    KEY `idx_status` (`status`)
+    UNIQUE KEY `uk_channel_out_trade_no` (`channel`, `out_trade_no`),
+    KEY `idx_order` (`order_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci COMMENT = '支付记录表';
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = '支付流水表';
 
--- 12. 本地消息表
+-- 12. 退款流水表
+CREATE TABLE `t_refund`
+(
+    `id`            BIGINT         NOT NULL AUTO_INCREMENT COMMENT '退款流水ID（主键）',
+    `refund_no`     BIGINT         NOT NULL COMMENT '退款流水号（雪花ID）',
+    `payment_id`    BIGINT         NOT NULL COMMENT '关联支付流水ID',
+    `order_id`      BIGINT         NOT NULL COMMENT '关联订单ID',
+    `channel`       TINYINT        NOT NULL COMMENT '原支付渠道（1-支付宝 2-微信）',
+    `refund_amount` DECIMAL(10, 2) NOT NULL COMMENT '退款金额（元）',
+    `status`        TINYINT        NOT NULL DEFAULT 0 COMMENT '状态（0-待退款 1-退款中 2-成功 3-失败）',
+    `out_refund_no` VARCHAR(64)    NOT NULL COMMENT '商户退款单号（给第三方，与 channel 联合唯一）',
+    `trade_no`      VARCHAR(64)    NULL COMMENT '第三方退款单号（alipay refund_id / wxpay refund_id）',
+    `reason`        VARCHAR(255)   NULL COMMENT '退款原因',
+    `refund_time`   DATETIME       NULL COMMENT '退款成功时间',
+    `notify_raw`    VARCHAR(2048)  NULL COMMENT '第三方回调原始报文',
+    `create_time`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_refund_no` (`refund_no`),
+    UNIQUE KEY `uk_channel_out_refund_no` (`channel`, `out_refund_no`),
+    KEY `idx_payment` (`payment_id`),
+    KEY `idx_order` (`order_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = '退款流水表';
+
+-- 13. 本地消息表
 CREATE TABLE `t_local_message`
 (
-    `id`          BIGINT      NOT NULL AUTO_INCREMENT COMMENT '消息ID（主键）',
-    `msg_type`    VARCHAR(32) NOT NULL COMMENT '消息类型（sms/boxoffice/refund）',
-    `biz_id`      VARCHAR(64) NOT NULL COMMENT '业务ID（订单号等）',
-    `payload`     JSON        NOT NULL COMMENT '消息内容',
-    `status`      TINYINT     NOT NULL DEFAULT 0 COMMENT '状态（0-待发送 1-已发送）',
-    `retry_count` INT         NOT NULL DEFAULT 0 COMMENT '重试次数',
-    `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT '消息ID（主键）',
+    `msg_type`        VARCHAR(32)   NOT NULL COMMENT '消息类型',
+    `biz_id`          BIGINT        NOT NULL COMMENT '业务ID',
+    `payload`         VARCHAR(1024) NOT NULL COMMENT '消息内容（JSON）',
+    `status`          TINYINT       NOT NULL DEFAULT 0 COMMENT '状态：0-待发送 1-已发送 2-终态失败',
+    `retry_count`     INT           NOT NULL DEFAULT 0 COMMENT '已重试次数',
+    `next_retry_time` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下次可重试时间',
+    `create_time`     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_type_biz` (`msg_type`, `biz_id`),
-    KEY `idx_status` (`status`)
+    KEY `idx_dispatch` (`status`, `next_retry_time`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = '本地消息表';

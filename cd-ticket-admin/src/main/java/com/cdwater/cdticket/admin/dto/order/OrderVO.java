@@ -15,6 +15,12 @@ public class OrderVO {
     private Long screeningId;
     private Long movieId;
     private String movieTitle;
+    private Long hallId;
+    private String hallName;
+    private Long cinemaId;
+    private String cinemaName;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
     private Integer status;
     private BigDecimal totalAmount;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

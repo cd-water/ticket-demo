@@ -227,6 +227,12 @@ export interface OrderVO {
   screeningId: number
   movieId: number
   movieTitle: string
+  hallId: number | null
+  hallName: string | null
+  cinemaId: number
+  cinemaName: string | null
+  /** yyyy-MM-dd HH:mm:ss */
+  startTime: string | null
   /** 0-待支付 1-已支付 2-已取消 */
   status: number
   totalAmount: number
@@ -240,6 +246,19 @@ export interface OrderListQuery extends PageQuery {
   /** 精确匹配，按字符串透传（t_order.order_no 是 BIGINT） */
   orderNo?: string
   status?: number
+}
+
+/** GET /api/admin/orders/{orderId}/items 的元素，按 seatRow/Col 升序 */
+export interface OrderItemVO {
+  id: number
+  orderId: number
+  screeningId: number
+  seatRow: number
+  seatCol: number
+  /** 展示座位号，如 "3排5座" */
+  seatNo: string
+  price: number
+  createTime: string
 }
 
 /* ---------- 用户 ---------- */

@@ -1,9 +1,10 @@
 package com.cdwater.cdticket.admin.controller;
 
-import com.cdwater.cdticket.admin.service.OrderService;
+import com.cdwater.cdticket.admin.dto.order.OrderItemVO;
 import com.cdwater.cdticket.admin.dto.order.OrderVO;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.Result;
+import com.cdwater.cdticket.admin.service.OrderService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @Validated
 public class OrderController {
+
     private final OrderService orderService;
 
     @GetMapping("/cinemas/{cinemaId}/orders")
@@ -28,5 +32,10 @@ public class OrderController {
                                                     @RequestParam(required = false) Long orderNo,
                                                     @RequestParam(required = false) @Min(0) @Max(2) Integer status) {
         return Result.success(orderService.pageByCinema(page, size, orderNo, status, cinemaId));
+    }
+
+    @GetMapping("/orders/{orderId}/items")
+    public Result<List<OrderItemVO>> listItems(@PathVariable @Min(1) Long orderId) {
+        return Result.success(orderService.listItemsByOrder(orderId));
     }
 }

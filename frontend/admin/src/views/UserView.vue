@@ -94,7 +94,7 @@ onMounted(load)
       </el-table-column>
       <el-table-column label="操作" width="120" align="right">
         <template #default="{ row }">
-          <el-button link :type="row.status === 1 ? 'danger' : 'primary'" @click="toggleStatus(row)">
+          <el-button link :type="row.status === 1 ? 'danger' : 'success'" @click="toggleStatus(row)">
             {{ row.status === 1 ? '禁用' : '启用' }}
           </el-button>
         </template>
