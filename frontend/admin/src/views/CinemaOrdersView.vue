@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { listOrders } from '@/api/orders'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { listOrdersByCinema } from '@/api/orders'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatAmount, formatDateTime } from '@/utils/format'
 import type { OrderVO } from '@/types/api'
+
+const route = useRoute()
+const cinemaId = Number(route.params.cinemaId)
 
 const loading = ref(false)
 const rows = ref<OrderVO[]>([])
@@ -18,7 +22,8 @@ const STATUS_LABEL: Record<number, string> = { 0: '待支付', 1: '已支付', 2
 async function load() {
   loading.value = true
   try {
-    const data = await listOrders({
+    const data = await listOrdersByCinema({
+      cinemaId,
       page: page.value,
       size: size.value,
       orderNo: query.orderNo || undefined,
@@ -27,13 +32,14 @@ async function load() {
     rows.value = data.records
     total.value = data.total
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   } finally {
     loading.value = false
   }
 }
 
 onMounted(load)
+watch(() => route.params.cinemaId, () => load())
 
 function search() {
   page.value = 1
@@ -111,6 +117,9 @@ function onSize(s: number) {
       <el-table-column label="支付截止" width="150">
         <template #default="{ row }">{{ formatDateTime(row.payExpireTime) }}</template>
       </el-table-column>
+      <el-table-column label="更新时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
+      </el-table-column>
       <template #empty>当前筛选下没有订单</template>
     </el-table>
 
@@ -128,3 +137,71 @@ function onSize(s: number) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panel-head .search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+
+.f-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.f-btn:hover {
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+.f-btn.on {
+  background: var(--brand);
+  color: var(--on-brand);
+  border-color: var(--brand);
+}
+
+.detail-text {
+  margin-left: 6px;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pager .total {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+</style>

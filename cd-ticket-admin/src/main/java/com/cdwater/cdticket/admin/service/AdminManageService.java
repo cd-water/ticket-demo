@@ -21,32 +21,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminManageService {
     private final AdminMapper adminMapper;
-    private final CinemaService cinemaService;
     private final PasswordEncoder passwordEncoder;
     private final TokenStoreService tokenStore;
 
-    public List<AdminVO> list(Integer role) {
-        return adminMapper.selectListWithCinema(role);
+    public List<AdminVO> list() {
+        return adminMapper.selectListAll();
     }
 
     public void create(AdminSaveRequest req) {
-        if (req.isCinemaAdmin() && req.getCinemaId() == null) {
-            throw new BizException(ResultCode.CINEMA_ADMIN_NEED_CINEMA);
-        }
-        if (req.getCinemaId() != null && req.getCinemaId() != 0
-                && cinemaService.getCinema(req.getCinemaId()) == null) {
-            throw new BizException("绑定的影院不存在", ResultCode.CINEMA_ADMIN_NEED_CINEMA.getCode());
-        }
-
         if (findByUsername(req.getUsername()) != null) {
             throw new BizException(ResultCode.ADMIN_USERNAME_EXISTS);
         }
-
         Admin admin = new Admin();
         admin.setUsername(req.getUsername());
         admin.setPassword(passwordEncoder.encode(req.getPassword()));
-        admin.setRole(req.getRole());
-        admin.setCinemaId(req.isCinemaAdmin() ? req.getCinemaId() : 0L);
         admin.setStatus(1);
         adminMapper.insert(admin);
     }

@@ -14,8 +14,6 @@ public class Admin {
     private Long id;
     private String username;
     private String password;
-    private Integer role;
-    private Long cinemaId;
     private Integer status;
     private Integer deleted;
     private LocalDateTime createTime;

@@ -1,6 +1,8 @@
 package com.cdwater.cdticket.admin.dto.admin;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -12,15 +14,4 @@ public class AdminSaveRequest {
     @NotBlank
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,20}$")
     private String password;
-
-    @NotNull
-    @Min(0)
-    @Max(1)
-    private Integer role;
-
-    private Long cinemaId;
-
-    public boolean isCinemaAdmin() {
-        return role != null && role == 1;
-    }
 }

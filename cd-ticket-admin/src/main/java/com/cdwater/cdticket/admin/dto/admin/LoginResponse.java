@@ -11,7 +11,5 @@ public class LoginResponse {
     public static class AdminInfo {
         private Long id;
         private String username;
-        private Integer role;
-        private Long cinemaId;
     }
 }

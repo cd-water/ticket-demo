@@ -21,6 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FileService {
+
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp", "gif");
 
     private final MinioClient minioClient;

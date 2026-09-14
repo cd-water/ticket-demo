@@ -13,7 +13,6 @@ import com.cdwater.cdticket.admin.dto.movie.MovieVO;
 import com.cdwater.cdticket.admin.dto.screening.ScreeningSaveRequest;
 import com.cdwater.cdticket.admin.entity.Screening;
 import com.cdwater.cdticket.admin.mapper.ScreeningMapper;
-import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -31,11 +30,10 @@ public class ScreeningService {
     private final MovieService movieService;
     private final HallService hallService;
 
-    public PageResult<ScreeningVO> page(int page, int size, Long movieId) {
-        PageResult.check(page, size);
+    public PageResult<ScreeningVO> pageByCinema(int page, int size, Long movieId, Long cinemaId) {
         IPage<Screening> p = screeningMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Screening>()
                 .eq(movieId != null, Screening::getMovieId, movieId)
-                .eq(Screening::getCinemaId, SecurityUtils.getCinemaId())
+                .eq(Screening::getCinemaId, cinemaId)
                 .orderByDesc(Screening::getStartTime));
 
         Set<Long> movieIds = p.getRecords().stream().map(Screening::getMovieId).collect(Collectors.toSet());
@@ -53,7 +51,6 @@ public class ScreeningService {
         boolean isCreate = req.getId() == null;
         if (!isCreate) {
             Screening existing = requireScreening(req.getId());
-            SecurityUtils.requireScope(existing.getCinemaId());
             if (existing.getStartTime().isBefore(LocalDateTime.now())) {
                 throw new BizException(ResultCode.SCREENING_STARTED);
             }
@@ -66,12 +63,14 @@ public class ScreeningService {
         if (hall == null) {
             throw new BizException("影厅不存在", ResultCode.BAD_REQUEST.getCode());
         }
-        SecurityUtils.requireScope(hall.getCinemaId());
+        if (!hall.getCinemaId().equals(req.getCinemaId())) {
+            throw new BizException("影厅不属于该影院", ResultCode.BAD_REQUEST.getCode());
+        }
         if (!req.getStartTime().isAfter(LocalDateTime.now())) {
             throw new BizException("开场时间必须晚于当前时间", ResultCode.BAD_REQUEST.getCode());
         }
         Screening s = toEntity(req);
-        s.setCinemaId(hall.getCinemaId());
+        s.setCinemaId(req.getCinemaId());
         try {
             if (isCreate) {
                 screeningMapper.insert(s);
@@ -85,7 +84,6 @@ public class ScreeningService {
 
     public void delete(Long id) {
         Screening existing = requireScreening(id);
-        SecurityUtils.requireScope(existing.getCinemaId());
         if (existing.getStartTime().isBefore(LocalDateTime.now())) {
             throw new BizException(ResultCode.SCREENING_STARTED);
         }
@@ -103,6 +101,8 @@ public class ScreeningService {
         vo.setStartTime(s.getStartTime());
         vo.setPrice(s.getPrice());
         vo.setStatus(s.getStartTime().isBefore(LocalDateTime.now()) ? 1 : 0);
+        vo.setCreateTime(s.getCreateTime());
+        vo.setUpdateTime(s.getUpdateTime());
         return vo;
     }
 

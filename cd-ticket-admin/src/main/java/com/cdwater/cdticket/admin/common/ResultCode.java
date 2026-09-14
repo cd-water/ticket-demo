@@ -2,8 +2,12 @@ package com.cdwater.cdticket.admin.common;
 
 import lombok.Getter;
 
+/**
+ * 业务错误码
+ */
 @Getter
 public enum ResultCode {
+
     SUCCESS("0000", "ok"),
 
     BAD_REQUEST("C001", "参数错误"),
@@ -12,7 +16,6 @@ public enum ResultCode {
     NOT_FOUND("C004", "不存在"),
 
     ADMIN_USERNAME_EXISTS("C201", "用户名已存在"),
-    CINEMA_ADMIN_NEED_CINEMA("C202", "影院管理员必须绑定影院"),
     CANNOT_OPERATE_SELF("C203", "不能操作当前登录管理员"),
     LOGIN_FAILED("C204", "用户名或密码错误"),
 

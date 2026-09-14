@@ -1,5 +1,6 @@
 package com.cdwater.cdticket.admin.dto.screening;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,7 +14,12 @@ public class ScreeningVO {
     private Long hallId;
     private String hallName;
     private Long cinemaId;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
     private BigDecimal price;
     private Integer status;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime;
 }

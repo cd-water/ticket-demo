@@ -4,25 +4,28 @@ import com.cdwater.cdticket.admin.service.OrderQueryService;
 import com.cdwater.cdticket.admin.dto.order.OrderVO;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.common.Result;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/orders")
 @RequiredArgsConstructor
+@Validated
 public class OrderAdminController {
     private final OrderQueryService orderQueryService;
 
-    @GetMapping
-    @PreAuthorize("hasAuthority('CINEMA_ADMIN')")
-    public Result<PageResult<OrderVO>> page(@RequestParam(defaultValue = "1") int page,
-                                            @RequestParam(defaultValue = "10") int size,
-                                            @RequestParam(required = false) String orderNo,
-                                            @RequestParam(required = false) Integer status) {
-        return Result.success(orderQueryService.page(page, size, orderNo, status));
+    @GetMapping("/api/admin/cinemas/{cinemaId}/orders")
+    public Result<PageResult<OrderVO>> pageByCinema(@PathVariable @Min(1) Long cinemaId,
+                                                   @RequestParam(defaultValue = "1") @Min(1) int page,
+                                                   @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+                                                   @RequestParam(required = false) @Size(max = 32) String orderNo,
+                                                   @RequestParam(required = false) @Min(0) @Max(2) Integer status) {
+        return Result.success(orderQueryService.pageByCinema(page, size, orderNo, status, cinemaId));
     }
 }

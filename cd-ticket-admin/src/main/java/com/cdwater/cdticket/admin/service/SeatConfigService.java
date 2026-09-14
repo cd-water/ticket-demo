@@ -9,7 +9,6 @@ import com.cdwater.cdticket.admin.dto.seat.SeatGridVO;
 import com.cdwater.cdticket.admin.entity.Hall;
 import com.cdwater.cdticket.admin.entity.SeatConfig;
 import com.cdwater.cdticket.admin.mapper.SeatConfigMapper;
-import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ public class SeatConfigService {
 
     public SeatGridVO getGrid(Long hallId) {
         Hall hall = hallService.requireHall(hallId);
-        SecurityUtils.requireScope(hall.getCinemaId());
         List<SeatConfig> configs = configMapper.selectList(new LambdaQueryWrapper<SeatConfig>()
                 .eq(SeatConfig::getHallId, hallId));
         Map<String, Integer> statusBySeat = configs.stream()
@@ -46,7 +44,6 @@ public class SeatConfigService {
     @Transactional
     public void replace(Long hallId, List<SeatCellRequest> seats) {
         Hall hall = hallService.requireHall(hallId);
-        SecurityUtils.requireScope(hall.getCinemaId());
         for (SeatCellRequest cell : seats) {
             if (cell.getRow() < 1 || cell.getRow() > hall.getSeatRows()
                     || cell.getCol() < 1 || cell.getCol() > hall.getSeatCols()) {

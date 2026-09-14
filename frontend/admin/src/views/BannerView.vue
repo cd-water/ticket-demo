@@ -129,7 +129,7 @@ async function remove(row: BannerVO) {
       <el-table-column label="排序" width="90" prop="sort" />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
-          <StatusPill :label="row.status === 1 ? '上线' : '下线'" :tone="row.status === 1 ? 'ok' : 'muted'" />
+          <StatusPill :label="row.status === 1 ? '启用' : '禁用'" :tone="row.status === 1 ? 'ok' : 'muted'" />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="170">
@@ -164,8 +164,8 @@ async function remove(row: BannerVO) {
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="form.status">
-            <el-radio :value="1">上线</el-radio>
-            <el-radio :value="0">下线</el-radio>
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>

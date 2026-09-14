@@ -11,6 +11,9 @@ import lombok.Data;
 public class HallSaveRequest {
     private Long id;
 
+    @NotNull
+    private Long cinemaId;
+
     @NotBlank
     @Size(max = 50)
     private String name;

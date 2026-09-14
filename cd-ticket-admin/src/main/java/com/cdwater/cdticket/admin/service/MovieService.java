@@ -26,7 +26,6 @@ public class MovieService {
     private final MovieMapper movieMapper;
 
     public PageResult<MovieVO> page(int page, int size, String title, Integer status) {
-        PageResult.check(page, size);
         IPage<Movie> p = movieMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Movie>()
                 .like(title != null && !title.isBlank(), Movie::getTitle, title)
                 .eq(status != null, Movie::getStatus, status)
@@ -40,11 +39,13 @@ public class MovieService {
             return;
         }
         requireMovie(req.getId());
+        String poster = req.getPoster() == null ? "" : req.getPoster();
+        String description = req.getDescription() == null ? "" : req.getDescription();
         movieMapper.update(null, new LambdaUpdateWrapper<Movie>()
                 .eq(Movie::getId, req.getId())
                 .set(Movie::getTitle, req.getTitle())
-                .set(Movie::getPoster, req.getPoster() == null ? "" : req.getPoster())
-                .set(Movie::getDescription, req.getDescription())
+                .set(Movie::getPoster, poster)
+                .set(Movie::getDescription, description)
                 .set(Movie::getDuration, req.getDuration())
                 .set(Movie::getReleaseDate, req.getReleaseDate())
                 .set(Movie::getStatus, req.getStatus()));
@@ -90,6 +91,7 @@ public class MovieService {
         v.setReleaseDate(m.getReleaseDate());
         v.setStatus(m.getStatus());
         v.setCreateTime(m.getCreateTime());
+        v.setUpdateTime(m.getUpdateTime());
         return v;
     }
 

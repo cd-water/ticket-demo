@@ -5,11 +5,15 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * MinIO 配置项
+ */
 @Component
 @ConfigurationProperties(prefix = "minio")
 @Getter
 @Setter
 public class MinioProperties {
+
     private String endpoint;
     private String accessKey;
     private String secretKey;

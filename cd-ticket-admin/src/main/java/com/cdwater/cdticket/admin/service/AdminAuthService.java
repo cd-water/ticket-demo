@@ -32,8 +32,6 @@ public class AdminAuthService {
         LoginResponse.AdminInfo info = new LoginResponse.AdminInfo();
         info.setId(admin.getId());
         info.setUsername(admin.getUsername());
-        info.setRole(admin.getRole());
-        info.setCinemaId(admin.getCinemaId());
         resp.setAdmin(info);
         return resp;
     }

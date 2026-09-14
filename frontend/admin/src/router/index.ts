@@ -1,47 +1,62 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ALL_MENUS } from '@/config/menu'
+import { MENUS } from '@/config/menu'
 
-/** 菜单 key → 页面组件（dashboard 暂留占位） */
 const VIEWS: Record<string, () => Promise<unknown>> = {
   dashboard: () => import('@/views/PlaceholderView.vue'),
   movies: () => import('@/views/MovieView.vue'),
   cinemas: () => import('@/views/CinemaView.vue'),
   users: () => import('@/views/UserView.vue'),
   banners: () => import('@/views/BannerView.vue'),
-  orders: () => import('@/views/OrderView.vue'),
   admins: () => import('@/views/AdminView.vue'),
-  halls: () => import('@/views/HallView.vue'),
-  screenings: () => import('@/views/ScreeningView.vue'),
+  cinemaHalls: () => import('@/views/CinemaHallsView.vue'),
+  cinemaScreenings: () => import('@/views/CinemaScreeningsView.vue'),
+  cinemaOrders: () => import('@/views/CinemaOrdersView.vue'),
 }
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/LoginView.vue'),
-      meta: { public: true },
-    },
+    { path: '/login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
     {
       path: '/',
       component: () => import('@/layout/AdminLayout.vue'),
       redirect: '/dashboard',
-      children: ALL_MENUS.map((m) => ({
-        path: m.key,
-        component: VIEWS[m.key] ?? (() => import('@/views/PlaceholderView.vue')),
-        meta: { title: m.title },
-      })),
+      children: [
+        ...MENUS.map((m) => ({
+          path: m.key,
+          component: VIEWS[m.key] ?? (() => import('@/views/PlaceholderView.vue')),
+          meta: { title: m.title },
+        })),
+        {
+          path: 'cinemas/:cinemaId',
+          component: () => import('@/views/CinemaDetailView.vue'),
+          meta: { title: '影院详情' },
+          children: [
+            { path: '', redirect: 'halls' },
+            {
+              path: 'halls',
+              component: VIEWS.cinemaHalls,
+              meta: { title: '影厅管理' },
+            },
+            {
+              path: 'screenings',
+              component: VIEWS.cinemaScreenings,
+              meta: { title: '排场管理' },
+            },
+            {
+              path: 'orders',
+              component: VIEWS.cinemaOrders,
+              meta: { title: '订单管理' },
+            },
+          ],
+        },
+      ],
     },
-    {
-      path: '/:pathMatch(.*)*',
-      redirect: '/dashboard',
-    },
+    { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
   ],
 })
 
-/** 登录后的默认落地页；被拦截的是它时不带 redirect，保持登录页 URL 干净 */
 const DEFAULT_PAGE = '/dashboard'
 
 router.beforeEach((to) => {

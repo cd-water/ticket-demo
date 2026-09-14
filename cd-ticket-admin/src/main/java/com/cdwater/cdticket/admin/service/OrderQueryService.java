@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cdwater.cdticket.admin.common.PageResult;
 import com.cdwater.cdticket.admin.dto.order.OrderVO;
 import com.cdwater.cdticket.admin.mapper.OrderAdminMapper;
-import com.cdwater.cdticket.admin.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +13,8 @@ import org.springframework.stereotype.Service;
 public class OrderQueryService {
     private final OrderAdminMapper orderAdminMapper;
 
-    public PageResult<OrderVO> page(int page, int size, String orderNo, Integer status) {
-        PageResult.check(page, size);
-        IPage<OrderVO> p = orderAdminMapper.selectPage(Page.of(page, size), orderNo, status,
-                SecurityUtils.getCinemaId());
+    public PageResult<OrderVO> pageByCinema(int page, int size, String orderNo, Integer status, Long cinemaId) {
+        IPage<OrderVO> p = orderAdminMapper.selectPage(Page.of(page, size), orderNo, status, cinemaId);
         return PageResult.of(p);
     }
 }

@@ -5,6 +5,7 @@ import type { FormInstance } from 'element-plus'
 import { deleteMovie, listMovies, saveMovie } from '@/api/movies'
 import { uploadImage } from '@/api/files'
 import StatusPill from '@/components/StatusPill.vue'
+import { formatDateTime } from '@/utils/format'
 import type { MovieVO } from '@/types/api'
 
 const loading = ref(false)
@@ -30,6 +31,7 @@ const form = reactive({
 
 const rules = {
   title: [{ required: true, message: '请输入片名', trigger: 'blur' }],
+  description: [{ required: true, message: '请输入简介', trigger: 'blur' }],
   duration: [{ required: true, message: '请输入时长', trigger: 'blur' }],
 }
 
@@ -188,12 +190,15 @@ function onSize(s: number) {
     </div>
 
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">
-      <el-table-column label="影片" min-width="240">
+      <el-table-column label="海报" width="90">
         <template #default="{ row }">
           <img v-if="row.poster" class="thumb" :src="row.poster" :alt="row.title" />
           <span v-else class="thumb" />
-          <span style="margin-left: 10px">{{ row.title }}</span>
         </template>
+      </el-table-column>
+      <el-table-column label="片名" prop="title" min-width="180" />
+      <el-table-column label="简介" min-width="200" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.description || '—' }}</template>
       </el-table-column>
       <el-table-column label="时长" width="110">
         <template #default="{ row }">{{ row.duration }} 分钟</template>
@@ -205,6 +210,12 @@ function onSize(s: number) {
         <template #default="{ row }">
           <StatusPill :label="row.status === 1 ? '上架' : '下架'" :tone="row.status === 1 ? 'ok' : 'muted'" />
         </template>
+      </el-table-column>
+      <el-table-column label="创建时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="150" align="right">
         <template #default="{ row }">
@@ -239,8 +250,8 @@ function onSize(s: number) {
             <div v-else class="upload-slot">{{ uploading ? '上传中…' : '＋ 上传海报' }}</div>
           </el-upload>
         </el-form-item>
-        <el-form-item label="简介">
-          <el-input v-model="form.description" type="textarea" :rows="3" maxlength="500" />
+        <el-form-item label="简介" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" maxlength="1024" />
         </el-form-item>
         <el-form-item label="时长" prop="duration">
           <el-input-number v-model="form.duration" :min="1" :max="600" />

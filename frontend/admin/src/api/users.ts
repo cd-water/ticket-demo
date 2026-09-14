@@ -5,6 +5,7 @@ export interface UserListQuery {
   page: number
   size: number
   phone?: string
+  status?: number
 }
 
 export function listUsers(q: UserListQuery) {

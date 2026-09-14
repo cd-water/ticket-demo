@@ -3,8 +3,8 @@ import type { AdminManageVO } from '@/types/api'
 import type { AdminSaveRequest } from '@/types/api'
 import type { ResetPasswordRequest } from '@/types/api'
 
-export function listAdmins(role?: number) {
-  return http.get<unknown, AdminManageVO[]>('/admin/admins/list', { params: { role } })
+export function listAdmins() {
+  return http.get<unknown, AdminManageVO[]>('/admin/admins/list')
 }
 
 export function createAdmin(body: AdminSaveRequest) {

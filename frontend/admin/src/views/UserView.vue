@@ -11,12 +11,17 @@ const rows = ref<UserVO[]>([])
 const total = ref(0)
 const page = ref(1)
 const size = ref(10)
-const query = reactive({ phone: '' })
+const query = reactive({ phone: '', status: null as number | null })
 
 async function load() {
   loading.value = true
   try {
-    const data = await listUsers({ page: page.value, size: size.value, phone: query.phone || undefined })
+    const data = await listUsers({
+      page: page.value,
+      size: size.value,
+      phone: query.phone || undefined,
+      status: query.status ?? undefined,
+    })
     rows.value = data.records
     total.value = data.total
   } catch {
@@ -35,6 +40,12 @@ function search() {
 
 function reset() {
   query.phone = ''
+  query.status = null
+  search()
+}
+
+function filterStatus(v: number | null) {
+  query.status = v
   search()
 }
 
@@ -88,6 +99,12 @@ function onSize(s: number) {
         <el-button type="primary" @click="search">查询</el-button>
         <el-button @click="reset">重置</el-button>
       </div>
+    </div>
+
+    <div class="filters">
+      <button class="f-btn" :class="{ on: query.status === null }" @click="filterStatus(null)">全部</button>
+      <button class="f-btn" :class="{ on: query.status === 1 }" @click="filterStatus(1)">正常</button>
+      <button class="f-btn" :class="{ on: query.status === 0 }" @click="filterStatus(0)">禁用</button>
     </div>
 
     <el-table v-loading="loading" :data="rows" style="margin-top: 12px">

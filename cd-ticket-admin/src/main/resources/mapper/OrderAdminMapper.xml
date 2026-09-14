@@ -6,7 +6,7 @@
     <select id="selectPage" resultType="com.cdwater.cdticket.admin.dto.order.OrderVO">
         SELECT o.id, o.order_no, o.user_id, o.screening_id, o.movie_id, o.movie_title,
                o.cinema_id, o.status, o.total_amount, o.pay_expire_time, o.pay_time,
-               o.cancel_type, o.create_time,
+               o.cancel_type, o.create_time, o.update_time,
                u.phone AS user_phone, u.nickname AS user_nickname
         FROM t_order o
         LEFT JOIN t_user u ON u.id = o.user_id AND u.deleted = 0

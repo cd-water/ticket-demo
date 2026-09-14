@@ -11,13 +11,11 @@ import com.cdwater.cdticket.admin.dto.admin.ResetPasswordRequest;
 import com.cdwater.cdticket.admin.dto.common.StatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -41,34 +39,29 @@ public class AdminController {
     }
 
     @GetMapping("/admins/list")
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
-    public Result<List<AdminVO>> list(@RequestParam(required = false) Integer role) {
-        return Result.success(adminManageService.list(role));
+    public Result<List<AdminVO>> list() {
+        return Result.success(adminManageService.list());
     }
 
     @PostMapping("/admins/create")
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public Result<Void> create(@RequestBody @Valid AdminSaveRequest req) {
         adminManageService.create(req);
         return Result.success();
     }
 
     @PostMapping("/admins/{id}/reset-password")
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public Result<Void> resetPassword(@PathVariable Long id, @RequestBody @Valid ResetPasswordRequest req) {
         adminManageService.resetPassword(id, req);
         return Result.success();
     }
 
     @PostMapping("/admins/{id}/delete")
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public Result<Void> delete(@PathVariable Long id) {
         adminManageService.delete(id);
         return Result.success();
     }
 
     @PostMapping("/admins/{id}/status")
-    @PreAuthorize("hasAuthority('PLATFORM_ADMIN')")
     public Result<Void> toggleStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest req) {
         adminManageService.toggleStatus(id, req.getStatus());
         return Result.success();

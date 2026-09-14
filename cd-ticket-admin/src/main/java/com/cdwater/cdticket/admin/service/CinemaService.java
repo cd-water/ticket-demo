@@ -20,10 +20,10 @@ import java.util.List;
 public class CinemaService {
     private final CinemaMapper cinemaMapper;
 
-    public PageResult<CinemaVO> page(int page, int size, String name) {
-        PageResult.check(page, size);
+    public PageResult<CinemaVO> page(int page, int size, String name, Integer status) {
         IPage<Cinema> p = cinemaMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<Cinema>()
                 .like(name != null && !name.isBlank(), Cinema::getName, name)
+                .eq(status != null, Cinema::getStatus, status)
                 .orderByDesc(Cinema::getCreateTime));
         return PageResult.of(p.convert(CinemaService::toVO));
     }
@@ -41,11 +41,6 @@ public class CinemaService {
     public void delete(Long id) {
         requireCinema(id);
         cinemaMapper.deleteById(id);
-    }
-
-    public List<CinemaVO> listAll() {
-        return cinemaMapper.selectList(new LambdaQueryWrapper<Cinema>().orderByAsc(Cinema::getId))
-                .stream().map(CinemaService::toVO).toList();
     }
 
     public CinemaVO getCinema(Long id) {
@@ -68,6 +63,7 @@ public class CinemaService {
         v.setAddress(c.getAddress());
         v.setStatus(c.getStatus());
         v.setCreateTime(c.getCreateTime());
+        v.setUpdateTime(c.getUpdateTime());
         return v;
     }
 

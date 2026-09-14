@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { deleteHall, getSeatGrid, listHalls, saveSeatGrid, saveHall } from '@/api/halls'
+import { deleteHall, getSeatGrid, listHallsByCinema, saveHall, saveSeatGrid } from '@/api/halls'
 import SeatCanvas from '@/components/SeatCanvas.vue'
 import type { HallVO, SeatCellVO } from '@/types/api'
+
+const route = useRoute()
+const cinemaId = Number(route.params.cinemaId)
 
 const halls = ref<HallVO[]>([])
 const current = ref<HallVO | null>(null)
@@ -33,7 +37,7 @@ async function loadSeats(hallId: number) {
     seats.value = data.seats
     dirty.value = false
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   } finally {
     loadingSeats.value = false
   }
@@ -41,7 +45,7 @@ async function loadSeats(hallId: number) {
 
 async function loadHalls(selectId?: number) {
   try {
-    halls.value = await listHalls()
+    halls.value = await listHallsByCinema(cinemaId)
     const target =
       (selectId !== undefined ? halls.value.find((h) => h.id === selectId) : undefined) ?? halls.value[0]
     if (target) {
@@ -55,11 +59,12 @@ async function loadHalls(selectId?: number) {
       dirty.value = false
     }
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   }
 }
 
 onMounted(() => loadHalls())
+watch(() => route.params.cinemaId, () => loadHalls())
 
 async function selectHall(hall: HallVO) {
   if (current.value?.id === hall.id) return
@@ -96,7 +101,7 @@ async function saveSeats() {
     ElMessage.success('座位模板已保存')
     await loadSeats(current.value.id)
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   } finally {
     savingSeats.value = false
   }
@@ -125,11 +130,11 @@ async function submit() {
   if (!valid) return
   saving.value = true
   try {
-    await saveHall({ ...form, id: editingId.value })
+    await saveHall({ ...form, cinemaId, id: editingId.value })
     dialogVisible.value = false
     if (editingId.value === null) {
       ElMessage.success('已新增影厅')
-      halls.value = await listHalls()
+      halls.value = await listHallsByCinema(cinemaId)
       const newest = halls.value.reduce<HallVO | null>((a, b) => (!a || b.id > a.id ? b : a), null)
       if (newest) {
         current.value = newest
@@ -140,7 +145,7 @@ async function submit() {
       await loadHalls(editingId.value)
     }
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   } finally {
     saving.value = false
   }

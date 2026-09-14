@@ -13,11 +13,11 @@ TRUNCATE TABLE `t_hall`;
 TRUNCATE TABLE `t_seat_config`;
 TRUNCATE TABLE `t_screening`;
 
--- 管理员（cinema_id=0 表示不关联特定影院；明文密码 Aa123456）
-INSERT INTO `t_admin` (`username`, `password`, `role`, `cinema_id`, `status`) VALUES
-    ('admin', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 0, 0, 1),
-    ('cinema01', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 1, 1, 1),
-    ('cinema02', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 1, 2, 1);
+-- 管理员（明文密码 Aa123456）
+INSERT INTO `t_admin` (`username`, `password`, `status`) VALUES
+    ('admin', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 1),
+    ('cinema01', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 1),
+    ('cinema02', '$2a$10$SwwMs7T7E2rWloWEZP9ABeANabe992RETeA4.0HOfr2AqszhwSkiu', 1);
 
 -- 影院
 INSERT INTO `t_cinema` (`name`, `address`, `status`) VALUES

@@ -1,8 +1,8 @@
 import http from '@/api/http'
 import type { HallSaveRequest, HallVO, SeatCellRequest, SeatGridVO } from '@/types/api'
 
-export function listHalls() {
-  return http.get<unknown, HallVO[]>('/admin/halls')
+export function listHallsByCinema(cinemaId: number) {
+  return http.get<unknown, HallVO[]>(`/admin/cinemas/${cinemaId}/halls`)
 }
 
 export function saveHall(body: HallSaveRequest) {

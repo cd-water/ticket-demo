@@ -10,10 +10,20 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.UUID;
 
+/**
+ * Token 存储（Redis）
+ */
 @Service
 @RequiredArgsConstructor
 public class TokenStoreService {
+
+    /**
+     * token → adminId
+     */
     private static final String TOKEN_KEY = "admin:token:";
+    /**
+     * adminId → 当前 token（单设备登录踢线用）
+     */
     private static final String CURRENT_KEY = "admin:current:";
 
     private final StringRedisTemplate redis;
@@ -33,16 +43,20 @@ public class TokenStoreService {
         return token;
     }
 
-    public TokenAuthenticationFilter.AdminContext resolve(String token) {
+    /**
+     * token 过期、账号不存在或被禁用均返回 null
+     */
+    public Long resolve(String token) {
         String idStr = redis.opsForValue().get(TOKEN_KEY + token);
         if (idStr == null) return null;
         Admin admin = adminMapper.selectById(Long.valueOf(idStr));
         if (admin == null || admin.getStatus() == null || admin.getStatus() != 1) return null;
-        return new TokenAuthenticationFilter.AdminContext(
-                admin.getId(), admin.getRole(), admin.getCinemaId());
+        return admin.getId();
     }
 
-    /** 两个 key 必须同寿命续期，否则 CURRENT_KEY 先过期后 revoke 找不到 token，登出/踢线失效 */
+    /**
+     * 两个 key 同寿命续期，否则 revoke 找不到 token
+     */
     public void renew(String token, Long adminId) {
         Duration ttl = Duration.ofSeconds(props.getExpireSeconds());
         redis.expire(TOKEN_KEY + token, ttl);

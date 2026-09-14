@@ -8,10 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * MinIO 配置
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class MinioConfig {
+
     private final MinioProperties props;
 
     @Bean
@@ -24,6 +28,9 @@ public class MinioConfig {
         return client;
     }
 
+    /**
+     * 启动时确保 bucket 存在
+     */
     private void ensureBucket(MinioClient client) {
         try {
             if (!client.bucketExists(BucketExistsArgs.builder().bucket(props.getBucket()).build())) {

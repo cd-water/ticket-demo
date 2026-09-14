@@ -5,14 +5,15 @@ export interface CinemaListQuery {
   page: number
   size: number
   name?: string
+  status?: number
 }
 
 export function listCinemas(q: CinemaListQuery) {
   return http.get<unknown, PageResult<CinemaVO>>('/admin/cinemas', { params: q })
 }
 
-export function listCinemasSimple() {
-  return http.get<unknown, CinemaVO[]>('/admin/cinemas/simple')
+export function getCinema(id: number) {
+  return http.get<unknown, CinemaVO>(`/admin/cinemas/${id}`)
 }
 
 export function saveCinema(body: CinemaSaveRequest) {

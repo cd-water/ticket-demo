@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { listHalls } from '@/api/halls'
-import { deleteScreening, listMovieOptions, listScreenings, saveScreening } from '@/api/screenings'
+import { listHallsByCinema } from '@/api/halls'
+import { deleteScreening, listMovieOptions, listScreeningsByCinema, saveScreening } from '@/api/screenings'
 import StatusPill from '@/components/StatusPill.vue'
 import { formatDateTime } from '@/utils/format'
 import type { HallVO, MovieOption, ScreeningVO } from '@/types/api'
+
+const route = useRoute()
+const cinemaId = Number(route.params.cinemaId)
 
 const loading = ref(false)
 const rows = ref<ScreeningVO[]>([])
@@ -38,7 +42,8 @@ const rules = {
 async function load() {
   loading.value = true
   try {
-    const data = await listScreenings({
+    const data = await listScreeningsByCinema({
+      cinemaId,
       page: page.value,
       size: size.value,
       movieId: query.movieId ?? undefined,
@@ -46,7 +51,7 @@ async function load() {
     rows.value = data.records
     total.value = data.total
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   } finally {
     loading.value = false
   }
@@ -54,14 +59,16 @@ async function load() {
 
 onMounted(async () => {
   try {
-    const [opts, hallList] = await Promise.all([listMovieOptions(), listHalls()])
+    const [opts, hallList] = await Promise.all([listMovieOptions(), listHallsByCinema(cinemaId)])
     movies.value = opts
     halls.value = hallList
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   }
   load()
 })
+
+watch(() => route.params.cinemaId, () => load())
 
 function filterMovies(v: number | null) {
   query.movieId = v
@@ -98,6 +105,7 @@ async function submit() {
   saving.value = true
   const body = {
     id: editingId.value,
+    cinemaId,
     movieId: form.movieId as number,
     hallId: form.hallId as number,
     startTime: form.startTime,
@@ -109,7 +117,7 @@ async function submit() {
     dialogVisible.value = false
     load()
   } catch {
-    /* 错误提示已由 http.ts 统一弹出（含 C501 时间冲突） */
+    /* 错误由 http.ts 统一弹（含 C501 时间冲突） */
   } finally {
     saving.value = false
   }
@@ -139,7 +147,7 @@ async function remove(row: ScreeningVO) {
     ElMessage.success('已删除')
     load()
   } catch {
-    /* 错误提示已由 http.ts 统一弹出 */
+    /* 错误由 http.ts 统一弹 */
   }
 }
 
@@ -186,6 +194,9 @@ function onSize(s: number) {
         <template #default="{ row }">
           <StatusPill :label="row.status === 1 ? '已开场' : '未开始'" :tone="row.status === 1 ? 'muted' : 'ok'" />
         </template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="170">
+        <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="150" align="right">
         <template #default="{ row }">
@@ -242,3 +253,43 @@ function onSize(s: number) {
     </el-dialog>
   </div>
 </template>
+
+<style scoped>
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panel-head .search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pager .total {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.hint {
+  margin-left: 8px;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+</style>

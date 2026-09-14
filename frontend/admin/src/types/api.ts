@@ -9,10 +9,6 @@ export interface Result<T = unknown> {
 export interface AdminInfo {
   id: number
   username: string
-  /** 0=平台管理员 1=影院管理员 */
-  role: number
-  /** 关联影院 ID，平台管理员为 0 */
-  cinemaId: number
 }
 
 /** POST /api/admin/auth/login 的 data */
@@ -39,10 +35,10 @@ export interface MovieVO {
   releaseDate: string | null
   status: number
   createTime: string
+  updateTime: string
 }
 
 export interface MovieSaveRequest {
-  /** 修改时传入；新增不填 */
   id?: number | null
   title: string
   poster?: string | null
@@ -69,7 +65,6 @@ export interface BannerVO {
 }
 
 export interface BannerSaveRequest {
-  /** 修改时传入；新增不填 */
   id?: number | null
   image: string
   linkUrl?: string
@@ -84,17 +79,17 @@ export interface CinemaVO {
   address: string
   status: number
   createTime: string
+  updateTime: string
 }
 
 export interface CinemaSaveRequest {
-  /** 修改时传入；新增不填 */
   id?: number | null
   name: string
   address: string
   status: number
 }
 
-/** 影厅与座位（/api/admin/halls） */
+/** 影厅与座位 */
 export interface HallVO {
   id: number
   cinemaId: number
@@ -102,11 +97,13 @@ export interface HallVO {
   seatRows: number
   seatCols: number
   status: number
+  createTime: string
+  updateTime: string
 }
 
 export interface HallSaveRequest {
-  /** 修改时传入；新增不填 */
   id?: number | null
+  cinemaId: number
   name: string
   seatRows: number
   seatCols: number
@@ -131,7 +128,7 @@ export interface SeatGridVO {
   seats: SeatCellVO[]
 }
 
-/** 排场（/api/admin/screenings） */
+/** 排场 */
 export interface ScreeningVO {
   id: number
   movieId: number
@@ -142,18 +139,20 @@ export interface ScreeningVO {
   startTime: string
   price: number
   status: number
+  createTime: string
+  updateTime: string
 }
 
 export interface ScreeningSaveRequest {
-  /** 修改时传入；新增不填 */
   id?: number | null
+  cinemaId: number
   movieId: number
   hallId: number
   startTime: string
   price: number
 }
 
-/** 订单（/api/admin/orders，只读） */
+/** 订单（只读） */
 export interface OrderVO {
   id: number
   orderNo: string
@@ -170,6 +169,7 @@ export interface OrderVO {
   payTime: string | null
   cancelType: number | null
   createTime: string
+  updateTime: string
 }
 
 /** 用户（/api/admin/users） */
@@ -182,12 +182,10 @@ export interface UserVO {
   updateTime: string
 }
 
-/** 管理员管理（/api/admin/admins） */
+/** 管理员管理（/api/admin/admins/list） */
 export interface AdminManageVO {
   id: number
   username: string
-  role: number
-  cinemaName: string | null
   status: number
   createTime: string
   updateTime: string
@@ -197,8 +195,6 @@ export interface AdminManageVO {
 export interface AdminSaveRequest {
   username: string
   password: string
-  role: number
-  cinemaId?: number | null
 }
 
 /** 重置密码 */

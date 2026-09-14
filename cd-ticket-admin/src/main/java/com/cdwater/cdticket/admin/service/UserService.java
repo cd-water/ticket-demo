@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserMapper userMapper;
 
-    public PageResult<UserVO> page(int page, int size, String phone) {
-        PageResult.check(page, size);
+    public PageResult<UserVO> page(int page, int size, String phone, Integer status) {
         IPage<User> p = userMapper.selectPage(Page.of(page, size), new LambdaQueryWrapper<User>()
                 .like(phone != null && !phone.isBlank(), User::getPhone, phone)
+                .eq(status != null, User::getStatus, status)
                 .orderByDesc(User::getId));
         return PageResult.of(p.convert(UserService::toVO));
     }
