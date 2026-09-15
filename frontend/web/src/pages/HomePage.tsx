@@ -1,179 +1,252 @@
-import { useState } from 'react'
-import type { SubmitEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { changePassword, logout } from '@/api/auth'
-import { useAuthStore } from '@/stores/auth'
-import { showToast } from '@/components/toast'
+import { listBanners } from '@/api/banner'
+import { listBoxOffice, listComingMovies, listHotMovies } from '@/api/movie'
+import type { BannerVO, BoxOfficeVO, MovieVO } from '@/types/api'
+import { TopBar } from '@/components/TopBar'
+import { PosterCard } from '@/components/PosterCard'
+import { posterFallback } from '@/lib/format'
 
-/** 与后端 ChangePasswordRequest 的 @Pattern 一致 */
-const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/
-const PASSWORD_HINT = '密码需8-20位，且包含字母与数字'
+const ROTATE_MS = 5000
 
-/** 首页占位：游客可访问；右上角登录入口（已登录显示昵称，hover 出下拉：修改密码 / 退出登录）。 */
+/** 首页：上方轮播 + 左热映/待映 + 右票房榜 */
 export default function HomePage() {
   const navigate = useNavigate()
-  const user = useAuthStore((s) => s.user)
-  const clear = useAuthStore((s) => s.clear)
+  const [banners, setBanners] = useState<BannerVO[]>([])
+  const [hot, setHot] = useState<MovieVO[]>([])
+  const [coming, setComing] = useState<MovieVO[]>([])
+  const [box, setBox] = useState<BoxOfficeVO[]>([])
 
-  const [pwdOpen, setPwdOpen] = useState(false)
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [bannerIdx, setBannerIdx] = useState(0)
+  const [imgErr, setImgErr] = useState<Record<number, boolean>>({})
 
-  async function onLogout() {
-    const { refreshToken } = useAuthStore.getState()
-    try {
-      if (refreshToken) await logout(refreshToken)
-    } catch {
-      /* 即使后端吊销失败也本地退出 */
-    }
-    clear()
-    showToast('已退出登录', 'success')
-    navigate('/', { replace: true })
-  }
+  // 4 路并发拉取
+  useEffect(() => {
+    Promise.allSettled([
+      listBanners().then(setBanners),
+      listHotMovies().then(setHot),
+      listComingMovies().then(setComing),
+      listBoxOffice().then(setBox),
+    ])
+  }, [])
 
-  function openPwdModal() {
-    setNewPassword('')
-    setConfirmPassword('')
-    setPwdOpen(true)
-  }
+  // 轮播自动切换
+  useEffect(() => {
+    if (banners.length <= 1) return
+    const t = setInterval(() => setBannerIdx((i) => (i + 1) % banners.length), ROTATE_MS)
+    return () => clearInterval(t)
+  }, [banners.length])
 
-  async function onSubmitPwd(e: SubmitEvent) {
-    e.preventDefault()
-    if (!PASSWORD_PATTERN.test(newPassword) || !PASSWORD_PATTERN.test(confirmPassword)) {
-      showToast(PASSWORD_HINT, 'error')
-      return
-    }
-    if (newPassword !== confirmPassword) {
-      showToast('两次输入密码不一致', 'error')
-      return
-    }
-    setSaving(true)
-    try {
-      await changePassword(newPassword, confirmPassword)
-      showToast('密码修改成功', 'success')
-      setPwdOpen(false)
-    } catch {
-      /* 错误提示已由 http.ts 统一弹出 */
-    } finally {
-      setSaving(false)
+  function gotoBanner(b: BannerVO) {
+    if (!b.linkUrl) return
+    // 站外完整 URL（如 https://www.baidu.com）走 location.assign；站内路径走 SPA navigate
+    if (/^https?:\/\//.test(b.linkUrl)) {
+      window.location.assign(b.linkUrl)
+    } else if (b.linkUrl.startsWith('/')) {
+      navigate(b.linkUrl)
     }
   }
+
+  const activeBanner = banners[bannerIdx]
 
   return (
     <div className="min-h-dvh bg-bg">
-      <header className="sticky top-0 z-40 border-b border-line bg-bg">
-        <div className="mx-auto flex max-w-[1200px] items-center gap-7 px-6 py-3.5">
-          <div className="flex items-center gap-2 font-[family-name:var(--font-serif-cn)] text-xl font-extrabold">
-            <span className="size-3 rounded-[3px] bg-brand shadow-[0_0_0_4px_rgba(255,195,0,0.25)]" />
-            电影票务系统
-          </div>
-          <div className="ml-auto flex items-center gap-3.5">
-            {user ? (
-              <div className="group relative">
-                <button
-                  type="button"
-                  className="flex cursor-pointer items-center gap-2 text-sm"
-                  onClick={() => showToast('「我的」页面建设中', 'info')}
-                >
-                  <span className="flex size-[30px] items-center justify-center rounded-full bg-brand text-[13px] font-bold text-on-brand">
-                    {user.nickname.slice(-2)}
-                  </span>
-                  {user.nickname}
-                </button>
-                <div className="invisible absolute right-0 top-full z-50 pt-2 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
-                  <div className="w-40 rounded-xl border border-line bg-card py-1.5 shadow-[var(--shadow-card)]">
-                    <button
-                      type="button"
-                      className="block w-full cursor-pointer px-4 py-2 text-left text-sm hover:bg-bg-deep"
-                      onClick={openPwdModal}
-                    >
-                      修改密码
-                    </button>
-                    <button
-                      type="button"
-                      className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-[#E5484D] hover:bg-bg-deep"
-                      onClick={onLogout}
-                    >
-                      退出登录
-                    </button>
-                  </div>
+      <TopBar />
+
+      {/* 轮播图 */}
+      <main className="mx-auto max-w-[1200px] px-6 pb-20">
+        <div
+          className="relative mt-6 overflow-hidden rounded-2xl"
+          style={{ aspectRatio: '1200 / 360' }}
+        >
+          {banners.length === 0 ? (
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(120deg, #FFF3D6, #FFE9B8)',
+              }}
+            >
+              <div className="absolute inset-0 flex items-center px-12">
+                <div>
+                  <h1 className="font-[family-name:var(--font-serif-cn)] text-[34px] font-extrabold leading-tight">
+                    今晚，和谁一起
+                    <br />
+                    看一场好电影？
+                  </h1>
+                  <p className="mt-3 text-[15px] text-ink-2">
+                    热门大片、黄金场次、最佳座位，一站选齐。
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/movies')}
+                    className="mt-6 cursor-pointer rounded-full bg-brand px-8 py-3 text-[15px] font-extrabold text-on-brand transition-colors hover:bg-brand-deep hover:text-white"
+                  >
+                    立即购票
+                  </button>
                 </div>
               </div>
+            </div>
+          ) : (
+            banners.map((b, i) => {
+              const active = i === bannerIdx
+              const useFallback = !b.image || imgErr[b.id]
+              return (
+                <div
+                  key={b.id}
+                  onClick={() => gotoBanner(b)}
+                  className={`absolute inset-0 cursor-pointer transition-opacity duration-700 ${
+                    active ? 'opacity-100' : 'pointer-events-none opacity-0'
+                  }`}
+                  style={
+                    useFallback
+                      ? { background: posterFallback(b.id, true) }
+                      : {
+                          backgroundImage: `url(${b.image})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }
+                  }
+                >
+                  {useFallback && (
+                    <div className="absolute inset-0 flex items-center px-12">
+                      <div className="text-white">
+                        <h2 className="font-[family-name:var(--font-serif-cn)] text-[28px] font-extrabold">
+                          精选推荐
+                        </h2>
+                        <p className="mt-2 text-sm opacity-90">点击查看影片详情</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          )}
+          {/* 隐藏的 img 探测器：用于标记加载失败回退 */}
+          {activeBanner?.image && !imgErr[activeBanner.id] && (
+            <img
+              src={activeBanner.image}
+              alt=""
+              className="hidden"
+              onError={() => setImgErr((p) => ({ ...p, [activeBanner.id]: true }))}
+            />
+          )}
+          {/* 圆点指示器 */}
+          {banners.length > 1 && (
+            <div className="absolute bottom-3.5 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {banners.map((b, i) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBannerIdx(i)}
+                  className={`size-2 cursor-pointer rounded-full transition-all ${
+                    i === bannerIdx ? 'w-6 bg-white' : 'bg-white/55'
+                  }`}
+                  aria-label={`轮播图 ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 热映 + 待映 + 票房榜 */}
+        <div className="mt-7 grid grid-cols-[1fr_280px] gap-7 max-[900px]:grid-cols-1">
+          <div>
+            <SectionHeader title="热映电影" onMore={() => navigate('/movies?showStatus=hot&page=1')} />
+            {hot.length === 0 ? (
+              <EmptyRow />
             ) : (
-              <button
-                type="button"
-                className="cursor-pointer rounded-full bg-brand px-5 py-2 text-sm font-bold text-on-brand transition-colors hover:bg-brand-deep hover:text-white"
-                onClick={() => navigate('/login')}
-              >
-                登录
-              </button>
+              <PosterGrid movies={hot} badge={{ text: '热映', tone: 'hot' }} />
+            )}
+
+            <div className="mt-9" />
+            <SectionHeader title="待映电影" onMore={() => navigate('/movies?showStatus=coming&page=1')} />
+            {coming.length === 0 ? (
+              <EmptyRow />
+            ) : (
+              <PosterGrid movies={coming} badge={{ text: '待映', tone: 'coming' }} />
             )}
           </div>
-        </div>
-      </header>
 
-      <main className="mx-auto max-w-[1200px] px-6">
-        <div className="mt-6 rounded-2xl bg-gradient-to-br from-bg-deep to-[#FFE9B8]" style={{ minHeight: '420px' }} />
+          {/* 票房榜 */}
+          <aside className="space-y-3.5">
+            <h3 className="font-[family-name:var(--font-serif-cn)] text-[18px] font-extrabold">
+              今日票房榜
+            </h3>
+            <div className="rounded-2xl bg-card p-4 shadow-[var(--shadow-card)]">
+              {box.length === 0 ? (
+                <div className="py-6 text-center text-[13px] text-ink-2">暂无榜单</div>
+              ) : (
+                <ol className="space-y-3">
+                  {box.map((b, i) => (
+                    <li key={b.id}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/movies/${b.id}`)}
+                        className="flex w-full cursor-pointer items-center gap-3 text-left hover:text-brand-deep"
+                      >
+                        <span
+                          className={`flex size-7 shrink-0 items-center justify-center rounded-md font-mono text-[13px] font-bold ${
+                            i < 3 ? 'bg-brand text-on-brand' : 'bg-bg-deep text-ink-2'
+                          }`}
+                        >
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-semibold">{b.title}</div>
+                          <div className="text-[11px] text-ink-2">今日票房</div>
+                        </div>
+                        <div className="font-mono text-sm font-bold text-brand-deep">
+                          ¥{b.boxOffice.toLocaleString('zh-CN', { minimumFractionDigits: 0 })}
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          </aside>
+        </div>
       </main>
-
-      {pwdOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6"
-          onClick={() => setPwdOpen(false)}
-        >
-          <div
-            className="w-[400px] max-w-full rounded-[20px] bg-card p-7 shadow-[var(--shadow-card)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="mb-4 font-[family-name:var(--font-serif-cn)] text-lg font-extrabold">修改密码</h2>
-            <form onSubmit={onSubmitPwd}>
-              <label className="mb-1.5 block text-[13px] text-ink-2" htmlFor="new-password">
-                新密码
-              </label>
-              <input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="8-20位，含字母与数字"
-                maxLength={20}
-                autoComplete="new-password"
-                className="mb-4 w-full rounded-[10px] border border-line bg-card px-3.5 py-3 text-[15px] outline-none focus:border-brand"
-              />
-              <label className="mb-1.5 block text-[13px] text-ink-2" htmlFor="confirm-password">
-                确认密码
-              </label>
-              <input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="请再次输入新密码"
-                maxLength={20}
-                autoComplete="new-password"
-                className="mb-5 w-full rounded-[10px] border border-line bg-card px-3.5 py-3 text-[15px] outline-none focus:border-brand"
-              />
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  className="flex-1 cursor-pointer rounded-full border border-line py-2.5 text-sm font-semibold text-ink-2 hover:text-brand-deep"
-                  onClick={() => setPwdOpen(false)}
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 cursor-pointer rounded-full bg-brand py-2.5 text-sm font-extrabold text-on-brand transition-colors hover:bg-brand-deep hover:text-white disabled:cursor-wait disabled:opacity-70"
-                >
-                  {saving ? '保存中…' : '确认修改'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
+}
+
+function SectionHeader({ title, onMore }: { title: string; onMore: () => void }) {
+  return (
+    <div className="mb-4 flex items-center gap-2.5">
+      <h2 className="font-[family-name:var(--font-serif-cn)] text-[22px] font-extrabold">
+        {title}
+      </h2>
+      <button
+        type="button"
+        onClick={onMore}
+        className="ml-auto cursor-pointer text-sm text-ink-2 hover:text-brand-deep"
+      >
+        更多 ›
+      </button>
+    </div>
+  )
+}
+
+function PosterGrid({
+  movies,
+  badge,
+}: {
+  movies: MovieVO[]
+  badge: { text: string; tone: 'hot' | 'coming' }
+}) {
+  return (
+    <div
+      className="grid gap-x-5 gap-y-7"
+      style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
+    >
+      {movies.map((m) => (
+        <PosterCard key={m.id} movie={m} badge={badge} />
+      ))}
+    </div>
+  )
+}
+
+function EmptyRow() {
+  return <div className="py-10 text-center text-[13px] text-ink-2">暂无影片</div>
 }

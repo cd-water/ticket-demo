@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import { getOrderItems, listOrdersByCinema } from '@/api/orders'
 import ListPager from '@/components/ListPager.vue'
 import StatusFilter from '@/components/StatusFilter.vue'

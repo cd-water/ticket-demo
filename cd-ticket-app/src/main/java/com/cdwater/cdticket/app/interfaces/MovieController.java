@@ -28,10 +28,10 @@ public class MovieController {
     private final MovieService movieService;
 
     @GetMapping
-    public Result<PageResult<MovieVO>> page(@RequestParam @Pattern(regexp = "hot|coming") String status,
+    public Result<PageResult<MovieVO>> page(@RequestParam @Pattern(regexp = "hot|coming") String showStatus,
                                             @RequestParam(defaultValue = "1") @Min(1) int page,
                                             @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size) {
-        return Result.success(movieService.page(status, page, size));
+        return Result.success(movieService.page(showStatus, page, size));
     }
 
     @GetMapping("/{id}")

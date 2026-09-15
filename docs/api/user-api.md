@@ -95,11 +95,11 @@
 
 ### 电影列表（电影页，分页，热映/待映切换）
 
-`GET /api/user/movies?status=&page=&size=` —— 免鉴权
+`GET /api/user/movies?showStatus=&page=&size=` —— 免鉴权
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `status` | string | **是** | `hot` 热映 / `coming` 待映 |
+| `showStatus` | string | **是** | `hot` 热映 / `coming` 待映 |
 | `page` / `size` | int | 否 | 分页（见通用分页） |
 
 **响应 `data`**：分页结构，`records` 为 `[{ id, title, poster }]`；`hot` 上映日期倒序、`coming` 升序

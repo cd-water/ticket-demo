@@ -51,11 +51,8 @@ async function onLogout() {
       <header class="topbar">
         <div class="crumb"><b>{{ activeTitle }}</b></div>
         <div class="topbar-right">
-          <div class="admin-chip">
-            <span class="avatar">{{ auth.admin?.username?.charAt(0).toUpperCase() }}</span>
-            <span>{{ auth.admin?.username }}</span>
-          </div>
-          <button class="logout-btn" @click="onLogout">退出登录</button>
+          <span class="admin-name">{{ auth.admin?.username }}</span>
+          <button class="logout-btn" @click="onLogout">登出</button>
         </div>
       </header>
       <main class="content">
@@ -170,23 +167,9 @@ async function onLogout() {
   gap: 16px;
 }
 
-.admin-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.admin-name {
   font-size: 13px;
-}
-
-.admin-chip .avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--brand);
-  color: var(--on-brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
+  color: var(--ink);
 }
 
 .logout-btn {

@@ -108,10 +108,10 @@ public class MovieService {
         return list;
     }
 
-    /** 电影列表分页：status=hot 按上映日期倒序 / coming 按上映日期升序 */
-    public PageResult<MovieVO> page(String status, int page, int size) {
+    /** 电影列表分页：showStatus=hot 按上映日期倒序 / coming 按上映日期升序 */
+    public PageResult<MovieVO> page(String showStatus, int page, int size) {
         // ponytail: mock 数据量小,直接返回全集;接入 DB 后做 LIMIT/OFFSET
-        List<MovieVO> all = "hot".equals(status) ? hot() : coming();
+        List<MovieVO> all = "hot".equals(showStatus) ? hot() : coming();
         return new PageResult<>((long) all.size(), all, page, size);
     }
 
