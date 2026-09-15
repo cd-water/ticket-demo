@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { getCinema, listScreenings } from '@/api/cinema'
 import type { CinemaDetailVO, ScreeningVO } from '@/types/api'
 import { TopBar } from '@/components/TopBar'
+import { SeatModal } from '@/components/SeatModal'
 import { showToast } from '@/components/toast'
 import { formatMoneyShort, formatScreeningTime, posterFallback } from '@/lib/format'
 
@@ -19,6 +20,7 @@ export default function CinemaDetailPage() {
     return v ? Number(v) : undefined
   })
   const [screenings, setScreenings] = useState<ScreeningVO[] | null>(null)
+  const [seatFor, setSeatFor] = useState<ScreeningVO | null>(null)
 
   // 拉影院详情
   useEffect(() => {
@@ -154,7 +156,7 @@ export default function CinemaDetailPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => showToast('选座购票建设中', 'info')}
+                          onClick={() => setSeatFor(s)}
                           className="ml-auto cursor-pointer rounded-full bg-brand px-5 py-2 text-sm font-bold text-on-brand transition-colors hover:bg-brand-deep hover:text-white"
                         >
                           选座购票
@@ -166,6 +168,16 @@ export default function CinemaDetailPage() {
               </>
             )}
           </>
+        )}
+
+        {seatFor && (
+          <SeatModal
+            screeningId={seatFor.id}
+            hallName={seatFor.hallName}
+            startTime={formatScreeningTime(seatFor.startTime)}
+            price={seatFor.price}
+            onClose={() => setSeatFor(null)}
+          />
         )}
       </main>
     </div>

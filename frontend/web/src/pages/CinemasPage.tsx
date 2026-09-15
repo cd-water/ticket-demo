@@ -46,7 +46,7 @@ export default function CinemasPage() {
         )}
 
         {!loading && data && data.records.length > 0 && (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
+          <div className="flex flex-col gap-4">
             {data.records.map((c) => (
               <CinemaCard key={c.id} cinema={c} />
             ))}

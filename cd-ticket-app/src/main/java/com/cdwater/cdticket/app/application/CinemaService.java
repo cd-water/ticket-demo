@@ -7,96 +7,31 @@ import com.cdwater.cdticket.app.application.dto.ScreeningVO;
 import com.cdwater.cdticket.app.common.PageResult;
 import com.cdwater.cdticket.app.common.ResultCode;
 import com.cdwater.cdticket.app.common.exception.BizException;
+import com.cdwater.cdticket.app.domain.model.Cinema;
+import com.cdwater.cdticket.app.domain.model.Movie;
+import com.cdwater.cdticket.app.domain.model.Screening;
+import com.cdwater.cdticket.app.domain.repository.CinemaRepository;
+import com.cdwater.cdticket.app.domain.repository.MovieRepository;
+import com.cdwater.cdticket.app.infrastructure.service.CacheService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CinemaService {
 
-    // ponytail: 内存 mock,数据重启即丢;接入 t_cinema/t_screening/t_movie 后改为 repository 查询
-    private static final Map<Long, CinemaDetailVO> MOCK_CINEMAS = new LinkedHashMap<>();
-    private static final Map<Long, List<ScreeningVO>> MOCK_SCREENINGS = new LinkedHashMap<>();
+    private static final long LIST_CACHE_TTL = 120;
 
-    static {
-        cinema(1L, "CD-TICKET·天府广场店", "成都市锦江区人民东路10号", 1);
-        cinema(2L, "CD-TICKET·春熙路店", "成都市锦江区春熙路88号", 1);
-        cinema(3L, "CD-TICKET·宽窄巷子店", "成都市青羊区长顺上街127号", 0);
+    private final CinemaRepository cinemaRepository;
+    private final MovieRepository movieRepository;
+    private final CacheService cacheService;
 
-        screenings(1L, List.of(
-                screening(1001L, 1L, 6L, "3号激光厅", "2026-09-15 14:20:00", "48.00"),
-                screening(1002L, 1L, 1L, "1号巨幕厅", "2026-09-15 19:30:00", "58.00"),
-                screening(1003L, 2L, 6L, "3号激光厅", "2026-09-15 20:00:00", "48.00"),
-                screening(1004L, 5L, 2L, "2号杜比厅", "2026-09-16 10:00:00", "52.00")
-        ));
-        screenings(2L, List.of(
-                screening(2001L, 1L, 1L, "1号巨幕厅", "2026-09-15 13:50:00", "58.00"),
-                screening(2002L, 2L, 6L, "3号激光厅", "2026-09-15 16:40:00", "48.00"),
-                screening(2003L, 4L, 2L, "2号杜比厅", "2026-09-15 19:10:00", "52.00")
-        ));
-        screenings(3L, List.of(
-                screening(3001L, 3L, 6L, "3号激光厅", "2026-09-15 15:00:00", "48.00")
-        ));
-    }
-
-    private static void cinema(Long id, String name, String address, Integer status) {
-        CinemaDetailVO vo = new CinemaDetailVO();
-        vo.setId(id);
-        vo.setName(name);
-        vo.setAddress(address);
-        vo.setStatus(status);
-        vo.setMovies(new ArrayList<>());
-        MOCK_CINEMAS.put(id, vo);
-    }
-
-    private static void screenings(Long cinemaId, List<ScreeningVO> list) {
-        MOCK_SCREENINGS.put(cinemaId, new ArrayList<>(list));
-        CinemaDetailVO c = MOCK_CINEMAS.get(cinemaId);
-        if (c == null) return;
-        for (ScreeningVO s : list) {
-            if (c.getMovies().stream().noneMatch(m -> m.getId().equals(s.getMovieId()))) {
-                MovieVO m = new MovieVO();
-                m.setId(s.getMovieId());
-                m.setTitle(movieTitle(s.getMovieId()));
-                m.setPoster("https://cdn.example.com/poster" + s.getMovieId() + ".jpg");
-                c.getMovies().add(m);
-            }
-        }
-    }
-
-    private static ScreeningVO screening(Long id, Long movieId, Long hallId,
-                                         String hallName, String startTimeStr, String price) {
-        ScreeningVO s = new ScreeningVO();
-        s.setId(id);
-        s.setMovieId(movieId);
-        s.setHallId(hallId);
-        s.setHallName(hallName);
-        s.setStartTime(LocalDateTime.parse(startTimeStr.replace(" ", "T")));
-        s.setEndTime(s.getStartTime().plusHours(3));
-        s.setPrice(new BigDecimal(price));
-        return s;
-    }
-
-    // ponytail: 电影标题/海报与 MovieService 的 mock 重复,应来自 movie domain,当前未实现共享层
-    private static String movieTitle(Long id) {
-        return switch (id.intValue()) {
-            case 1 -> "流浪地球 3";
-            case 2 -> "深海传说";
-            case 3 -> "长安三万里";
-            case 4 -> "熊出没·重启";
-            case 5 -> "千里江山图";
-            case 6 -> "星际拓荒者";
-            default -> "未知电影";
-        };
-    }
-
-    private static CinemaVO toVO(CinemaDetailVO c) {
+    private static CinemaVO toVO(Cinema c) {
         CinemaVO vo = new CinemaVO();
         vo.setId(c.getId());
         vo.setName(c.getName());
@@ -105,32 +40,63 @@ public class CinemaService {
         return vo;
     }
 
-    /** 影院分页（停业/营业都返回，按 id 升序） */
+    /** 影院分页（停业/营业都返回，按 id 升序）；逻辑过期缓存 */
     public PageResult<CinemaVO> page(int page, int size) {
-        // ponytail: mock 数据量小,直接返回全集;接入 DB 后做 LIMIT/OFFSET
-        List<CinemaVO> all = MOCK_CINEMAS.values().stream()
-                .sorted(Comparator.comparing(CinemaDetailVO::getId))
-                .map(CinemaService::toVO)
-                .toList();
-        return new PageResult<>((long) all.size(), all, page, size);
+        return cacheService.getOrLoad("cinemas:" + page + ":" + size, LIST_CACHE_TTL, () -> {
+            PageResult<Cinema> p = cinemaRepository.page(page, size);
+            return new PageResult<>(p.getTotal(), p.getRecords().stream().map(CinemaService::toVO).toList(),
+                    p.getPage(), p.getSize());
+        }, new TypeReference<>() {});
     }
 
     /** 影院详情；不存在抛 NOT_FOUND */
     public CinemaDetailVO detail(Long id) {
-        CinemaDetailVO c = MOCK_CINEMAS.get(id);
+        Cinema c = cinemaRepository.findById(id);
         if (c == null) {
             throw new BizException(ResultCode.NOT_FOUND);
         }
-        return c;
+        CinemaDetailVO vo = new CinemaDetailVO();
+        vo.setId(c.getId());
+        vo.setName(c.getName());
+        vo.setAddress(c.getAddress());
+        vo.setStatus(c.getStatus());
+        vo.setMovies(cinemaRepository.findMoviesByCinema(c.getId()).stream()
+                .map(m -> {
+                    MovieVO mv = new MovieVO();
+                    mv.setId(m.getId());
+                    mv.setTitle(m.getTitle());
+                    mv.setPoster(m.getPoster());
+                    return mv;
+                }).toList());
+        return vo;
     }
 
     /** 影院排片列表（可按 movieId 过滤） */
     public List<ScreeningVO> screenings(Long cinemaId, Long movieId) {
-        if (!MOCK_CINEMAS.containsKey(cinemaId)) {
+        if (cinemaRepository.findById(cinemaId) == null) {
             throw new BizException(ResultCode.NOT_FOUND);
         }
-        List<ScreeningVO> all = MOCK_SCREENINGS.getOrDefault(cinemaId, List.of());
-        if (movieId == null) return all;
-        return all.stream().filter(s -> s.getMovieId().equals(movieId)).toList();
+        List<Screening> list = cinemaRepository.findScreenings(cinemaId, movieId);
+        if (list.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, String> hallNames = cinemaRepository.findHallNames(
+                list.stream().map(Screening::getHallId).distinct().toList());
+        Map<Long, Integer> durations = movieRepository.findByIds(
+                        list.stream().map(Screening::getMovieId).distinct().toList())
+                .stream().collect(Collectors.toMap(Movie::getId, Movie::getDuration));
+
+        return list.stream().map(s -> {
+            ScreeningVO vo = new ScreeningVO();
+            vo.setId(s.getId());
+            vo.setMovieId(s.getMovieId());
+            vo.setHallId(s.getHallId());
+            vo.setHallName(hallNames.get(s.getHallId()));
+            vo.setStartTime(s.getStartTime());
+            vo.setEndTime(s.getStartTime().plusMinutes(durations.get(s.getMovieId())));
+            vo.setPrice(s.getPrice());
+            return vo;
+        }).toList();
     }
 }

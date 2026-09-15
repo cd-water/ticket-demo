@@ -5,6 +5,7 @@ import MovieDetailPage from '@/pages/MovieDetailPage'
 import CinemasPage from '@/pages/CinemasPage'
 import CinemaDetailPage from '@/pages/CinemaDetailPage'
 import MyPage from '@/pages/MyPage'
+import OrderDetailPage from '@/pages/OrderDetailPage'
 import LoginPage from '@/pages/LoginPage'
 import { ToastHost } from '@/components/Toast'
 
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/cinemas" element={<CinemasPage />} />
         <Route path="/cinemas/:id" element={<CinemaDetailPage />} />
         <Route path="/me" element={<MyPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

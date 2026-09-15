@@ -25,9 +25,14 @@ public class Result<T> {
     }
 
     public static <T> Result<T> fail(String code, String message) {
+        return fail(code, message, null);
+    }
+
+    public static <T> Result<T> fail(String code, String message, T data) {
         Result<T> r = new Result<>();
         r.code = code;
         r.message = message;
+        r.data = data;
         return r;
     }
 

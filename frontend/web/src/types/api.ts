@@ -104,3 +104,73 @@ export interface CinemaDetailVO extends CinemaVO {
 export interface UpdateProfileRequest {
   nickname: string
 }
+
+/* ===== seat（座位图） ===== */
+
+/** GET /api/user/screenings/{id}/seats 的 data */
+export interface SeatMapVO {
+  screeningId: number
+  hallId: number
+  hallName: string
+  seatRows: number
+  seatCols: number
+  seats: SeatVO[]
+}
+
+/** 座位图中的单座 */
+export interface SeatVO {
+  seatRow: number
+  seatCol: number
+  seatNo: string
+  /** 0 可用 / 1 已售 / 2 锁定中 / 3 不可售 */
+  status: number
+}
+
+/* ===== order（订单） ===== */
+
+/** 座位引用（请求） */
+export interface SeatRef {
+  seatRow: number
+  seatCol: number
+}
+
+/** POST /api/user/orders 请求体 */
+export interface CreateOrderRequest {
+  screeningId: number
+  seats: SeatRef[]
+}
+
+/** 座位明细（详情/创建/支付响应里的 items） */
+export interface OrderItemVO {
+  seatRow: number
+  seatCol: number
+  seatNo: string
+  price: number
+}
+
+/** 订单响应（列表/详情/创建/支付共用） */
+export interface OrderVO {
+  id: number
+  /** 订单号（雪花ID，字符串） */
+  orderNo: string
+  /** 0 待支付 / 1 已支付 / 2 已取消 */
+  status: number
+  totalAmount: number
+  movieId?: number
+  movieTitle?: string
+  moviePoster?: string
+  cinemaId?: number
+  cinemaName?: string
+  hallName?: string
+  screeningId?: number
+  startTime?: string
+  /** 详情/创建/支付返回 */
+  items?: OrderItemVO[]
+  /** 列表返回（座位号字符串数组） */
+  seats?: string[]
+  ticketCode?: string
+  payExpireTime?: string
+  payTime?: string
+  cancelReason?: string
+  createTime?: string
+}

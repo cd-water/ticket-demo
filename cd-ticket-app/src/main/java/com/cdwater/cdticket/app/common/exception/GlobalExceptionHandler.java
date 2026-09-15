@@ -21,8 +21,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BizException.class)
-    public Result<Void> handleBiz(BizException e) {
-        return Result.fail(e.getCode(), e.getMessage());
+    public Result<Object> handleBiz(BizException e) {
+        return Result.fail(e.getCode(), e.getMessage(), e.getData());
     }
 
     /**

@@ -30,12 +30,15 @@ export default function HomePage() {
     ])
   }, [])
 
-  // 轮播自动切换
+  // 轮播自动切换：默认 5s 下一张；手动切换（箭头/悬停圆点）后重新计时
   useEffect(() => {
     if (banners.length <= 1) return
     const t = setInterval(() => setBannerIdx((i) => (i + 1) % banners.length), ROTATE_MS)
     return () => clearInterval(t)
-  }, [banners.length])
+  }, [banners.length, bannerIdx])
+
+  const prev = () => setBannerIdx((i) => (i - 1 + banners.length) % banners.length)
+  const next = () => setBannerIdx((i) => (i + 1) % banners.length)
 
   function gotoBanner(b: BannerVO) {
     if (!b.linkUrl) return
@@ -130,13 +133,35 @@ export default function HomePage() {
               onError={() => setImgErr((p) => ({ ...p, [activeBanner.id]: true }))}
             />
           )}
-          {/* 圆点指示器 */}
+          {/* 手动切换按钮 */}
+          {banners.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={prev}
+                aria-label="上一张"
+                className="absolute top-1/2 left-3 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/30 text-xl text-white transition-colors hover:bg-black/55"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={next}
+                aria-label="下一张"
+                className="absolute top-1/2 right-3 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/30 text-xl text-white transition-colors hover:bg-black/55"
+              >
+                ›
+              </button>
+            </>
+          )}
+          {/* 圆点指示器：悬停切换 */}
           {banners.length > 1 && (
             <div className="absolute bottom-3.5 left-1/2 flex -translate-x-1/2 gap-1.5">
               {banners.map((b, i) => (
                 <button
                   key={b.id}
                   type="button"
+                  onMouseEnter={() => setBannerIdx(i)}
                   onClick={() => setBannerIdx(i)}
                   className={`size-2 cursor-pointer rounded-full transition-all ${
                     i === bannerIdx ? 'w-6 bg-white' : 'bg-white/55'

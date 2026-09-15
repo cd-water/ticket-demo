@@ -142,6 +142,8 @@ CREATE TABLE `t_order`
     `version`         INT            NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
     `pay_expire_time` DATETIME       NOT NULL COMMENT '支付截止时间',
     `pay_time`        DATETIME       NULL COMMENT '支付时间',
+    `ticket_code`     VARCHAR(20)    NULL COMMENT '取票码（支付成功时生成，8位数字）',
+    `cancel_reason`   VARCHAR(255)   NULL COMMENT '取消原因（超时关单/用户取消）',
     `create_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
