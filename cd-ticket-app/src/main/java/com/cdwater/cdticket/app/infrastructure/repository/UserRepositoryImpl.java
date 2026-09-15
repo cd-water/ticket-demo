@@ -1,0 +1,35 @@
+package com.cdwater.cdticket.app.infrastructure.repository;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cdwater.cdticket.app.domain.UserRepository;
+import com.cdwater.cdticket.app.infrastructure.entity.User;
+import com.cdwater.cdticket.app.infrastructure.mapper.UserMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class UserRepositoryImpl implements UserRepository {
+
+    private final UserMapper userMapper;
+
+    @Override
+    public User findByPhone(String phone) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
+    }
+
+    @Override
+    public User findById(Long id) {
+        return userMapper.selectById(id);
+    }
+
+    @Override
+    public User save(User user) {
+        if (user.getId() == null) {
+            userMapper.insert(user);
+        } else {
+            userMapper.updateById(user);
+        }
+        return user;
+    }
+}

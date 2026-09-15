@@ -1,7 +1,9 @@
 package com.cdwater.cdticket.app.user.application;
 
+import com.cdwater.cdticket.app.application.SmsCodeService;
+import com.cdwater.cdticket.app.application.SmsSender;
 import com.cdwater.cdticket.app.common.exception.BizException;
-import com.cdwater.cdticket.app.user.infrastructure.SmsProperties;
+import com.cdwater.cdticket.app.infrastructure.SmsProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;

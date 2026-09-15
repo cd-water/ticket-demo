@@ -1,11 +1,14 @@
 package com.cdwater.cdticket.app.user.application;
 
+import com.cdwater.cdticket.app.application.AuthService;
+import com.cdwater.cdticket.app.application.RefreshTokenService;
+import com.cdwater.cdticket.app.application.SmsCodeService;
 import com.cdwater.cdticket.app.common.exception.BizException;
-import com.cdwater.cdticket.app.common.security.JwtProperties;
-import com.cdwater.cdticket.app.common.security.JwtUtil;
-import com.cdwater.cdticket.app.user.application.dto.LoginResponse;
-import com.cdwater.cdticket.app.user.domain.UserRepository;
-import com.cdwater.cdticket.app.user.infrastructure.entity.User;
+import com.cdwater.cdticket.app.infrastructure.security.JwtProperties;
+import com.cdwater.cdticket.app.infrastructure.security.JwtUtil;
+import com.cdwater.cdticket.app.application.dto.LoginResponse;
+import com.cdwater.cdticket.app.domain.UserRepository;
+import com.cdwater.cdticket.app.infrastructure.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
