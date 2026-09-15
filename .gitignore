@@ -31,11 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-
 .codegraph
 CLAUDE.md
 AGENTS.md
-docs/superpowers
-.playwright-cli
-.superpowers
-.claude

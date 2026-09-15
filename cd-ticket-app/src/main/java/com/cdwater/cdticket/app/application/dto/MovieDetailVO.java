@@ -13,6 +13,6 @@ public class MovieDetailVO {
     private String description;
     private Integer duration;
     private LocalDate releaseDate;
-    /** hot 热映 / coming 待映（与电影列表 status 参数一致） */
+    /** hot 热映 / coming 待映 */
     private String showStatus;
 }

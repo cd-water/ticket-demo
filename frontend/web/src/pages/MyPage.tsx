@@ -82,16 +82,11 @@ export default function MyPage() {
 
         {/* 资料卡 */}
         <section className="mb-4 rounded-2xl bg-card p-6 shadow-[var(--shadow-card)]">
-          <div className="flex items-center gap-3.5">
-            <span className="flex size-12 items-center justify-center rounded-full bg-brand text-base font-bold text-on-brand">
-              {user.nickname.slice(-2)}
-            </span>
-            <div>
-              <div className="font-[family-name:var(--font-serif-cn)] text-lg font-extrabold">
-                {user.nickname}
-              </div>
-              <div className="text-[13px] text-ink-2">{user.phone}</div>
+          <div>
+            <div className="font-[family-name:var(--font-serif-cn)] text-lg font-extrabold">
+              {user.nickname}
             </div>
+            <div className="text-[13px] text-ink-2">{user.phone}</div>
           </div>
         </section>
 

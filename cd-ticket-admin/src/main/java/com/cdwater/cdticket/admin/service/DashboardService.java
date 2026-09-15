@@ -62,6 +62,7 @@ public class DashboardService {
         vo.setTotalPendingCount(totalPending);
         vo.setTotalPaidCount(totalPaid);
         vo.setTotalCancelledCount(totalCancelled);
+        vo.setTotalOrderCount(totalPending + totalPaid + totalCancelled);
         vo.setTotalRevenue(orderMapper.sumPaidTotal());
 
         vo.setPerCinemaStats(cinemaMapper.selectCinemaStats());

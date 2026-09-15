@@ -16,7 +16,7 @@
   --ink-2: #9A927F;
   --danger: #E5484D;
 
-  /* 字体（系统栈，Noto 本机装了即生效） */
+  /* 字体（Noto 由 @fontsource 注入，本地优先；找不到降级到系统字体栈） */
   --font-serif: 'Noto Serif SC', 'Songti SC', SimSun, serif;
   --font-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
 
