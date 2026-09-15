@@ -1,5 +1,7 @@
-package com.cdwater.cdticket.app.infrastructure.security;
+package com.cdwater.cdticket.app.common;
 
+import com.cdwater.cdticket.app.common.util.JwtUtil;
+import com.cdwater.cdticket.app.infrastructure.config.JwtProperties;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

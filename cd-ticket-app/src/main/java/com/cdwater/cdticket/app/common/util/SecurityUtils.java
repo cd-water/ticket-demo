@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.app.infrastructure.security;
+package com.cdwater.cdticket.app.common.util;
 
 import com.cdwater.cdticket.app.common.ResultCode;
 import com.cdwater.cdticket.app.common.exception.BizException;

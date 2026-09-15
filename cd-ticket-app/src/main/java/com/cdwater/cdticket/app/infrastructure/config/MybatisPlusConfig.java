@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.app.config;
+package com.cdwater.cdticket.app.infrastructure.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;

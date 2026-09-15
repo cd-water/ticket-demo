@@ -1,5 +1,6 @@
-package com.cdwater.cdticket.app.infrastructure.security;
+package com.cdwater.cdticket.app.interfaces.auth;
 
+import com.cdwater.cdticket.app.common.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

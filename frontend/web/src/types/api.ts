@@ -10,7 +10,6 @@ export interface UserInfo {
   id: number
   phone: string
   nickname: string
-  hasPassword: boolean
 }
 
 /** POST /api/user/auth/login/sms 与 /login/password 的 data */

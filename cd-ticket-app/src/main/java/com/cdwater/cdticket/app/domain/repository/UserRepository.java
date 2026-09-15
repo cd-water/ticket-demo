@@ -1,6 +1,6 @@
-package com.cdwater.cdticket.app.domain;
+package com.cdwater.cdticket.app.domain.repository;
 
-import com.cdwater.cdticket.app.infrastructure.entity.User;
+import com.cdwater.cdticket.app.domain.model.User;
 
 public interface UserRepository {
     User findByPhone(String phone);

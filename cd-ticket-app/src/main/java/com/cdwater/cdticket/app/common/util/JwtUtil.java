@@ -1,5 +1,6 @@
-package com.cdwater.cdticket.app.infrastructure.security;
+package com.cdwater.cdticket.app.common.util;
 
+import com.cdwater.cdticket.app.infrastructure.config.JwtProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;

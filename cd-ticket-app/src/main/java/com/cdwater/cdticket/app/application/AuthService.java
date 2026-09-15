@@ -2,13 +2,14 @@ package com.cdwater.cdticket.app.application;
 
 import com.cdwater.cdticket.app.common.exception.BizException;
 import com.cdwater.cdticket.app.common.ResultCode;
-import com.cdwater.cdticket.app.infrastructure.security.JwtUtil;
+import com.cdwater.cdticket.app.common.util.JwtUtil;
 import com.cdwater.cdticket.app.application.dto.LoginResponse;
 import com.cdwater.cdticket.app.application.dto.RefreshResponse;
 import com.cdwater.cdticket.app.application.dto.UserInfo;
-import com.cdwater.cdticket.app.domain.UserRepository;
-import com.cdwater.cdticket.app.infrastructure.convert.UserConvert;
-import com.cdwater.cdticket.app.infrastructure.entity.User;
+import com.cdwater.cdticket.app.domain.repository.UserRepository;
+import com.cdwater.cdticket.app.application.convert.UserConvert;
+import com.cdwater.cdticket.app.domain.model.User;
+import com.cdwater.cdticket.app.interfaces.dto.UpdateProfileRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,20 +34,19 @@ public class AuthService {
         if (user == null) {
             user = new User();
             user.setPhone(phone);
-            user.setNickname("用户" + phone.substring(phone.length() - 4));
-            user.setStatus(1);
+            user.setNickname("user_" + phone.substring(phone.length() - 4));
             user = userRepository.save(user);
+        } else if (user.getStatus() == null || user.getStatus() != 1) {
+            throw new BizException(ResultCode.LOGIN_FAILED);
         }
-        checkEnabled(user);
         return issueTokens(user);
     }
 
     public LoginResponse loginByPassword(String phone, String password) {
         User user = userRepository.findByPhone(phone);
-        if (user == null) {
+        if (user == null || user.getStatus() == null || user.getStatus() != 1) {
             throw new BizException(ResultCode.LOGIN_FAILED);
         }
-        checkEnabled(user);
         if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
             throw new BizException(ResultCode.LOGIN_FAILED);
         }
@@ -67,7 +67,6 @@ public class AuthService {
     }
 
     public void changePassword(Long userId, String newPassword, String confirmPassword) {
-        // 长度/复杂度校验已在 controller 的 @Valid(ChangePasswordRequest) 完成
         if (!newPassword.equals(confirmPassword)) {
             throw new BizException(ResultCode.PASSWORD_CONFIRM_MISMATCH);
         }
@@ -90,17 +89,21 @@ public class AuthService {
         return UserConvert.INSTANCE.toUserInfo(user);
     }
 
+    public UserInfo updateProfile(Long userId, UpdateProfileRequest req) {
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            throw new BizException(ResultCode.UNAUTHORIZED);
+        }
+        user.setNickname(req.getNickname());
+        userRepository.save(user);
+        return UserConvert.INSTANCE.toUserInfo(user);
+    }
+
     private LoginResponse issueTokens(User user) {
         LoginResponse resp = new LoginResponse();
         resp.setAccessToken(jwtUtil.createAccessToken(user.getId()));
         resp.setRefreshToken(refreshTokenService.create(user.getId()));
         resp.setUser(UserConvert.INSTANCE.toUserInfo(user));
         return resp;
-    }
-
-    private void checkEnabled(User user) {
-        if (user.getStatus() == null || user.getStatus() != 1) {
-            throw new BizException(ResultCode.USER_DISABLED);
-        }
     }
 }

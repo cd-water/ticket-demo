@@ -2,7 +2,7 @@ package com.cdwater.cdticket.app.application;
 
 import com.cdwater.cdticket.app.common.exception.BizException;
 import com.cdwater.cdticket.app.common.ResultCode;
-import com.cdwater.cdticket.app.infrastructure.SmsProperties;
+import com.cdwater.cdticket.app.infrastructure.config.SmsProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -20,8 +20,6 @@ public class SmsCodeService {
     private final SmsSender smsSender;
 
     public void sendCode(String phone) {
-        // 手机号格式校验已在 controller 的 @Valid(SmsCodeRequest) 完成
-        // 短信发送不限流；如需限流，统一在更高层（API网关/切面）做
         String code = String.format("%06d", ThreadLocalRandom.current().nextInt(1_000_000));
         redis.opsForValue().set(SMS_KEY_PREFIX + phone, code,
                 Duration.ofSeconds(smsProperties.getCodeExpireSeconds()));

@@ -160,7 +160,7 @@
 }
 ```
 
-> 电影不存在或已下架：`code = C201`，`data = null`。
+> 电影不存在或已下架：`code = C004`（`NOT_FOUND`），`data = null`。
 
 ### 影院列表（影院页，分页）
 
@@ -234,7 +234,7 @@
 }
 ```
 
-> 影院不存在：`code = C301`，`data = null`。
+> 影院不存在：`code = C004`（`NOT_FOUND`），`data = null`。
 
 ### 影院排片列表
 
@@ -268,3 +268,232 @@
   ]
 }
 ```
+
+## 通用模型
+
+### `UserInfo`
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | long | 用户 ID |
+| `phone` | string | 手机号 |
+| `nickname` | string | 昵称 |
+
+### `LoginResponse`
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `accessToken` | string | JWT，900s 过期，鉴权头 `Authorization: Bearer <token>` |
+| `refreshToken` | string | UUID，7d 过期，存 Redis；用于刷新与登出 |
+| `user` | object | `UserInfo` |
+
+### `RefreshResponse`
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `accessToken` | string | 新的 access token |
+| `refreshToken` | string | 新的 refresh token（旧 token 已轮换） |
+
+## 认证（`/api/user/auth`）
+
+### 发送短信验证码
+
+`POST /api/user/auth/sms-code` —— 免鉴权
+
+**请求体**：
+
+```json
+{ "phone": "13800138000" }
+```
+
+> 短信验证码 300s 过期。
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": null
+}
+```
+
+### 短信验证码登录
+
+`POST /api/user/auth/login/sms` —— 免鉴权
+
+**请求体**：
+
+```json
+{ "phone": "13800138000", "code": "123456" }
+```
+
+**响应 `data`**：`LoginResponse`
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzE1MTI0MDAwLCJleHAiOjE3MTUxMjQ5MDB9.signature",
+    "refreshToken": "8e3a1b40-2c9a-4d5e-bb1e-9a2c3f4d5e6a",
+    "user": { "id": 1, "phone": "13800138000", "nickname": "user_8000" }
+  }
+}
+```
+
+> - 验证码错误或过期：`code = C102`
+> - 手机号未注册时自动注册并登录,昵称 `user_<手机后4位>`
+
+### 密码登录
+
+`POST /api/user/auth/login/password` —— 免鉴权
+
+**请求体**：
+
+```json
+{ "phone": "13800138000", "password": "abcd1234" }
+```
+
+**响应 `data`**：`LoginResponse`
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzE1MTI0MDAwLCJleHAiOjE3MTUxMjQ5MDB9.signature",
+    "refreshToken": "8e3a1b40-2c9a-4d5e-bb1e-9a2c3f4d5e6a",
+    "user": { "id": 1, "phone": "13800138000", "nickname": "user_8000" }
+  }
+}
+```
+
+> 用户名/密码错误、用户已禁用统一返回:`code = C101`(不区分原因,避免泄露账号状态)。
+
+### 刷新 Token
+
+`POST /api/user/auth/refresh` —— 免鉴权(凭 refreshToken)
+
+**请求体**：
+
+```json
+{ "refreshToken": "<uuid>" }
+```
+
+**响应 `data`**：`RefreshResponse`
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzE1MTI0MDAwLCJleHAiOjE3MTUxMjQ5MDB9.signature",
+    "refreshToken": "new-uuid-3c1d-4e5f-a678-9b0c1d2e3f4a"
+  }
+}
+```
+
+> - refreshToken 无效或过期：`code = C002`
+> - 旧的 refreshToken 在响应返回后失效(轮换),下次刷新需用新的
+
+### 登出
+
+`POST /api/user/auth/logout` —— **需鉴权**
+
+**请求体**：
+
+```json
+{ "refreshToken": "<uuid>" }
+```
+
+> 仅销毁服务端 refreshToken,前端需自行丢弃 accessToken(短期有效,自然过期)。
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": null
+}
+```
+
+## 用户（`/api/user`）
+
+### 当前用户信息
+
+`GET /api/user/me` —— **需鉴权**,无参数
+
+**响应 `data`**：`UserInfo`
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": { "id": 1, "phone": "13800138000", "nickname": "user_8000" }
+}
+```
+
+### 更新个人资料
+
+`POST /api/user/me` —— **需鉴权**
+
+**请求体**：
+
+```json
+{ "nickname": "新昵称" }
+```
+
+> 字段说明：
+> - `nickname`：1-50 字符（与 DB `t_user.nickname VARCHAR(50)` 对齐）
+>
+> 当前仅支持昵称；后续要加字段（头像、性别、生日等）直接扩请求体和服务层 `AuthService.updateProfile`。
+
+**响应 `data`**：`UserInfo`
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": { "id": 1, "phone": "13800138000", "nickname": "新昵称" }
+}
+```
+
+### 修改密码
+
+`POST /api/user/me/password` —— **需鉴权**
+
+**请求体**：
+
+```json
+{
+  "newPassword": "newpass1",
+  "confirmPassword": "newpass1"
+}
+```
+
+> - 两次密码不一致：`code = C105`
+> - 与旧密码相同：`code = C104`
+> - 密码规则：8-20 位,必须含字母和数字(`@Pattern` 校验)
+
+**响应示例**：
+
+```json
+{
+  "code": "0000",
+  "message": "ok",
+  "data": null
+}
+```
+

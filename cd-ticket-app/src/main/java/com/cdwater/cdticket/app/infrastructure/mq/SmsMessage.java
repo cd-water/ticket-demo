@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.app.infrastructure.kafka;
+package com.cdwater.cdticket.app.infrastructure.mq;
 
 import lombok.Data;
 

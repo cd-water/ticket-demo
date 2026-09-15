@@ -8,5 +8,4 @@ public class UserInfo {
     private Long id;
     private String phone;
     private String nickname;
-    private Boolean hasPassword;
 }

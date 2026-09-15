@@ -1,7 +1,9 @@
-package com.cdwater.cdticket.app.infrastructure.security;
+package com.cdwater.cdticket.app.infrastructure.config;
 
 import com.cdwater.cdticket.app.common.Result;
 import com.cdwater.cdticket.app.common.ResultCode;
+import com.cdwater.cdticket.app.common.util.JwtUtil;
+import com.cdwater.cdticket.app.interfaces.auth.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,12 @@ public class SecurityConfig {
             "/api/user/auth/sms-code",
             "/api/user/auth/login/sms",
             "/api/user/auth/login/password",
-            "/api/user/auth/refresh"
+            "/api/user/auth/refresh",
+            "/api/user/banners",
+            "/api/user/movies",
+            "/api/user/movies/**",
+            "/api/user/cinemas",
+            "/api/user/cinemas/**"
     };
 
     private final JwtUtil jwtUtil;

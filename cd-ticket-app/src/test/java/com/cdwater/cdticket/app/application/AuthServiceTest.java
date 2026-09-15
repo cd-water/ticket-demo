@@ -1,14 +1,13 @@
-package com.cdwater.cdticket.app.user.application;
+package com.cdwater.cdticket.app.application;
 
-import com.cdwater.cdticket.app.application.AuthService;
-import com.cdwater.cdticket.app.application.RefreshTokenService;
-import com.cdwater.cdticket.app.application.SmsCodeService;
 import com.cdwater.cdticket.app.common.exception.BizException;
-import com.cdwater.cdticket.app.infrastructure.security.JwtProperties;
-import com.cdwater.cdticket.app.infrastructure.security.JwtUtil;
+import com.cdwater.cdticket.app.infrastructure.config.JwtProperties;
+import com.cdwater.cdticket.app.common.util.JwtUtil;
 import com.cdwater.cdticket.app.application.dto.LoginResponse;
-import com.cdwater.cdticket.app.domain.UserRepository;
-import com.cdwater.cdticket.app.infrastructure.entity.User;
+import com.cdwater.cdticket.app.application.dto.UserInfo;
+import com.cdwater.cdticket.app.domain.repository.UserRepository;
+import com.cdwater.cdticket.app.domain.model.User;
+import com.cdwater.cdticket.app.interfaces.dto.UpdateProfileRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,7 +46,7 @@ class AuthServiceTest {
         LoginResponse resp = authService.loginBySms("13800138000", "123456");
         assertNotNull(resp.getAccessToken());
         assertNotNull(resp.getRefreshToken());
-        assertEquals("用户8000", resp.getUser().getNickname());
+        assertEquals("user_8000", resp.getUser().getNickname());
     }
 
     @Test
@@ -76,5 +75,27 @@ class AuthServiceTest {
         user.setPassword(new BCryptPasswordEncoder().encode("samepass1"));
         when(userRepository.findById(1L)).thenReturn(user);
         assertThrows(BizException.class, () -> authService.changePassword(1L, "samepass1", "samepass1"));
+    }
+
+    @Test
+    void updateProfileReturnsUpdatedUser() {
+        User user = new User();
+        user.setId(1L);
+        user.setPhone("13800138000");
+        user.setNickname("user_8000");
+        when(userRepository.findById(1L)).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setNickname("新昵称");
+        UserInfo info = authService.updateProfile(1L, req);
+        assertEquals("新昵称", info.getNickname());
+    }
+
+    @Test
+    void updateProfileRejectsUnknownUser() {
+        when(userRepository.findById(99L)).thenReturn(null);
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setNickname("x");
+        assertThrows(BizException.class, () -> authService.updateProfile(99L, req));
     }
 }

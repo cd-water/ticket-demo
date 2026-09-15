@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.app.infrastructure.security;
+package com.cdwater.cdticket.app.infrastructure.config;
 
 import lombok.Getter;
 import lombok.Setter;

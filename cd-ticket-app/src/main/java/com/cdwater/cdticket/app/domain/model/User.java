@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.app.infrastructure.entity;
+package com.cdwater.cdticket.app.domain.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

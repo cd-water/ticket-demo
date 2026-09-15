@@ -1,4 +1,4 @@
-package com.cdwater.cdticket.app.infrastructure.kafka;
+package com.cdwater.cdticket.app.infrastructure.mq;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

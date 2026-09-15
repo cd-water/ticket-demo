@@ -1,8 +1,8 @@
 package com.cdwater.cdticket.app.infrastructure.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cdwater.cdticket.app.domain.UserRepository;
-import com.cdwater.cdticket.app.infrastructure.entity.User;
+import com.cdwater.cdticket.app.domain.repository.UserRepository;
+import com.cdwater.cdticket.app.domain.model.User;
 import com.cdwater.cdticket.app.infrastructure.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

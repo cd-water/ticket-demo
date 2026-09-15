@@ -2,7 +2,7 @@ package com.cdwater.cdticket.app.application;
 
 import com.cdwater.cdticket.app.common.exception.BizException;
 import com.cdwater.cdticket.app.common.ResultCode;
-import com.cdwater.cdticket.app.infrastructure.security.JwtProperties;
+import com.cdwater.cdticket.app.infrastructure.config.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,6 @@ public class RefreshTokenService {
         return token;
     }
 
-    /** 返回 token 对应的 userId；token 无效抛 1002。 */
     public Long getUserId(String token) {
         String userId = redis.opsForValue().get(KEY_PREFIX + token);
         if (userId == null) {
